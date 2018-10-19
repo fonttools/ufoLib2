@@ -4,7 +4,7 @@ from fontTools.misc.filenames import userNameToFileName
 from fontTools.misc.py23 import tounicode
 import os
 import errno
-from lxml import etree
+from fontTools.misc import etree
 from fontTools.misc import plistlib
 from ufoLib2.constants import CONTENTS_FILENAME, LAYERINFO_FILENAME
 
