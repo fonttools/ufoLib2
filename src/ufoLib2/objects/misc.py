@@ -1,6 +1,6 @@
 import attr
 from collections import namedtuple
-from ufoLib2.reader import UFOReader
+from fontTools.ufoLib import UFOReader
 
 try:
     from collections.abc import Mapping

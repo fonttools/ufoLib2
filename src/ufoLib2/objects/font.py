@@ -8,8 +8,8 @@ from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.features import Features
-from ufoLib2.reader import UFOReader
-from ufoLib2.writer import UFOWriter
+from fontTools.ufoLib import UFOReader
+from fontTools.ufoLib import UFOWriter
 
 
 @attr.s(slots=True)
