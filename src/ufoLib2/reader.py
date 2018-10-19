@@ -3,7 +3,7 @@ import attr
 import os
 import errno
 from io import open
-from ufoLib2 import plistlib
+from fontTools.misc import plistlib
 from ufoLib2.constants import (
     DATA_DIRNAME,
     DEFAULT_GLYPHS_DIRNAME,

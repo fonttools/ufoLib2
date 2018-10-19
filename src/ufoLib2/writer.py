@@ -4,7 +4,7 @@ from fontTools.misc.filenames import userNameToFileName
 from fontTools.misc.py23 import open, tounicode
 import os
 import errno
-from ufoLib2 import plistlib
+from fontTools.misc import plistlib
 import shutil
 from ufoLib2.constants import (
     DATA_DIRNAME,
