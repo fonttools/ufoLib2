@@ -7,10 +7,7 @@ from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
 from ufoLib2.objects.misc import Transformation
 from ufoLib2.objects.point import Point
-from ufoLib2.pointPens.converterPens import (
-    PointToSegmentPen,
-    SegmentToPointPen,
-)
+from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
 

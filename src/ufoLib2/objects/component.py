@@ -1,7 +1,7 @@
 import attr
 from typing import Optional
 from ufoLib2.objects.misc import Transformation
-from ufoLib2.pointPens.converterPens import PointToSegmentPen
+from fontTools.pens.pointPen import PointToSegmentPen
 import warnings
 
 
