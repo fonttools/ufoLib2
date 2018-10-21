@@ -18,7 +18,7 @@ class Glyph(object):
     height = attr.ib(default=0, init=False, type=Union[int, float])
     unicodes = attr.ib(default=attr.Factory(list), init=False, type=list)
 
-    image = attr.ib(
+    _image = attr.ib(
         default=attr.Factory(Image), init=False, repr=False, type=Image
     )
     lib = attr.ib(
@@ -96,6 +96,28 @@ class Glyph(object):
                 self.unicodes.insert(0, value)
             else:
                 self.unicodes.append(value)
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, image):
+        if isinstance(image, Image):
+            self._image = image
+        else:
+            self._image = Image(
+                fileName=image["fileName"],
+                transformation=Transformation(
+                    image["xScale"],
+                    image["xyScale"],
+                    image["yxScale"],
+                    image["yScale"],
+                    image["xOffset"],
+                    image["yOffset"],
+                ),
+                color=image.get("color"),
+            )
 
     def clear(self):
         del self._anchors[:]
