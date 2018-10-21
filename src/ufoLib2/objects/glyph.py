@@ -1,12 +1,9 @@
 import attr
 from typing import Optional, Union
 from ufoLib2.objects.anchor import Anchor
-from ufoLib2.objects.component import Component
-from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
 from ufoLib2.objects.misc import Transformation
-from ufoLib2.objects.point import Point
 from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
@@ -196,15 +193,3 @@ class Glyph(object):
             self.lib["public.verticalOrigin"] = value
         elif "public.verticalOrigin" in self.lib:
             del self.lib["public.verticalOrigin"]
-
-
-class GlyphClasses(object):
-    Anchor = Anchor
-    Component = Component
-    Contour = Contour
-    Glyph = Glyph
-    Guideline = Guideline
-    Image = Image
-    Point = Point
-
-    Transformation = Transformation

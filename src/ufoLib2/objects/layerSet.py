@@ -57,13 +57,11 @@ class LayerSet(object):
 
     @classmethod
     def load(cls, reader):
-        return cls(
-            (
-                Layer(name=name, glyphSet=glyphSet)
-                for name, glyphSet in reader.iterGlyphSets()
-            ),
-            defaultLayer=reader.getDefaultLayerName(),
-        )
+        layers = [
+            Layer(name=layerName, glyphSet=reader.getGlyphSet(layerName))
+            for layerName in reader.getLayerNames()
+        ]
+        return cls(layers, defaultLayer=reader.getDefaultLayerName())
 
     def __contains__(self, name):
         return name in self._layers
@@ -175,7 +173,7 @@ class LayerSet(object):
         defaultLayer = self.defaultLayer
         for layer in self:
             default = layer is defaultLayer
-            glyphSet = writer.getGlyphSet(layer.name, default=default)
+            glyphSet = writer.getGlyphSet(layer.name, defaultLayer=default)
             layer.save(glyphSet, saveAs=saveAs)
             # do this need a separate call?
             glyphSet.writeLayerInfo(layer)

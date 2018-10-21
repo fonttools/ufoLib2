@@ -1,7 +1,7 @@
 import attr
 from typing import Optional
-from ufoLib2.objects.glyph import Glyph, GlyphClasses
-from ufoLib2.reader import GlyphSet
+from ufoLib2.objects.glyph import Glyph
+from fontTools.ufoLib.glifLib import GlyphSet
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
@@ -88,7 +88,8 @@ class Layer(object):
             or name in self._scheduledForDeletion
         ):
             raise KeyError("name %r not in layer" % name)
-        glyph = self._glyphSet.readGlyph(name, GlyphClasses)
+        glyph = Glyph(name)
+        self._glyphSet.readGlyph(name, glyph, glyph.getPointPen())
         self._glyphs[name] = glyph
 
     def newGlyph(self, name):
@@ -125,7 +126,9 @@ class Layer(object):
                 if name in glyphSet:
                     glyphSet.deleteGlyph(name)
         for glyph in glyphs:
-            glyphSet.writeGlyph(glyph)
+            glyphSet.writeGlyph(
+                glyph.name, glyphObject=glyph, drawPointsFunc=glyph.drawPoints
+            )
         glyphSet.writeContents()
         self._glyphSet = glyphSet
         self._scheduledForDeletion = set()
