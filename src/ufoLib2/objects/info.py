@@ -25,6 +25,8 @@ class Info(object):
 
     note = attr.ib(default=None, type=Optional[str])
 
+    guidelines = attr.ib(default=attr.Factory(list), type=list)
+
     # note: all list entries have detailed speccing
     openTypeGaspRangeRecords = attr.ib(default=None, type=list)
     openTypeHeadCreated = attr.ib(default=None, type=Optional[str])

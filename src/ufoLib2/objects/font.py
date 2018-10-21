@@ -98,7 +98,8 @@ class Font(object):
     @property
     def guidelines(self):
         if self._guidelines is None:
-            self.info
+            # guidelines are stored in fontinfo.plist
+            self._guidelines = [Guideline(**g) for g in self.info.guidelines]
         return self._guidelines
 
     @guidelines.setter
@@ -125,17 +126,11 @@ class Font(object):
         if self._info is None:
             if self._path is not None:
                 reader = UFOReader(self._path)
-                data = reader.readInfo()
-                # split guidelines from the retrieved font info
-                guidelines = data.pop("guidelines", [])
-                self._info = Info(**data)
-                for i in range(len(guidelines)):
-                    data = guidelines[i]
-                    guidelines[i] = Guideline(**data)
-                self._guidelines = guidelines
+                info = Info()
+                reader.readInfo(info)
+                self._info = info
             else:
                 self._info = Info()
-                self._guidelines = []
         return self._info
 
     @property
@@ -209,14 +204,11 @@ class Font(object):
         if self._groups is not None or saveAs:
             writer.writeGroups(self.groups)
         if self._info is not None or saveAs:
-            info = attr.asdict(
-                self.info, filter=attr.filters.exclude(type(None))
-            )
-            if self.guidelines:
-                info["guidelines"] = [
-                    attr.asdict(g, filter=attr.filters.exclude(type(None)))
-                    for g in self.guidelines
-                ]
+            info = self.info
+            info.guidelines = [
+                attr.asdict(g, filter=attr.filters.exclude(type(None)))
+                for g in self.guidelines
+            ]
             writer.writeInfo(info)
         if self._kerning is not None or saveAs:
             writer.writeKerning(self.kerning)
