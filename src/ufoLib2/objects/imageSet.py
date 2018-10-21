@@ -6,4 +6,4 @@ from fontTools.ufoLib import UFOWriter
 class ImageSet(DataStore):
     readf = UFOReader.readImage
     writef = UFOWriter.writeImage
-    deletef = UFOWriter.deleteImage
+    deletef = UFOWriter.removeImage
