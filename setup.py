@@ -22,11 +22,9 @@ setup(
     include_package_data=True,
     python_requires=">=2.7",
     install_requires=[
-        "fonttools>=3.24.0",
-        "attrs>=17.3.0",
-        "lxml",
+        "fonttools[ufo,lxml] >= 3.31.0",
+        "attrs>=18.2.0",
         "typing ; python_version<'3.5'",
-        "singledispatch ; python_version<'3.4'",
     ],
     setup_requires=["setuptools_scm"],
     classifiers=[
