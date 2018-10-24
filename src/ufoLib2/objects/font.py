@@ -1,6 +1,7 @@
 import attr
 import os
-from typing import Optional
+import shutil
+import fs.tempfs
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.dataSet import DataSet
 from ufoLib2.objects.guideline import Guideline
@@ -8,79 +9,94 @@ from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.features import Features
-from fontTools.ufoLib import UFOReader
-from fontTools.ufoLib import UFOWriter
+from fontTools.misc.py23 import basestring, PY3
+from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
 
 
-@attr.s(slots=True)
+@attr.s(kw_only=PY3)
 class Font(object):
-    _path = attr.ib(default=None, type=Optional[str])
+    layers = attr.ib(
+        default=attr.Factory(LayerSet),
+        repr=False,
+        validator=attr.validators.instance_of(LayerSet),
+        type=LayerSet,
+    )
+    info = attr.ib(default=attr.Factory(Info), repr=False, type=Info)
+    features = attr.ib(
+        default=attr.Factory(Features), repr=False, type=Features
+    )
+    groups = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
+    kerning = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
+    lib = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
+    data = attr.ib(default=attr.Factory(DataSet), repr=False, type=DataSet)
+    images = attr.ib(default=attr.Factory(ImageSet), repr=False, type=ImageSet)
 
-    _features = attr.ib(default=None, init=False, repr=False, type=Features)
-    _groups = attr.ib(default=None, init=False, repr=False, type=dict)
-    _guidelines = attr.ib(default=None, init=False, repr=False, type=list)
-    _info = attr.ib(default=None, init=False, repr=False, type=Info)
-    _kerning = attr.ib(default=None, init=False, repr=False, type=dict)
-    _layers = attr.ib(default=None, init=False, repr=False, type=LayerSet)
-    _lib = attr.ib(default=None, init=False, repr=False, type=dict)
+    @classmethod
+    def open(cls, path, lazy=True, validate=True):
+        reader = UFOReader(path, validate=validate)
+        self = cls.read(reader, lazy=lazy)
+        self._path = path
+        self._fileStructure = reader.fileStructure
+        return self
 
-    _data = attr.ib(init=False, repr=False, type=DataSet)
-    _images = attr.ib(init=False, repr=False, type=ImageSet)
-
-    def __attrs_post_init__(self):
-        if self._path is not None:
-            reader = UFOReader(self._path)
-            # load the layers
-            self._layers = LayerSet.load(reader)
-            # load data directory list
-            data = reader.getDataDirectoryListing()
-            self._data = DataSet(path=self._path, fileNames=data)
-            # load images list
-            images = reader.getImageDirectoryListing()
-            self._images = ImageSet(path=self._path, fileNames=images)
+    @classmethod
+    def read(cls, reader, lazy=True):
+        layers = LayerSet.read(reader, lazy=lazy)
+        data = DataSet.read(reader, lazy=lazy)
+        images = ImageSet.read(reader, lazy=lazy)
+        info = Info()
+        reader.readInfo(info)
+        features = Features(reader.readFeatures())
+        groups = reader.readGroups()
+        kerning = reader.readKerning()
+        lib = reader.readLib()
+        self = cls(
+            layers=layers,
+            info=info,
+            features=features,
+            groups=groups,
+            kerning=kerning,
+            lib=lib,
+            data=data,
+            images=images,
+        )
+        if lazy:
+            # keep the reader around so we can close it when done
+            self.reader = reader
         else:
-            self._layers = LayerSet()
-            self._data = DataSet()
-            self._images = ImageSet()
+            reader.close()
+        return self
 
     def __contains__(self, name):
-        return name in self._layers._defaultLayer
+        return name in self.layers.defaultLayer
 
     def __delitem__(self, name):
-        del self._layers._defaultLayer[name]
+        del self.layers.defaultLayer[name]
 
     def __getitem__(self, name):
-        return self._layers._defaultLayer[name]
+        return self.layers.defaultLayer[name]
 
     def __iter__(self):
-        return iter(self._layers._defaultLayer)
+        return iter(self.layers.defaultLayer)
 
     def __len__(self):
-        return len(self._layers._defaultLayer)
+        return len(self.layers.defaultLayer)
 
     def get(self, name, default=None):
-        return self._layers._defaultLayer.get(name, default)
+        return self.layers.defaultLayer.get(name, default)
 
     def keys(self):
-        return self._layers._defaultLayer.keys()
+        return self.layers.defaultLayer.keys()
 
-    @property
-    def data(self):
-        return self._data
+    def close(self):
+        if hasattr(self, "reader"):
+            self.reader.close()
 
-    @property
-    def features(self):
-        if self._features is None:
-            if self._path is not None:
-                reader = UFOReader(self._path)
-                self._features = Features(reader.readFeatures())
-            else:
-                self._features = Features()
-        return self._features
+    def __enter__(self):
+        return self
 
-    @features.setter
-    def features(self, text):
-        self._features = text
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.close()
 
     @property
     def glyphOrder(self):
@@ -97,10 +113,7 @@ class Font(object):
 
     @property
     def guidelines(self):
-        if self._guidelines is None:
-            # guidelines are stored in fontinfo.plist
-            self._guidelines = [Guideline(**g) for g in self.info.guidelines]
-        return self._guidelines
+        return self.info.guidelines
 
     @guidelines.setter
     def guidelines(self, value):
@@ -108,116 +121,106 @@ class Font(object):
             self.appendGuideline(guideline)
 
     @property
-    def groups(self):
-        if self._groups is None:
-            if self._path is not None:
-                reader = UFOReader(self._path)
-                self._groups = reader.readGroups()
-            else:
-                self._groups = {}
-        return self._groups
-
-    @property
-    def images(self):
-        return self._images
-
-    @property
-    def info(self):
-        if self._info is None:
-            if self._path is not None:
-                reader = UFOReader(self._path)
-                info = Info()
-                reader.readInfo(info)
-                self._info = info
-            else:
-                self._info = Info()
-        return self._info
-
-    @property
-    def kerning(self):
-        if self._kerning is None:
-            if self._path is not None:
-                reader = UFOReader(self._path)
-                self._kerning = reader.readKerning()
-            else:
-                self._kerning = {}
-        return self._kerning
-
-    @property
-    def layers(self):
-        return self._layers
-
-    @property
-    def lib(self):
-        if self._lib is None:
-            if self._path is not None:
-                reader = UFOReader(self._path)
-                self._lib = reader.readLib()
-            else:
-                self._lib = {}
-        return self._lib
-
-    @property
     def path(self):
-        return self._path
+        try:
+            return self._path
+        except AttributeError:
+            return
 
     def addGlyph(self, glyph):
-        self._layers._defaultLayer.addGlyph(glyph)
+        self.layers.defaultLayer.addGlyph(glyph)
 
     def newGlyph(self, name):
-        return self._layers._defaultLayer.newGlyph(name)
+        return self.layers.defaultLayer.newGlyph(name)
 
     def newLayer(self, name):
-        return self._layers.newLayer(name)
+        return self.layers.newLayer(name)
 
     def renameGlyph(self, name, newName, overwrite=False):
-        self._layers._defaultLayer.renameGlyph(name, newName, overwrite)
+        self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
 
     def renameLayer(self, name, newName, overwrite=False):
-        self._layers.renameLayer(name, newName, overwrite)
+        self.layers.renameLayer(name, newName, overwrite)
 
     def appendGuideline(self, guideline):
         if not isinstance(guideline, Guideline):
             guideline = Guideline(**guideline)
-        self.guidelines.append(guideline)
+        self.info.guidelines.append(guideline)
 
-    def save(self, path=None, formatVersion=3):
+    def write(self, writer, saveAs=True):
+        # TODO move this check to fontTools UFOWriter
+        if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:
+            assert DEFAULT_LAYER_NAME not in self.layers.layerOrder
+        # save font attrs
+        writer.writeFeatures(self.features.text)
+        writer.writeGroups(self.groups)
+        writer.writeInfo(self.info)
+        writer.writeKerning(self.kerning)
+        writer.writeLib(self.lib)
+        # save the layers
+        self.layers.write(writer, saveAs=saveAs)
+        # save bin parts
+        self.data.write(writer, saveAs=saveAs)
+        self.images.write(writer, saveAs=saveAs)
+
+    def save(
+        self, path=None, formatVersion=3, structure=None, overwrite=False
+    ):
         if formatVersion != 3:
             raise NotImplementedError(
                 "unsupported format version: %s" % formatVersion
             )
+        # validate 'structure' argument
+        if structure is not None:
+            structure = UFOFileStructure(structure)
+        elif hasattr(self, "_fileStructure"):
+            # if structure is None, fall back to the same as when first loaded
+            structure = self._fileStructure
+
+        if hasattr(path, "__fspath__"):
+            path = path.__fspath__()
+        if isinstance(path, basestring):
+            path = os.path.normpath(path)
+        # else we assume it's an fs.BaseFS and we pass it on to UFOWriter
+
+        overwritePath = tmp = None
+
         saveAs = path is not None
         if saveAs:
-            if os.path.exists(path):
-                import errno
+            if isinstance(path, basestring) and os.path.exists(path):
+                if overwrite:
+                    overwritePath = path
+                    tmp = fs.tempfs.TempFS()
+                    path = tmp.getsyspath(os.path.basename(path))
+                else:
+                    import errno
 
-                raise OSError(errno.EEXIST, "path %r already exists" % path)
+                    raise OSError(
+                        errno.EEXIST, "path %r already exists" % path
+                    )
+        elif self.path is None:
+            raise TypeError("'path' is required when saving a new Font")
         else:
-            path = self._path
-        if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:
-            assert DEFAULT_LAYER_NAME not in self.layers.layerOrder
+            path = self.path
 
-        writer = UFOWriter(path)
-        # save font attrs
-        if self._features is not None or saveAs:
-            writer.writeFeatures(self.features.text)
-        if self._groups is not None or saveAs:
-            writer.writeGroups(self.groups)
-        if self._info is not None or saveAs:
-            info = self.info
-            info.guidelines = [
-                attr.asdict(g, filter=attr.filters.exclude(type(None)))
-                for g in self.guidelines
-            ]
-            writer.writeInfo(info)
-        if self._kerning is not None or saveAs:
-            writer.writeKerning(self.kerning)
-        if self._lib is not None or saveAs:
-            writer.writeLib(self.lib)
-        # save the layers
-        self._layers.save(writer, saveAs=saveAs)
-        # save bin parts
-        self._data.save(writer, saveAs=saveAs)
-        self._images.save(writer, saveAs=saveAs)
+        try:
+            with UFOWriter(path, structure=structure) as writer:
+                self.write(writer, saveAs=saveAs)
+            writer.setModificationTime()
+        except Exception:
+            raise
+        else:
+            if overwritePath is not None:
+                # remove existing then move file to destination
+                if os.path.isdir(overwritePath):
+                    shutil.rmtree(overwritePath)
+                elif os.path.isfile(overwritePath):
+                    os.remove(overwritePath)
+                shutil.move(path, overwritePath)
+                path = overwritePath
+        finally:
+            # clean up the temporary directory
+            if tmp is not None:
+                tmp.close()
 
         self._path = path
