@@ -43,7 +43,7 @@ class Layer(object):
 
     def __getitem__(self, name):
         if self._glyphs[name] is _NOT_LOADED:
-            self.loadGlyph(name)
+            return self.loadGlyph(name)
         return self._glyphs[name]
 
     def __iter__(self):
@@ -91,6 +91,7 @@ class Layer(object):
         glyph = Glyph(name)
         self._glyphSet.readGlyph(name, glyph, glyph.getPointPen())
         self._glyphs[name] = glyph
+        return glyph
 
     def newGlyph(self, name):
         if name in self._glyphs:
@@ -116,16 +117,18 @@ class Layer(object):
         glyph._name = newName
 
     def write(self, glyphSet, saveAs=False):
-        if saveAs:
-            glyphs = self
-        else:
-            glyphs = self._glyphs.values()
+        if not saveAs:
             for name in self._scheduledForDeletion:
                 if name in glyphSet:
                     glyphSet.deleteGlyph(name)
-        for glyph in glyphs:
+        for name, glyph in self._glyphs.items():
+            if glyph is _NOT_LOADED:
+                if saveAs:
+                    glyph = self.loadGlyph(name)
+                else:
+                    continue
             glyphSet.writeGlyph(
-                glyph.name, glyphObject=glyph, drawPointsFunc=glyph.drawPoints
+                name, glyphObject=glyph, drawPointsFunc=glyph.drawPoints
             )
         glyphSet.writeContents()
         glyphSet.writeLayerInfo(self)
