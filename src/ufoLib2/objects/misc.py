@@ -1,69 +1,79 @@
 import attr
 from collections import namedtuple
-from fontTools.ufoLib import UFOReader
 
 try:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, MutableMapping
 except ImportError:
-    from collections import Mapping
+    from collections import Mapping, MutableMapping
 
 
-@attr.s(slots=True)
-class DataStore(object):
+# sentinel value to signal a "lazy" object hasn't been loaded yet
+_NOT_LOADED = object()
+
+
+@attr.s(repr=False)
+class DataStore(MutableMapping):
+    listdir = None
     readf = None
     writef = None
     deletef = None
 
-    _path = attr.ib(default=None, type=str)
-    _fileNames = attr.ib(default=attr.Factory(set), repr=False, type=set)
-    _data = attr.ib(default=attr.Factory(dict), init=False, type=dict)
-    _scheduledForDeletion = attr.ib(
-        default=attr.Factory(set), init=False, repr=False, type=set
-    )
+    _data = attr.ib(default=attr.Factory(dict), type=dict)
 
-    def __contains__(self, fileName):
-        return fileName in self._fileNames
+    def __attrs_post_init__(self):
+        self._scheduledForDeletion = set()
+
+    @classmethod
+    def read(cls, reader, lazy=True):
+        self = cls()
+        for fileName in cls.listdir(reader):
+            if lazy:
+                self._data[fileName] = _NOT_LOADED
+            else:
+                self._data[fileName] = cls.readf(reader, fileName)
+        if lazy:
+            self.reader = reader
+        return self
+
+    # MutableMapping methods
 
     def __len__(self):
-        return len(self._fileNames)
+        return len(self._data)
+
+    def __iter__(self):
+        return iter(self._data)
 
     def __getitem__(self, fileName):
-        if fileName not in self._data:
-            if fileName not in self._fileNames:
-                raise KeyError("%r is not in data store" % fileName)
-            reader = UFOReader(self._path)
-            self._data[fileName] = self.__class__.readf(reader, fileName)
+        if self._data[fileName] is _NOT_LOADED:
+            self._data[fileName] = self.__class__.readf(self.reader, fileName)
         return self._data[fileName]
 
     def __setitem__(self, fileName, data):
         # should we forbid overwrite?
         self._data[fileName] = data
-        self._fileNames.add(fileName)
         if fileName in self._scheduledForDeletion:
             self._scheduledForDeletion.remove(fileName)
 
     def __delitem__(self, fileName):
         del self._data[fileName]
-        self._fileNames.remove(fileName)
         self._scheduledForDeletion.add(fileName)
 
-    def keys(self):
-        return set(self._fileNames)
-
-    def save(self, writer, saveAs=False):
+    def write(self, writer, saveAs=False):
         # if in-place, remove deleted data
         if not saveAs:
             for fileName in self._scheduledForDeletion:
                 self.__class__.deletef(writer, fileName)
         # write data
-        for fileName in self._fileNames:
-            data = self[fileName]
+        for fileName, data in self.items():
             self.__class__.writef(writer, fileName, data)
         self._scheduledForDeletion = set()
+        if saveAs and hasattr(self, "reader"):
+            # all data was read by now, ref to reader no longer needed
+            delattr(self, "reader")
 
     @property
     def fileNames(self):
-        return self._fileNames
+        return list(self._data.keys())
 
 
 class Transformation(
