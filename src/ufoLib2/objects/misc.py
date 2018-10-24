@@ -11,7 +11,7 @@ except ImportError:
 _NOT_LOADED = object()
 
 
-@attr.s(repr=False)
+@attr.s(slots=True, repr=False)
 class DataStore(MutableMapping):
     listdir = None
     readf = None
@@ -20,8 +20,10 @@ class DataStore(MutableMapping):
 
     _data = attr.ib(default=attr.Factory(dict), type=dict)
 
-    def __attrs_post_init__(self):
-        self._scheduledForDeletion = set()
+    _reader = attr.ib(default=None, init=False, repr=False)
+    _scheduledForDeletion = attr.ib(
+        default=attr.Factory(set), init=False, repr=False
+    )
 
     @classmethod
     def read(cls, reader, lazy=True):
@@ -32,7 +34,7 @@ class DataStore(MutableMapping):
             else:
                 self._data[fileName] = cls.readf(reader, fileName)
         if lazy:
-            self.reader = reader
+            self._reader = reader
         return self
 
     # MutableMapping methods
@@ -45,7 +47,7 @@ class DataStore(MutableMapping):
 
     def __getitem__(self, fileName):
         if self._data[fileName] is _NOT_LOADED:
-            self._data[fileName] = self.__class__.readf(self.reader, fileName)
+            self._data[fileName] = self.__class__.readf(self._reader, fileName)
         return self._data[fileName]
 
     def __setitem__(self, fileName, data):
@@ -67,9 +69,9 @@ class DataStore(MutableMapping):
         for fileName, data in self.items():
             self.__class__.writef(writer, fileName, data)
         self._scheduledForDeletion = set()
-        if saveAs and hasattr(self, "reader"):
+        if saveAs:
             # all data was read by now, ref to reader no longer needed
-            delattr(self, "reader")
+            self._reader = None
 
     @property
     def fileNames(self):

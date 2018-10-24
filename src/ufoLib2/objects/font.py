@@ -13,7 +13,7 @@ from fontTools.misc.py23 import basestring, PY3
 from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
 
 
-@attr.s(kw_only=PY3)
+@attr.s(slots=True, kw_only=PY3)
 class Font(object):
     layers = attr.ib(
         default=attr.Factory(LayerSet),
@@ -30,6 +30,10 @@ class Font(object):
     lib = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
     data = attr.ib(default=attr.Factory(DataSet), repr=False, type=DataSet)
     images = attr.ib(default=attr.Factory(ImageSet), repr=False, type=ImageSet)
+
+    _path = attr.ib(default=None, init=False)
+    _reader = attr.ib(default=None, init=False)
+    _fileStructure = attr.ib(default=None, init=False)
 
     @classmethod
     def open(cls, path, lazy=True, validate=True):
@@ -62,7 +66,7 @@ class Font(object):
         )
         if lazy:
             # keep the reader around so we can close it when done
-            self.reader = reader
+            self._reader = reader
         else:
             reader.close()
         return self
@@ -89,14 +93,18 @@ class Font(object):
         return self.layers.defaultLayer.keys()
 
     def close(self):
-        if hasattr(self, "reader"):
-            self.reader.close()
+        if self._reader is not None:
+            self._reader.close()
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.close()
+
+    @property
+    def reader(self):
+        return self._reader
 
     @property
     def glyphOrder(self):
@@ -178,7 +186,7 @@ class Font(object):
         # validate 'structure' argument
         if structure is not None:
             structure = UFOFileStructure(structure)
-        elif hasattr(self, "_fileStructure"):
+        elif self._fileStructure is not None:
             # if structure is None, fall back to the same as when first loaded
             structure = self._fileStructure
 
