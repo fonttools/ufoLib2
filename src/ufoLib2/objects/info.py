@@ -1,5 +1,16 @@
 import attr
 from typing import Optional, Union
+from ufoLib2.objects.guideline import Guideline
+
+
+def _guidelinesConverter(lst):
+    result = []
+    for g in lst:
+        if isinstance(g, Guideline):
+            result.append(g)
+        else:
+            result.append(Guideline(**g))
+    return result
 
 
 @attr.s(slots=True)
@@ -25,7 +36,9 @@ class Info(object):
 
     note = attr.ib(default=None, type=Optional[str])
 
-    guidelines = attr.ib(default=attr.Factory(list), type=list)
+    guidelines = attr.ib(
+        default=attr.Factory(list), converter=_guidelinesConverter, type=list
+    )
 
     # note: all list entries have detailed speccing
     openTypeGaspRangeRecords = attr.ib(default=None, type=list)
