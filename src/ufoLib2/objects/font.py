@@ -164,7 +164,12 @@ class Font(object):
         self.images.write(writer, saveAs=saveAs)
 
     def save(
-        self, path=None, formatVersion=3, structure=None, overwrite=False
+        self,
+        path=None,
+        formatVersion=3,
+        structure=None,
+        overwrite=False,
+        validate=True,
     ):
         if formatVersion != 3:
             raise NotImplementedError(
@@ -204,7 +209,9 @@ class Font(object):
             path = self.path
 
         try:
-            with UFOWriter(path, structure=structure) as writer:
+            with UFOWriter(
+                path, structure=structure, validate=validate
+            ) as writer:
                 self.write(writer, saveAs=saveAs)
             writer.setModificationTime()
         except Exception:
