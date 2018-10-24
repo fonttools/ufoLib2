@@ -4,6 +4,7 @@ from fontTools.ufoLib import UFOWriter
 
 
 class DataSet(DataStore):
+    listdir = UFOReader.getDataDirectoryListing
     readf = UFOReader.readData
     writef = UFOWriter.writeData
     deletef = UFOWriter.removeData
