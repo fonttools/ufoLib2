@@ -5,28 +5,45 @@ from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
+def _glyphsConverter(value):
+    if isinstance(value, dict):
+        return value
+    result = {}
+    for glyph in value:
+        if glyph.name in result:
+            raise KeyError("glyph %r already exists" % glyph.name)
+        result[glyph.name] = glyph
+    return result
+
+
 @attr.s(slots=True, repr=False)
 class Layer(object):
     _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
-    _glyphs = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
+    _glyphs = attr.ib(
+        default=attr.Factory(dict),
+        repr=False,
+        converter=_glyphsConverter,
+        type=dict,
+    )
     color = attr.ib(default=None, repr=False, type=Optional[str])
     lib = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
 
-    _glyphSet = attr.ib(default=None, repr=False)
+    _glyphSet = attr.ib(default=None, init=False, repr=False)
 
     @classmethod
     def read(cls, name, glyphSet, lazy=True):
-        self = cls(name, glyphSet=glyphSet)
         glyphNames = glyphSet.keys()
         if lazy:
-            self._glyphs = {name: _NOT_LOADED for name in glyphNames}
+            glyphs = {name: _NOT_LOADED for name in glyphNames}
         else:
-            try:
-                for name in glyphNames:
-                    self.loadGlyph(name)
-            finally:
-                # all glyphs loaded, we're done with the glyphSet
-                self._glyphSet = None
+            glyphs = {}
+            for name in glyphNames:
+                glyph = Glyph(name)
+                glyphSet.readGlyph(name, glyph, glyph.getPointPen())
+                glyphs[name] = glyph
+        self = cls(name, glyphs)
+        if lazy:
+            self._glyphSet = glyphSet
         glyphSet.readLayerInfo(self)
         return self
 
