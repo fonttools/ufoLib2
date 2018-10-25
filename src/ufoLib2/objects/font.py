@@ -80,6 +80,9 @@ class Font(object):
     def __getitem__(self, name):
         return self.layers.defaultLayer[name]
 
+    def __setitem__(self, name, glyph):
+        self.layers.defaultLayer[name] = glyph
+
     def __iter__(self):
         return iter(self.layers.defaultLayer)
 
