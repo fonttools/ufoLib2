@@ -20,15 +20,12 @@ def _glyphsConverter(value):
 class Layer(object):
     _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
     _glyphs = attr.ib(
-        default=attr.Factory(dict),
-        repr=False,
-        converter=_glyphsConverter,
-        type=dict,
+        default=attr.Factory(dict), converter=_glyphsConverter, type=dict
     )
-    color = attr.ib(default=None, repr=False, type=Optional[str])
-    lib = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
+    color = attr.ib(default=None, type=Optional[str])
+    lib = attr.ib(default=attr.Factory(dict), type=dict)
 
-    _glyphSet = attr.ib(default=None, init=False, repr=False)
+    _glyphSet = attr.ib(default=None, init=False)
 
     @classmethod
     def read(cls, name, glyphSet, lazy=True):
