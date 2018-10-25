@@ -24,6 +24,7 @@ class LayerSet(object):
     _layers = attr.ib(default=(), converter=_layersConverter, type=OrderedDict)
     defaultLayer = attr.ib(default=None, type=Layer)
 
+    _reader = attr.ib(default=None, init=False)
     _scheduledForDeletion = attr.ib(
         default=attr.Factory(set), init=False, repr=False
     )
@@ -94,7 +95,11 @@ class LayerSet(object):
 
         assert defaultLayer is not None
 
-        return cls(layers, defaultLayer=defaultLayer)
+        self = cls(layers, defaultLayer=defaultLayer)
+        if lazy:
+            self._reader = reader
+
+        return self
 
     def __contains__(self, name):
         return name in self._layers
@@ -177,7 +182,9 @@ class LayerSet(object):
             self._scheduledForDeletion.remove(newName)
         layer._name = newName
 
-    def write(self, writer, saveAs=True):
+    def write(self, writer, saveAs=None):
+        if saveAs is None:
+            saveAs = self._reader is not writer
         # if in-place, remove deleted layers
         if not saveAs:
             for layerName in self._scheduledForDeletion:

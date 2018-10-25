@@ -155,7 +155,9 @@ class Font(object):
             guideline = Guideline(**guideline)
         self.info.guidelines.append(guideline)
 
-    def write(self, writer, saveAs=True):
+    def write(self, writer, saveAs=None):
+        if saveAs is None:
+            saveAs = self._reader is not writer
         # TODO move this check to fontTools UFOWriter
         if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:
             assert DEFAULT_LAYER_NAME not in self.layers.layerOrder
