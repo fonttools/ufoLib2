@@ -5,7 +5,7 @@ from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-@attr.s(slots=True)
+@attr.s(slots=True, repr=False)
 class Layer(object):
     _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
     _glyphs = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
@@ -53,6 +53,18 @@ class Layer(object):
 
     def __len__(self):
         return len(self._glyphs)
+
+    def __repr__(self):
+        n = len(self._glyphs)
+        return "<{}.{} '{}' ({}) at {}>".format(
+            self.__class__.__module__,
+            self.__class__.__name__,
+            self._name,
+            "empty"
+            if n == 0
+            else "{} glyph{}".format(n, "s" if n > 1 else ""),
+            hex(id(self)),
+        )
 
     def get(self, name, default=None):
         try:
