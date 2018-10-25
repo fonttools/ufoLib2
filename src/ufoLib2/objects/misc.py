@@ -60,6 +60,15 @@ class DataStore(MutableMapping):
         del self._data[fileName]
         self._scheduledForDeletion.add(fileName)
 
+    def __repr__(self):
+        n = len(self._data)
+        return "<{}.{} ({}) at {}>".format(
+            self.__class__.__module__,
+            self.__class__.__name__,
+            "empty" if n == 0 else "{} file{}".format(n, "s" if n > 1 else ""),
+            hex(id(self)),
+        )
+
     def write(self, writer, saveAs=None):
         if saveAs is None:
             saveAs = self._reader is not writer
