@@ -96,6 +96,14 @@ class LayerSet(object):
 
         return Layer.read(layerName, glyphSet, lazy=lazy)
 
+    def loadLayer(self, layerName, lazy=True, default=False):
+        assert self._reader is not None
+        if layerName not in self._layers:
+            raise KeyError(layerName)
+        layer = self._loadLayer(self._reader, layerName, lazy, default)
+        self._layers[layerName] = layer
+        return layer
+
     def __contains__(self, name):
         return name in self._layers
 
@@ -106,7 +114,7 @@ class LayerSet(object):
 
     def __getitem__(self, name):
         if self._layers[name] is _NOT_LOADED:
-            self._layers[name] = self._loadLayer(self._reader, name)
+            return self.loadLayer(name)
         return self._layers[name]
 
     def __iter__(self):
@@ -187,7 +195,7 @@ class LayerSet(object):
             default = layer is defaultLayer
             if layer is _NOT_LOADED:
                 if saveAs:
-                    layer = self._loadLayer(self._reader, name, lazy=False)
+                    layer = self.loadLayer(name, lazy=False)
                 else:
                     continue
             glyphSet = writer.getGlyphSet(name, defaultLayer=default)
