@@ -25,9 +25,6 @@ class LayerSet(object):
     defaultLayer = attr.ib(default=None, type=Layer)
 
     _reader = attr.ib(default=None, init=False)
-    _scheduledForDeletion = attr.ib(
-        default=attr.Factory(set), init=False, repr=False
-    )
 
     def __attrs_post_init__(self):
         if not self._layers:
@@ -108,7 +105,6 @@ class LayerSet(object):
         if name == self.defaultLayer.name:
             raise KeyError("cannot delete default layer %r" % name)
         del self._layers[name]
-        self._scheduledForDeletion.add(name)
 
     def __getitem__(self, name):
         return self._layers[name]
@@ -147,8 +143,6 @@ class LayerSet(object):
         if name in self._layers:
             raise KeyError("layer %r already exists" % name)
         self._layers[name] = layer = Layer(name, **kwargs)
-        if name in self._scheduledForDeletion:
-            self._scheduledForDeletion.remove(name)
         return layer
 
     def renameGlyph(self, name, newName, overwrite=False):
@@ -177,23 +171,20 @@ class LayerSet(object):
         if not overwrite and newName in self._layers:
             raise KeyError("target name %r already exists" % newName)
         self._layers[newName] = layer = self._layers.pop(name)
-        self._scheduledForDeletion.add(name)
-        if newName in self._scheduledForDeletion:
-            self._scheduledForDeletion.remove(newName)
         layer._name = newName
 
     def write(self, writer, saveAs=None):
         if saveAs is None:
             saveAs = self._reader is not writer
         # if in-place, remove deleted layers
+        layers = self._layers
         if not saveAs:
-            for layerName in self._scheduledForDeletion:
+            for layerName in set(writer.getLayerNames()).difference(layers):
                 writer.deleteGlyphSet(layerName)
         # write layers
         defaultLayer = self.defaultLayer
-        for layer in self:
+        for layerName, layer in layers.items():
             default = layer is defaultLayer
-            glyphSet = writer.getGlyphSet(layer.name, defaultLayer=default)
+            glyphSet = writer.getGlyphSet(layerName, defaultLayer=default)
             layer.write(glyphSet, saveAs=saveAs)
         writer.writeLayerContents(self.layerOrder)
-        self._scheduledForDeletion = set()
