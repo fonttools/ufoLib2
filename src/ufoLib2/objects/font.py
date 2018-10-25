@@ -141,8 +141,8 @@ class Font(object):
     def newGlyph(self, name):
         return self.layers.defaultLayer.newGlyph(name)
 
-    def newLayer(self, name):
-        return self.layers.newLayer(name)
+    def newLayer(self, name, **kwargs):
+        return self.layers.newLayer(name, **kwargs)
 
     def renameGlyph(self, name, newName, overwrite=False):
         self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
