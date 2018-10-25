@@ -35,8 +35,8 @@ class Font(object):
     images = attr.ib(default=attr.Factory(ImageSet), repr=False, type=ImageSet)
 
     _path = attr.ib(default=None, init=False)
-    _reader = attr.ib(default=None, init=False)
-    _fileStructure = attr.ib(default=None, init=False)
+    _reader = attr.ib(default=None, init=False, repr=False)
+    _fileStructure = attr.ib(default=None, init=False, repr=False)
 
     @classmethod
     def open(cls, path, lazy=True, validate=True):
