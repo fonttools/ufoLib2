@@ -177,7 +177,7 @@ class LayerSet(object):
             self._scheduledForDeletion.remove(newName)
         layer._name = newName
 
-    def write(self, writer, saveAs=False):
+    def write(self, writer, saveAs=True):
         # if in-place, remove deleted layers
         if not saveAs:
             for layerName in self._scheduledForDeletion:

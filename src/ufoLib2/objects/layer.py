@@ -116,7 +116,7 @@ class Layer(object):
         # set name
         glyph._name = newName
 
-    def write(self, glyphSet, saveAs=False):
+    def write(self, glyphSet, saveAs=True):
         if not saveAs:
             for name in self._scheduledForDeletion:
                 if name in glyphSet:

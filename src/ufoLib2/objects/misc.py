@@ -60,7 +60,7 @@ class DataStore(MutableMapping):
         del self._data[fileName]
         self._scheduledForDeletion.add(fileName)
 
-    def write(self, writer, saveAs=False):
+    def write(self, writer, saveAs=True):
         # if in-place, remove deleted data
         if not saveAs:
             for fileName in self._scheduledForDeletion:
