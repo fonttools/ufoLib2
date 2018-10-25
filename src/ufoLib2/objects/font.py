@@ -23,7 +23,10 @@ class Font(object):
     )
     info = attr.ib(default=attr.Factory(Info), repr=False, type=Info)
     features = attr.ib(
-        default=attr.Factory(Features), repr=False, type=Features
+        default=attr.Factory(Features),
+        repr=False,
+        converter=lambda v: v if isinstance(v, Features) else Features(v),
+        type=Features,
     )
     groups = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
     kerning = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
