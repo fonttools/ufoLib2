@@ -13,30 +13,28 @@ from fontTools.misc.py23 import basestring, PY3
 from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
 
 
-@attr.s(slots=True, kw_only=PY3)
+@attr.s(slots=True, kw_only=PY3, repr=False)
 class Font(object):
     layers = attr.ib(
         default=attr.Factory(LayerSet),
-        repr=False,
         validator=attr.validators.instance_of(LayerSet),
         type=LayerSet,
     )
-    info = attr.ib(default=attr.Factory(Info), repr=False, type=Info)
+    info = attr.ib(default=attr.Factory(Info), type=Info)
     features = attr.ib(
         default=attr.Factory(Features),
-        repr=False,
         converter=lambda v: v if isinstance(v, Features) else Features(v),
         type=Features,
     )
-    groups = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
-    kerning = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
-    lib = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
-    data = attr.ib(default=attr.Factory(DataSet), repr=False, type=DataSet)
-    images = attr.ib(default=attr.Factory(ImageSet), repr=False, type=ImageSet)
+    groups = attr.ib(default=attr.Factory(dict), type=dict)
+    kerning = attr.ib(default=attr.Factory(dict), type=dict)
+    lib = attr.ib(default=attr.Factory(dict), type=dict)
+    data = attr.ib(default=attr.Factory(DataSet), type=DataSet)
+    images = attr.ib(default=attr.Factory(ImageSet), type=ImageSet)
 
     _path = attr.ib(default=None, init=False)
-    _reader = attr.ib(default=None, init=False, repr=False)
-    _fileStructure = attr.ib(default=None, init=False, repr=False)
+    _reader = attr.ib(default=None, init=False)
+    _fileStructure = attr.ib(default=None, init=False)
 
     @classmethod
     def open(cls, path, lazy=True, validate=True):
@@ -107,6 +105,16 @@ class Font(object):
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.close()
+
+    def __repr__(self):
+        names = list(filter(None, [self.info.familyName, self.info.styleName]))
+        fontName = " '{}'".format(" ".join(names)) if names else ""
+        return "<{}.{}{} at {}>".format(
+            self.__class__.__module__,
+            self.__class__.__name__,
+            fontName,
+            hex(id(self)),
+        )
 
     @property
     def reader(self):
