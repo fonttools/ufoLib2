@@ -96,8 +96,6 @@ class Layer(object):
         self._glyphs[glyph.name] = glyph
 
     def loadGlyph(self, name):
-        if self._glyphSet is None or name not in self._glyphSet:
-            raise KeyError("name %r not in glyphSet" % name)
         glyph = Glyph(name)
         self._glyphSet.readGlyph(name, glyph, glyph.getPointPen())
         self._glyphs[name] = glyph
