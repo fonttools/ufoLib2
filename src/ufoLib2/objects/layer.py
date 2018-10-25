@@ -13,9 +13,6 @@ class Layer(object):
     lib = attr.ib(default=attr.Factory(dict), repr=False, type=dict)
 
     _glyphSet = attr.ib(default=None, repr=False)
-    _scheduledForDeletion = attr.ib(
-        default=attr.Factory(set), init=False, repr=False
-    )
 
     @classmethod
     def read(cls, name, glyphSet, lazy=True):
@@ -37,14 +34,17 @@ class Layer(object):
         return name in self._glyphs
 
     def __delitem__(self, name):
-        if name not in self._glyphs:
-            raise KeyError("name %r is not in layer" % name)
-        self._delete(name)
+        del self._glyphs[name]
 
     def __getitem__(self, name):
         if self._glyphs[name] is _NOT_LOADED:
             return self.loadGlyph(name)
         return self._glyphs[name]
+
+    def __setitem__(self, name, glyph):
+        if not isinstance(glyph, Glyph):
+            raise TypeError("Expected Glyph, found %s" % type(glyph).__name__)
+        self._glyphs[name] = glyph
 
     def __iter__(self):
         for name in self._glyphs:
@@ -52,14 +52,6 @@ class Layer(object):
 
     def __len__(self):
         return len(self._glyphs)
-
-    def _delete(self, name):
-        # if the glyph is loaded, delete it
-        if name in self._glyphs:
-            del self._glyphs[name]
-        # if the glyph is on disk, schedule for removal
-        if self._glyphSet is not None and name in self._glyphSet:
-            self._scheduledForDeletion.add(name)
 
     def get(self, name, default=None):
         try:
@@ -70,6 +62,17 @@ class Layer(object):
     def keys(self):
         return self._glyphs.keys()
 
+    def pop(self, name, default=KeyError):
+        try:
+            glyph = self[name]
+        except KeyError:
+            if default is KeyError:
+                raise
+            glyph = default
+        else:
+            del self[name]
+        return glyph
+
     @property
     def name(self):
         return self._name
@@ -78,16 +81,10 @@ class Layer(object):
         if glyph.name in self._glyphs:
             raise KeyError("glyph %r already exists" % glyph.name)
         self._glyphs[glyph.name] = glyph
-        if glyph.name in self._scheduledForDeletion:
-            self._scheduledForDeletion.remove(glyph.name)
 
     def loadGlyph(self, name):
-        if (
-            self._glyphSet is None
-            or name not in self._glyphSet
-            or name in self._scheduledForDeletion
-        ):
-            raise KeyError("name %r not in layer" % name)
+        if self._glyphSet is None or name not in self._glyphSet:
+            raise KeyError("name %r not in glyphSet" % name)
         glyph = Glyph(name)
         self._glyphSet.readGlyph(name, glyph, glyph.getPointPen())
         self._glyphs[name] = glyph
@@ -97,8 +94,6 @@ class Layer(object):
         if name in self._glyphs:
             raise KeyError("glyph %r already exists" % name)
         self._glyphs[name] = glyph = Glyph(name)
-        if name in self._scheduledForDeletion:
-            self._scheduledForDeletion.remove(name)
         return glyph
 
     def renameGlyph(self, name, newName, overwrite=False):
@@ -106,22 +101,18 @@ class Layer(object):
             return
         if not overwrite and newName in self._glyphs:
             raise KeyError("target glyph %r already exists" % newName)
-        # load-get and delete
-        glyph = self[name]
-        self._delete(name)
-        # add new
-        self._glyphs[newName] = glyph
-        if newName in self._scheduledForDeletion:
-            self._scheduledForDeletion.remove(newName)
-        # set name
+        # pop and set name
+        glyph = self.pop(name)
         glyph._name = newName
+        # add it back
+        self._glyphs[newName] = glyph
 
     def write(self, glyphSet, saveAs=True):
+        glyphs = self._glyphs
         if not saveAs:
-            for name in self._scheduledForDeletion:
-                if name in glyphSet:
-                    glyphSet.deleteGlyph(name)
-        for name, glyph in self._glyphs.items():
+            for name in set(glyphSet.contents).difference(glyphs):
+                glyphSet.deleteGlyph(name)
+        for name, glyph in glyphs.items():
             if glyph is _NOT_LOADED:
                 if saveAs:
                     glyph = self.loadGlyph(name)
@@ -135,4 +126,3 @@ class Layer(object):
         if saveAs:
             # all glyphs are loaded by now, no need to keep ref to glyphSet
             self._glyphSet = None
-        self._scheduledForDeletion = set()
