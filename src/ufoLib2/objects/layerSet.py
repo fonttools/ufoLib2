@@ -130,9 +130,13 @@ class LayerSet(object):
         return self._layers.keys()
 
     def __repr__(self):
-        return "%s(%s)" % (
+        n = len(self._layers)
+        return "<{}.{} ({} layer{}) at {}>".format(
+            self.__class__.__module__,
             self.__class__.__name__,
-            repr(list(self)) if self._layers else "",
+            n,
+            "s" if n > 1 else "",
+            hex(id(self)),
         )
 
     @property
