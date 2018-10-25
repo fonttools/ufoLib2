@@ -44,6 +44,7 @@ class Layer(object):
     def __setitem__(self, name, glyph):
         if not isinstance(glyph, Glyph):
             raise TypeError("Expected Glyph, found %s" % type(glyph).__name__)
+        glyph._name = name
         self._glyphs[name] = glyph
 
     def __iter__(self):
