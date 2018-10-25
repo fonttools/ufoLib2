@@ -31,13 +31,13 @@ class Layer(object):
     def read(cls, name, glyphSet, lazy=True):
         glyphNames = glyphSet.keys()
         if lazy:
-            glyphs = {name: _NOT_LOADED for name in glyphNames}
+            glyphs = {gn: _NOT_LOADED for gn in glyphNames}
         else:
             glyphs = {}
-            for name in glyphNames:
-                glyph = Glyph(name)
-                glyphSet.readGlyph(name, glyph, glyph.getPointPen())
-                glyphs[name] = glyph
+            for glyphName in glyphNames:
+                glyph = Glyph(glyphName)
+                glyphSet.readGlyph(glyphName, glyph, glyph.getPointPen())
+                glyphs[glyphName] = glyph
         self = cls(name, glyphs)
         if lazy:
             self._glyphSet = glyphSet
