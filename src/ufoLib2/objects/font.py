@@ -20,7 +20,11 @@ class Font(object):
         validator=attr.validators.instance_of(LayerSet),
         type=LayerSet,
     )
-    info = attr.ib(default=attr.Factory(Info), type=Info)
+    info = attr.ib(
+        default=attr.Factory(Info),
+        converter=lambda v: v if isinstance(v, Info) else Info(**v),
+        type=Info,
+    )
     features = attr.ib(
         default=attr.Factory(Features),
         converter=lambda v: v if isinstance(v, Features) else Features(v),
@@ -29,8 +33,16 @@ class Font(object):
     groups = attr.ib(default=attr.Factory(dict), type=dict)
     kerning = attr.ib(default=attr.Factory(dict), type=dict)
     lib = attr.ib(default=attr.Factory(dict), type=dict)
-    data = attr.ib(default=attr.Factory(DataSet), type=DataSet)
-    images = attr.ib(default=attr.Factory(ImageSet), type=ImageSet)
+    data = attr.ib(
+        default=attr.Factory(DataSet),
+        converter=lambda v: v if isinstance(v, DataSet) else DataSet(**v),
+        type=DataSet,
+    )
+    images = attr.ib(
+        default=attr.Factory(ImageSet),
+        converter=lambda v: v if isinstance(v, ImageSet) else ImageSet(**v),
+        type=ImageSet,
+    )
 
     _path = attr.ib(default=None, init=False)
     _reader = attr.ib(default=None, init=False)
