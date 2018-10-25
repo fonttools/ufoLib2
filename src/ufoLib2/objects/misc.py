@@ -66,7 +66,12 @@ class DataStore(MutableMapping):
             for fileName in self._scheduledForDeletion:
                 self.__class__.deletef(writer, fileName)
         # write data
-        for fileName, data in self.items():
+        for fileName, data in self._data.items():
+            if data is _NOT_LOADED:
+                if saveAs:
+                    data = self.__class__.readf(self._reader, fileName)
+                else:
+                    continue
             self.__class__.writef(writer, fileName, data)
         self._scheduledForDeletion = set()
         if saveAs:
