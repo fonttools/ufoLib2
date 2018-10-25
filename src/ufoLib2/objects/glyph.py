@@ -1,46 +1,32 @@
 import attr
-from typing import Optional, Union
+from typing import Optional, Union, List, Any, Dict
 from ufoLib2.objects.anchor import Anchor
-from ufoLib2.objects.component import Component
-from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
 from ufoLib2.objects.misc import Transformation
-from ufoLib2.objects.point import Point
-from ufoLib2.pointPens.converterPens import (
-    PointToSegmentPen,
-    SegmentToPointPen,
-)
+from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
+from fontTools.misc.py23 import tounicode, unicode
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
 
-@attr.s(slots=True)
+@attr.s(slots=True, repr=False)
 class Glyph(object):
     _name = attr.ib(type=str)
-    width = attr.ib(default=0, init=False, type=Union[int, float])
-    height = attr.ib(default=0, init=False, type=Union[int, float])
-    unicodes = attr.ib(default=attr.Factory(list), init=False, type=list)
+    width = attr.ib(default=0, type=Union[int, float])
+    height = attr.ib(default=0, type=Union[int, float])
+    unicodes = attr.ib(default=attr.Factory(list), type=List[int])
 
-    image = attr.ib(
-        default=attr.Factory(Image), init=False, repr=False, type=Image
+    _image = attr.ib(default=attr.Factory(Image), type=Image)
+    lib = attr.ib(default=attr.Factory(dict), type=Dict[str, Any])
+    note = attr.ib(
+        default=None,
+        converter=lambda n: tounicode(n) if n is not None else None,
+        type=Optional[unicode],
     )
-    lib = attr.ib(
-        default=attr.Factory(dict), init=False, repr=False, type=dict
-    )
-    note = attr.ib(default=None, init=False, repr=False, type=Optional[str])
-
-    _anchors = attr.ib(
-        default=attr.Factory(list), init=False, repr=False, type=list
-    )
-    components = attr.ib(
-        default=attr.Factory(list), init=False, repr=False, type=list
-    )
-    contours = attr.ib(
-        default=attr.Factory(list), init=False, repr=False, type=list
-    )
-    _guidelines = attr.ib(
-        default=attr.Factory(list), init=False, repr=False, type=list
-    )
+    _anchors = attr.ib(default=attr.Factory(list), type=list)
+    components = attr.ib(default=attr.Factory(list), type=list)
+    contours = attr.ib(default=attr.Factory(list), type=list)
+    guidelines = attr.ib(default=attr.Factory(list), type=list)
 
     def __len__(self):
         return len(self.contours)
@@ -53,6 +39,14 @@ class Glyph(object):
 
     def __iter__(self):
         return iter(self.contours)
+
+    def __repr__(self):
+        return "<{}.{} '{}' at {}>".format(
+            self.__class__.__module__,
+            self.__class__.__name__,
+            self._name,
+            hex(id(self)),
+        )
 
     @property
     def anchors(self):
@@ -99,6 +93,28 @@ class Glyph(object):
                 self.unicodes.insert(0, value)
             else:
                 self.unicodes.append(value)
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, image):
+        if isinstance(image, Image):
+            self._image = image
+        else:
+            self._image = Image(
+                fileName=image["fileName"],
+                transformation=Transformation(
+                    image["xScale"],
+                    image["xyScale"],
+                    image["yxScale"],
+                    image["yScale"],
+                    image["xOffset"],
+                    image["yOffset"],
+                ),
+                color=image.get("color"),
+            )
 
     def clear(self):
         del self._anchors[:]
@@ -177,15 +193,3 @@ class Glyph(object):
             self.lib["public.verticalOrigin"] = value
         elif "public.verticalOrigin" in self.lib:
             del self.lib["public.verticalOrigin"]
-
-
-class GlyphClasses(object):
-    Anchor = Anchor
-    Component = Component
-    Contour = Contour
-    Glyph = Glyph
-    Guideline = Guideline
-    Image = Image
-    Point = Point
-
-    Transformation = Transformation

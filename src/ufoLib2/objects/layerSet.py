@@ -1,13 +1,15 @@
 import attr
 from collections import OrderedDict
+from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.objects.layer import Layer
 from ufoLib2.constants import DEFAULT_LAYER_NAME
-from fontTools.misc.py23 import basestring
 
 
 def _layersConverter(value):
     # takes an iterable of Layer objects and returns an OrderedDict keyed
     # by layer name
+    if isinstance(value, OrderedDict):
+        return value
     layers = OrderedDict()
     for layer in value:
         if not isinstance(layer, Layer):
@@ -23,47 +25,84 @@ def _layersConverter(value):
 @attr.s(slots=True, repr=False)
 class LayerSet(object):
     _layers = attr.ib(default=(), converter=_layersConverter, type=OrderedDict)
-    _defaultLayer = attr.ib(default=None, type=Layer)
-    _scheduledForDeletion = attr.ib(
-        default=attr.Factory(set), init=False, type=set
-    )
+    defaultLayer = attr.ib(default=None, type=Layer)
+
+    _reader = attr.ib(default=None, init=False)
 
     def __attrs_post_init__(self):
         if not self._layers:
             # LayerSet is never empty; always contains at least the default
-            if self._defaultLayer is not None:
+            if self.defaultLayer is not None:
                 raise TypeError(
                     "'defaultLayer' argument is invalid with empty LayerSet"
                 )
-            self._defaultLayer = self.newLayer(DEFAULT_LAYER_NAME)
-        elif self._defaultLayer is not None:
+            self.defaultLayer = self.newLayer(DEFAULT_LAYER_NAME)
+        elif self.defaultLayer is not None:
             # check that the specified default layer is in the layer set;
-            # 'defaultLayer' constructor argument is a string (the name),
-            # whereas the 'defaultLayer' property is a Layer object
-            default = self._defaultLayer
-            if isinstance(default, basestring):
-                if default not in self._layers:
-                    raise KeyError(default)
-                self._defaultLayer = self._layers[default]
+            default = self.defaultLayer
+            for layer in self._layers.values():
+                if layer is default:
+                    break
             else:
-                raise TypeError(
-                    "'defaultLayer': expected string, found '%s'"
-                    % type(default).__name__
+                raise ValueError(
+                    "defaultLayer %r is not among the specified layers"
+                    % default
                 )
+        elif len(self._layers) == 1:
+            # there's only one, we assume it's the default
+            self.defaultLayer = next(self._layers.values())
         else:
             if DEFAULT_LAYER_NAME not in self._layers:
                 raise ValueError("default layer not specified")
-            self._defaultLayer = self._layers[DEFAULT_LAYER_NAME]
+            self.defaultLayer = self._layers[DEFAULT_LAYER_NAME]
 
     @classmethod
-    def load(cls, reader):
-        return cls(
-            (
-                Layer(name=name, glyphSet=glyphSet)
-                for name, glyphSet in reader.iterGlyphSets()
-            ),
-            defaultLayer=reader.getDefaultLayerName(),
-        )
+    def read(cls, reader, lazy=True):
+        layers = OrderedDict()
+        defaultLayer = None
+
+        defaultLayerName = reader.getDefaultLayerName()
+
+        for layerName in reader.getLayerNames():
+            isDefault = layerName == defaultLayerName
+            if isDefault or not lazy:
+                layer = cls._loadLayer(reader, layerName, lazy, isDefault)
+                if isDefault:
+                    defaultLayer = layer
+                layers[layerName] = layer
+            else:
+                layers[layerName] = _NOT_LOADED
+
+        assert defaultLayer is not None
+
+        self = cls(layers, defaultLayer=defaultLayer)
+        if lazy:
+            self._reader = reader
+
+        return self
+
+    @staticmethod
+    def _loadLayer(reader, layerName, lazy=True, default=False):
+        # UFOReader.getGlyphSet method doesn't support 'defaultLayer'
+        # keyword argument, whereas the UFOWriter.getGlyphSet method
+        # requires it. In order to allow to use an instance of
+        # UFOWriter as the 'reader', here we try both ways...
+        try:
+            glyphSet = reader.getGlyphSet(layerName, defaultLayer=default)
+        except TypeError as e:
+            # TODO use inspect module?
+            if "keyword argument 'defaultLayer'" in str(e):
+                glyphSet = reader.getGlyphSet(layerName)
+
+        return Layer.read(layerName, glyphSet, lazy=lazy)
+
+    def loadLayer(self, layerName, lazy=True, default=False):
+        assert self._reader is not None
+        if layerName not in self._layers:
+            raise KeyError(layerName)
+        layer = self._loadLayer(self._reader, layerName, lazy, default)
+        self._layers[layerName] = layer
+        return layer
 
     def __contains__(self, name):
         return name in self._layers
@@ -72,9 +111,10 @@ class LayerSet(object):
         if name == self.defaultLayer.name:
             raise KeyError("cannot delete default layer %r" % name)
         del self._layers[name]
-        self._scheduledForDeletion.add(name)
 
     def __getitem__(self, name):
+        if self._layers[name] is _NOT_LOADED:
+            return self.loadLayer(name)
         return self._layers[name]
 
     def __iter__(self):
@@ -90,27 +130,14 @@ class LayerSet(object):
         return self._layers.keys()
 
     def __repr__(self):
-        return "%s(%s)" % (
+        n = len(self._layers)
+        return "<{}.{} ({} layer{}) at {}>".format(
+            self.__class__.__module__,
             self.__class__.__name__,
-            repr(list(self)) if self._layers else "",
+            n,
+            "s" if n > 1 else "",
+            hex(id(self)),
         )
-
-    @property
-    def defaultLayer(self):
-        return self._defaultLayer
-
-    @defaultLayer.setter
-    def defaultLayer(self, layer):
-        if not isinstance(layer, Layer):
-            raise TypeError(
-                "expected 'Layer', found '%s'" % type(layer).__name__
-            )
-        for this in self._layers.values():
-            if this is layer:
-                break
-        else:
-            raise KeyError("layer %r is not in layer set" % layer)
-        self._defaultLayer = layer
 
     @property
     def layerOrder(self):
@@ -124,15 +151,10 @@ class LayerSet(object):
             layers[name] = self._layers[name]
         self._layers = layers
 
-    def newLayer(self, name, glyphSet=None):
+    def newLayer(self, name, **kwargs):
         if name in self._layers:
             raise KeyError("layer %r already exists" % name)
-        self._layers[name] = layer = Layer(name, glyphSet)
-        # TODO: should this be done in Layer ctor?
-        if glyphSet is not None:
-            glyphSet.readLayerInfo(layer)
-        if name in self._scheduledForDeletion:
-            self._scheduledForDeletion.remove(name)
+        self._layers[name] = layer = Layer(name, **kwargs)
         return layer
 
     def renameGlyph(self, name, newName, overwrite=False):
@@ -161,23 +183,25 @@ class LayerSet(object):
         if not overwrite and newName in self._layers:
             raise KeyError("target name %r already exists" % newName)
         self._layers[newName] = layer = self._layers.pop(name)
-        self._scheduledForDeletion.add(name)
-        if newName in self._scheduledForDeletion:
-            self._scheduledForDeletion.remove(newName)
         layer._name = newName
 
-    def save(self, writer, saveAs=False):
+    def write(self, writer, saveAs=None):
+        if saveAs is None:
+            saveAs = self._reader is not writer
         # if in-place, remove deleted layers
+        layers = self._layers
         if not saveAs:
-            for layerName in self._scheduledForDeletion:
-                writer.deleteGlyphSet(layerName)
+            for name in set(writer.getLayerNames()).difference(layers):
+                writer.deleteGlyphSet(name)
         # write layers
         defaultLayer = self.defaultLayer
-        for layer in self:
+        for name, layer in layers.items():
             default = layer is defaultLayer
-            glyphSet = writer.getGlyphSet(layer.name, default=default)
-            layer.save(glyphSet, saveAs=saveAs)
-            # do this need a separate call?
-            glyphSet.writeLayerInfo(layer)
+            if layer is _NOT_LOADED:
+                if saveAs:
+                    layer = self.loadLayer(name, lazy=False)
+                else:
+                    continue
+            glyphSet = writer.getGlyphSet(name, defaultLayer=default)
+            layer.write(glyphSet, saveAs=saveAs)
         writer.writeLayerContents(self.layerOrder)
-        self._scheduledForDeletion = set()

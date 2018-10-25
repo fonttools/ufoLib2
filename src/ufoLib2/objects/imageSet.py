@@ -1,9 +1,10 @@
 from ufoLib2.objects.misc import DataStore
-from ufoLib2.reader import UFOReader
-from ufoLib2.writer import UFOWriter
+from fontTools.ufoLib import UFOReader
+from fontTools.ufoLib import UFOWriter
 
 
 class ImageSet(DataStore):
+    listdir = UFOReader.getImageDirectoryListing
     readf = UFOReader.readImage
     writef = UFOWriter.writeImage
-    deletef = UFOWriter.deleteImage
+    deletef = UFOWriter.removeImage
