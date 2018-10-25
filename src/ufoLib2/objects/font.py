@@ -54,6 +54,11 @@ class Font(object):
         self = cls.read(reader, lazy=lazy)
         self._path = path
         self._fileStructure = reader.fileStructure
+        if lazy:
+            # keep the reader around so we can close it when done
+            self._reader = reader
+        else:
+            reader.close()
         return self
 
     @classmethod
@@ -77,11 +82,6 @@ class Font(object):
             data=data,
             images=images,
         )
-        if lazy:
-            # keep the reader around so we can close it when done
-            self._reader = reader
-        else:
-            reader.close()
         return self
 
     def __contains__(self, name):
