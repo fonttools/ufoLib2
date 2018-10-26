@@ -1,6 +1,6 @@
 import attr
 from typing import Optional
-from ufoLib2.objects.misc import Transformation
+from fontTools.misc.transform import Transform
 
 try:
     from collections.abc import Mapping  # python >= 3.3
@@ -8,19 +8,13 @@ except ImportError:
     from collections import Mapping
 
 
-def _to_transformation(v):
-    if not isinstance(v, Transformation):
-        return Transformation(*v)
-    return v
-
-
 @attr.s(slots=True)
 class Image(Mapping):
     fileName = attr.ib(default=None, type=Optional[str])
     _transformation = attr.ib(
-        default=Transformation(),
-        convert=_to_transformation,
-        type=Transformation,
+        default=attr.Factory(Transform),
+        convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
+        type=Transform,
     )
     color = attr.ib(default=None, type=Optional[str])
 
@@ -30,7 +24,9 @@ class Image(Mapping):
 
     @transformation.setter
     def transformation(self, value):
-        self._transformation = _to_transformation(value)
+        self._transformation = (
+            value if isinstance(value, Transform) else Transform(*value)
+        )
 
     def clear(self):
         self.fileName = None
@@ -44,7 +40,16 @@ class Image(Mapping):
     # alias for python 2
     __nonzero__ = __bool__
 
-    _valid_keys_ = ("fileName",) + tuple(Transformation._fields) + ("color",)
+    _valid_keys_ = (
+        "fileName",
+        "xScale",
+        "xyScale",
+        "yxScale",
+        "yScale",
+        "xOffset",
+        "yOffset",
+        "color",
+    )
 
     # implementation of collections.abc.Mapping abstract methods.
     # the fontTools.ufoLib.validators.imageValidator requires that image is a

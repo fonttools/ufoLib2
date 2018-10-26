@@ -3,8 +3,8 @@ from typing import Optional, Union, List, Any, Dict
 from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
-from ufoLib2.objects.misc import Transformation
 from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
+from fontTools.misc.transform import Transform
 from fontTools.misc.py23 import tounicode, unicode
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
@@ -105,7 +105,7 @@ class Glyph(object):
         else:
             self._image = Image(
                 fileName=image["fileName"],
-                transformation=Transformation(
+                transformation=Transform(
                     image["xScale"],
                     image["xyScale"],
                     image["yxScale"],

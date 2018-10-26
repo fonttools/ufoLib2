@@ -1,20 +1,17 @@
 import attr
 from typing import Optional
-from ufoLib2.objects.misc import Transformation
+from fontTools.misc.transform import Transform
 from fontTools.pens.pointPen import PointToSegmentPen
 import warnings
-
-
-def _to_transformation(v):
-    if not isinstance(v, Transformation):
-        return Transformation(*v)
-    return v
 
 
 @attr.s(slots=True)
 class Component(object):
     baseGlyph = attr.ib(type=str)
-    _transformation = attr.ib(convert=_to_transformation, type=Transformation)
+    _transformation = attr.ib(
+        convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
+        type=Transform,
+    )
     identifier = attr.ib(default=None, type=Optional[str])
 
     @property
@@ -23,7 +20,9 @@ class Component(object):
 
     @transformation.setter
     def transformation(self, value):
-        self._transformation = _to_transformation(value)
+        self._transformation = (
+            value if isinstance(value, Transform) else Transform(*value)
+        )
 
     # -----------
     # Pen methods

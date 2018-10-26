@@ -1,5 +1,4 @@
 import attr
-from collections import namedtuple
 
 try:
     from collections.abc import Mapping, MutableMapping
@@ -92,19 +91,6 @@ class DataStore(MutableMapping):
     @property
     def fileNames(self):
         return list(self._data.keys())
-
-
-class Transformation(
-    namedtuple(
-        "Transformation",
-        ["xScale", "xyScale", "yxScale", "yScale", "xOffset", "yOffset"],
-    )
-):
-    def __repr__(self):
-        return "<%s [%r %r %r %r %r %r]>" % ((self.__class__.__name__,) + self)
-
-
-Transformation.__new__.__defaults__ = (1, 0, 0, 1, 0, 0)
 
 
 class AttrDictMixin(Mapping):
