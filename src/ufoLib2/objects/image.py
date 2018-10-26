@@ -30,16 +30,15 @@ class Image(Mapping):
     # alias for python 2
     __nonzero__ = __bool__
 
-    _valid_keys_ = (
-        "fileName",
+    _transformation_keys_ = (
         "xScale",
         "xyScale",
         "yxScale",
         "yScale",
         "xOffset",
         "yOffset",
-        "color",
     )
+    _valid_keys_ = ("fileName",) + _transformation_keys_ + ("color",)
 
     # implementation of collections.abc.Mapping abstract methods.
     # the fontTools.ufoLib.validators.imageValidator requires that image is a
@@ -47,11 +46,14 @@ class Image(Mapping):
 
     def __getitem__(self, key):
         try:
-            return getattr(self, key)
-        except AttributeError:
-            return getattr(self.transformation, key)
-        except AttributeError:
-            raise KeyError(key)
+            i = self._transformation_keys_.index(key)
+        except ValueError:
+            try:
+                return getattr(self, key)
+            except AttributeError:
+                raise KeyError(key)
+        else:
+            return self.transformation[i]
 
     def __len__(self):
         return len(self._valid_keys_)
