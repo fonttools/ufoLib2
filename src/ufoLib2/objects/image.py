@@ -11,26 +11,16 @@ except ImportError:
 @attr.s(slots=True)
 class Image(Mapping):
     fileName = attr.ib(default=None, type=Optional[str])
-    _transformation = attr.ib(
+    transformation = attr.ib(
         default=attr.Factory(Transform),
         convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
         type=Transform,
     )
     color = attr.ib(default=None, type=Optional[str])
 
-    @property
-    def transformation(self):
-        return self._transformation
-
-    @transformation.setter
-    def transformation(self, value):
-        self._transformation = (
-            value if isinstance(value, Transform) else Transform(*value)
-        )
-
     def clear(self):
         self.fileName = None
-        self._transformation = None
+        self.transformation = None
         self.color = None
 
     def __bool__(self):

@@ -8,21 +8,11 @@ import warnings
 @attr.s(slots=True)
 class Component(object):
     baseGlyph = attr.ib(type=str)
-    _transformation = attr.ib(
+    transformation = attr.ib(
         convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
         type=Transform,
     )
     identifier = attr.ib(default=None, type=Optional[str])
-
-    @property
-    def transformation(self):
-        return self._transformation
-
-    @transformation.setter
-    def transformation(self, value):
-        self._transformation = (
-            value if isinstance(value, Transform) else Transform(*value)
-        )
 
     # -----------
     # Pen methods
@@ -35,12 +25,10 @@ class Component(object):
     def drawPoints(self, pointPen):
         try:
             pointPen.addComponent(
-                self.baseGlyph,
-                self._transformation,
-                identifier=self.identifier,
+                self.baseGlyph, self.transformation, identifier=self.identifier
             )
         except TypeError:
-            pointPen.addComponent(self.baseGlyph, self._transformation)
+            pointPen.addComponent(self.baseGlyph, self.transformation)
             warnings.warn(
                 "The addComponent method needs an identifier kwarg. "
                 "The component's identifier value has been discarded.",
