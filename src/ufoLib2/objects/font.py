@@ -1,4 +1,3 @@
-import attr
 import os
 import shutil
 import fs.tempfs
@@ -9,44 +8,68 @@ from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.features import Features
-from fontTools.misc.py23 import basestring, PY3
+from fontTools.misc.py23 import basestring
 from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
 
 
-@attr.s(slots=True, kw_only=PY3, repr=False)
 class Font(object):
-    layers = attr.ib(
-        default=attr.Factory(LayerSet),
-        validator=attr.validators.instance_of(LayerSet),
-        type=LayerSet,
+    _fields = (
+        "layers",
+        "info",
+        "features",
+        "groups",
+        "kerning",
+        "lib",
+        "data",
+        "images",
     )
-    info = attr.ib(
-        default=attr.Factory(Info),
-        converter=lambda v: v if isinstance(v, Info) else Info(**v),
-        type=Info,
-    )
-    features = attr.ib(
-        default=attr.Factory(Features),
-        converter=lambda v: v if isinstance(v, Features) else Features(v),
-        type=Features,
-    )
-    groups = attr.ib(default=attr.Factory(dict), type=dict)
-    kerning = attr.ib(default=attr.Factory(dict), type=dict)
-    lib = attr.ib(default=attr.Factory(dict), type=dict)
-    data = attr.ib(
-        default=attr.Factory(DataSet),
-        converter=lambda v: v if isinstance(v, DataSet) else DataSet(**v),
-        type=DataSet,
-    )
-    images = attr.ib(
-        default=attr.Factory(ImageSet),
-        converter=lambda v: v if isinstance(v, ImageSet) else ImageSet(**v),
-        type=ImageSet,
-    )
+    __slots__ = _fields + ("_path", "_reader", "_fileStructure")
 
-    _path = attr.ib(default=None, init=False)
-    _reader = attr.ib(default=None, init=False)
-    _fileStructure = attr.ib(default=None, init=False)
+    def __init__(
+        self,
+        layers=None,
+        info=None,
+        features=None,
+        groups=None,
+        kerning=None,
+        lib=None,
+        data=None,
+        images=None,
+    ):
+        self.layers = LayerSet() if layers is None else layers
+        self.info = (
+            info
+            if isinstance(info, Info)
+            else Info(**info)
+            if info is not None
+            else Info()
+        )
+        self.features = (
+            features
+            if isinstance(features, Features)
+            else Features(features or "")
+        )
+        self.groups = {} if groups is None else groups
+        self.kerning = {} if kerning is None else kerning
+        self.lib = {} if lib is None else lib
+        self.data = (
+            data
+            if isinstance(data, DataSet)
+            else DataSet(**data)
+            if data is not None
+            else DataSet()
+        )
+        self.images = (
+            images
+            if isinstance(images, ImageSet)
+            else ImageSet(**images)
+            if images is not None
+            else ImageSet()
+        )
+
+        self._path = None
+        self._reader = None
+        self._fileStructure = None
 
     @classmethod
     def open(cls, path, lazy=True, validate=True):

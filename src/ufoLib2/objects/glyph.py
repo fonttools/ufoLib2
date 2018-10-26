@@ -1,32 +1,52 @@
-import attr
-from typing import Optional, Union, List, Any, Dict
 from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
 from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
 from fontTools.misc.transform import Transform
-from fontTools.misc.py23 import tounicode, unicode
+from fontTools.misc.py23 import tounicode
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
 
-@attr.s(slots=True, repr=False)
 class Glyph(object):
-    _name = attr.ib(type=str)
-    width = attr.ib(default=0, type=Union[int, float])
-    height = attr.ib(default=0, type=Union[int, float])
-    unicodes = attr.ib(default=attr.Factory(list), type=List[int])
-
-    _image = attr.ib(default=attr.Factory(Image), type=Image)
-    lib = attr.ib(default=attr.Factory(dict), type=Dict[str, Any])
-    note = attr.ib(
-        default=None,
-        converter=lambda n: tounicode(n) if n is not None else None,
-        type=Optional[unicode],
+    __slots__ = _fields = (
+        "_name",
+        "width",
+        "height",
+        "unicodes",
+        "_image",
+        "lib",
+        "note",
+        "_anchors",
+        "components",
+        "contours",
+        "_guidelines",
     )
-    _anchors = attr.ib(default=attr.Factory(list), type=list)
-    components = attr.ib(default=attr.Factory(list), type=list)
-    contours = attr.ib(default=attr.Factory(list), type=list)
-    guidelines = attr.ib(default=attr.Factory(list), type=list)
+
+    def __init__(
+        self,
+        name,
+        width=0,
+        height=0,
+        unicodes=None,
+        image=None,
+        lib=None,
+        note=None,
+        anchors=None,
+        components=None,
+        contours=None,
+        guidelines=None,
+    ):
+        self._name = name
+        self.width = width
+        self.height = height
+        self.unicodes = [] if unicodes is None else unicodes
+        self._image = image
+        self.lib = {} if lib is None else lib
+        self.note = tounicode(note) if note is not None else None
+        self._anchors = [] if anchors is None else anchors
+        self.components = [] if components is None else components
+        self.contours = [] if contours is None else contours
+        self._guidelines = [] if guidelines is None else guidelines
 
     def __len__(self):
         return len(self.contours)

@@ -1,18 +1,19 @@
-import attr
-from typing import Optional
-from fontTools.misc.transform import Transform
+from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.pointPen import PointToSegmentPen
 import warnings
+from ufoLib2.objects.misc import AttrReprMixin
 
 
-@attr.s(slots=True)
-class Component(object):
-    baseGlyph = attr.ib(type=str)
-    transformation = attr.ib(
-        convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
-        type=Transform,
-    )
-    identifier = attr.ib(default=None, type=Optional[str])
+class Component(AttrReprMixin):
+    __slots__ = _fields = ("baseGlyph", "transformation", "identifier")
+
+    def __init__(self, baseGlyph, transformation=Identity, identifier=None):
+        self.baseGlyph = baseGlyph
+        if isinstance(transformation, Transform):
+            self.transformation = transformation
+        else:
+            self.transformation = Transform(*transformation)
+        self.identifier = identifier
 
     # -----------
     # Pen methods

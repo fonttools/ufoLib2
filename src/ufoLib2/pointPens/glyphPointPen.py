@@ -32,7 +32,7 @@ class GlyphPointPen(AbstractPointPen):
             Point(
                 x,
                 y,
-                type=segmentType,
+                segmentType=segmentType,
                 smooth=smooth,
                 name=name,
                 identifier=identifier,

@@ -1,26 +1,26 @@
-import attr
-from typing import Optional
-from fontTools.misc.transform import Transform
+from fontTools.misc.transform import Identity, Transform
 
 try:
     from collections.abc import Mapping  # python >= 3.3
 except ImportError:
     from collections import Mapping
+from ufoLib2.objects.misc import AttrReprMixin
 
 
-@attr.s(slots=True)
-class Image(Mapping):
-    fileName = attr.ib(default=None, type=Optional[str])
-    transformation = attr.ib(
-        default=attr.Factory(Transform),
-        convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
-        type=Transform,
-    )
-    color = attr.ib(default=None, type=Optional[str])
+class Image(AttrReprMixin, Mapping):
+    __slots__ = _fields = ("fileName", "transformation", "color")
+
+    def __init__(self, fileName=None, transformation=Identity, color=None):
+        self.fileName = fileName
+        if isinstance(transformation, Transform):
+            self.transformation = transformation
+        else:
+            self.transformation = Transform(*transformation)
+        self.color = color
 
     def clear(self):
         self.fileName = None
-        self.transformation = Transform()
+        self.transformation = Identity
         self.color = None
 
     def __bool__(self):

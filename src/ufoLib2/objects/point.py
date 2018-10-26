@@ -1,17 +1,22 @@
-import attr
-from typing import Optional, Union
+from ufoLib2.objects.misc import AttrReprMixin
 
 
-@attr.s(slots=True)
-class Point(object):
-    x = attr.ib(type=Union[int, float])
-    y = attr.ib(type=Union[int, float])
-    type = attr.ib(type=Optional[str])
-    smooth = attr.ib(default=False, type=bool)
-    name = attr.ib(default=None, type=Optional[str])
-    identifier = attr.ib(default=None, type=Optional[str])
+class Point(AttrReprMixin):
+    __slots__ = _fields = (
+        "x",
+        "y",
+        "segmentType",
+        "smooth",
+        "name",
+        "identifier",
+    )
 
-    @property
-    def segmentType(self):
-        # alias for backward compatibility with defcon API
-        return self.type
+    def __init__(
+        self, x, y, segmentType=None, smooth=False, name=None, identifier=None
+    ):
+        self.x = x
+        self.y = y
+        self.segmentType = segmentType
+        self.smooth = smooth
+        self.name = name
+        self.identifier = identifier

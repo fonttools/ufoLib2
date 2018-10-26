@@ -1,31 +1,33 @@
-import attr
-from typing import Optional
 from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-def _glyphsConverter(value):
-    if isinstance(value, dict):
-        return value
-    result = {}
-    for glyph in value:
-        if glyph.name in result:
-            raise KeyError("glyph %r already exists" % glyph.name)
-        result[glyph.name] = glyph
-    return result
-
-
-@attr.s(slots=True, repr=False)
 class Layer(object):
-    _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
-    _glyphs = attr.ib(
-        default=attr.Factory(dict), converter=_glyphsConverter, type=dict
-    )
-    color = attr.ib(default=None, type=Optional[str])
-    lib = attr.ib(default=attr.Factory(dict), type=dict)
+    _fields = ("_name", "_glyphs", "color", "lib")
+    __slots__ = _fields + ("_glyphSet",)
 
-    _glyphSet = attr.ib(default=None, init=False)
+    def __init__(
+        self, name=DEFAULT_LAYER_NAME, glyphs=None, color=None, lib=None
+    ):
+        self._name = name
+
+        if glyphs is None:
+            self._glyphs = {}
+        elif isinstance(glyphs, dict):
+            self._glyphs = glyphs
+        else:
+            result = {}
+            for glyph in glyphs:
+                if glyph.name in result:
+                    raise KeyError("glyph %r already exists" % glyph.name)
+                result[glyph.name] = glyph
+            self._glyphs = result
+
+        self.color = color
+        self.lib = {} if lib is None else lib
+
+        self._glyphSet = None
 
     @classmethod
     def read(cls, name, glyphSet, lazy=True):

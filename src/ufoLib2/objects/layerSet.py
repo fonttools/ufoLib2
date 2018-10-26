@@ -1,65 +1,59 @@
-import attr
 from collections import OrderedDict
 from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.objects.layer import Layer
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-def _layersConverter(value):
-    # takes an iterable of Layer objects and returns an OrderedDict keyed
-    # by layer name
-    if isinstance(value, OrderedDict):
-        return value
-    layers = OrderedDict()
-    for layer in value:
-        if not isinstance(layer, Layer):
-            raise TypeError(
-                "expected 'Layer', found '%s'" % type(layer).__name__
-            )
-        if layer.name in layers:
-            raise KeyError("duplicate layer name: '%s'" % layer.name)
-        layers[layer.name] = layer
-    return layers
-
-
-@attr.s(slots=True, repr=False)
 class LayerSet(object):
-    _layers = attr.ib(default=(), converter=_layersConverter, type=OrderedDict)
-    defaultLayer = attr.ib(default=None, type=Layer)
+    _fields = ("_layers", "defaultLayerName")
+    __slots__ = ("_layers", "defaultLayer", "_reader")
 
-    _reader = attr.ib(default=None, init=False)
-
-    def __attrs_post_init__(self):
-        if not self._layers:
+    def __init__(self, layers=None, defaultLayerName=None):
+        if not layers:
             # LayerSet is never empty; always contains at least the default
-            if self.defaultLayer is not None:
+            if defaultLayerName is not None:
                 raise TypeError(
                     "'defaultLayer' argument is invalid with empty LayerSet"
                 )
+            self._layers = OrderedDict()
             self.defaultLayer = self.newLayer(DEFAULT_LAYER_NAME)
-        elif self.defaultLayer is not None:
-            # check that the specified default layer is in the layer set;
-            default = self.defaultLayer
-            for layer in self._layers.values():
-                if layer is default:
-                    break
-            else:
-                raise ValueError(
-                    "defaultLayer %r is not among the specified layers"
-                    % default
-                )
-        elif len(self._layers) == 1:
-            # there's only one, we assume it's the default
-            self.defaultLayer = next(self._layers.values())
         else:
-            if DEFAULT_LAYER_NAME not in self._layers:
-                raise ValueError("default layer not specified")
-            self.defaultLayer = self._layers[DEFAULT_LAYER_NAME]
+            if not isinstance(layers, OrderedDict):
+                layers = OrderedDict()
+                for layer in layers:
+                    if not isinstance(layer, Layer):
+                        raise TypeError(
+                            "expected 'Layer', found '%s'"
+                            % type(layer).__name__
+                        )
+                    if layer.name in layers:
+                        raise KeyError(
+                            "duplicate layer name: '%s'" % layer.name
+                        )
+                    layers[layer.name] = layer
+            self._layers = layers
+
+            # check that the default layer is in the layer set
+            if defaultLayerName is not None:
+                if defaultLayerName not in self._layers:
+                    raise ValueError(
+                        "%r is not among the specified layers"
+                        % defaultLayerName
+                    )
+                self.defaultLayer = self._layers[defaultLayerName]
+            elif len(self._layers) == 1:
+                # there's only one, we assume it's the default
+                self.defaultLayer = next(self._layers.values())
+            else:
+                if DEFAULT_LAYER_NAME not in self._layers:
+                    raise ValueError("default layer not specified")
+                self.defaultLayer = self._layers[DEFAULT_LAYER_NAME]
+
+        self._reader = None
 
     @classmethod
     def read(cls, reader, lazy=True):
         layers = OrderedDict()
-        defaultLayer = None
 
         defaultLayerName = reader.getDefaultLayerName()
 
@@ -67,15 +61,11 @@ class LayerSet(object):
             isDefault = layerName == defaultLayerName
             if isDefault or not lazy:
                 layer = cls._loadLayer(reader, layerName, lazy, isDefault)
-                if isDefault:
-                    defaultLayer = layer
                 layers[layerName] = layer
             else:
                 layers[layerName] = _NOT_LOADED
 
-        assert defaultLayer is not None
-
-        self = cls(layers, defaultLayer=defaultLayer)
+        self = cls(layers, defaultLayerName=defaultLayerName)
         if lazy:
             self._reader = reader
 
@@ -138,6 +128,10 @@ class LayerSet(object):
             "s" if n > 1 else "",
             hex(id(self)),
         )
+
+    @property
+    def defaultLayerName(self):
+        return self.defaultLayer.name
 
     @property
     def layerOrder(self):

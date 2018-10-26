@@ -1,19 +1,18 @@
-import attr
-from typing import Optional, Union
 from ufoLib2.objects.misc import AttrDictMixin
 
 
-@attr.s(slots=True)
 class Guideline(AttrDictMixin):
-    x = attr.ib(default=None, type=Optional[Union[int, float]])
-    y = attr.ib(default=None, type=Optional[Union[int, float]])
-    angle = attr.ib(default=None, type=Optional[Union[int, float]])
-    name = attr.ib(default=None, type=Optional[str])
-    color = attr.ib(default=None, type=Optional[str])
-    identifier = attr.ib(default=None, type=Optional[str])
+    __slots__ = _fields = ("x", "y", "angle", "name", "color", "identifier")
 
-    def __attrs_post_init__(self):
-        x, y, angle = self.x, self.y, self.angle
+    def __init__(
+        self,
+        x=None,
+        y=None,
+        angle=None,
+        name=None,
+        color=None,
+        identifier=None,
+    ):
         if x is None and y is None:
             raise ValueError("x or y must be present")
         if x is None or y is None:
@@ -27,3 +26,9 @@ class Guideline(AttrDictMixin):
             )
         if angle is not None and not (0 <= angle <= 360):
             raise ValueError("angle must be between 0 and 360")
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.name = name
+        self.color = color
+        self.identifier = identifier
