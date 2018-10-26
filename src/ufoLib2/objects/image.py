@@ -20,7 +20,7 @@ class Image(Mapping):
 
     def clear(self):
         self.fileName = None
-        self.transformation = None
+        self.transformation = Transform()
         self.color = None
 
     def __bool__(self):
