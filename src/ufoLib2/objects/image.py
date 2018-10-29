@@ -1,6 +1,6 @@
 import attr
 from typing import Optional
-from fontTools.misc.transform import Transform
+from fontTools.misc.transform import Identity, Transform
 
 try:
     from collections.abc import Mapping  # python >= 3.3
@@ -12,7 +12,7 @@ except ImportError:
 class Image(Mapping):
     fileName = attr.ib(default=None, type=Optional[str])
     transformation = attr.ib(
-        default=attr.Factory(Transform),
+        default=Identity,
         convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
         type=Transform,
     )
@@ -20,7 +20,7 @@ class Image(Mapping):
 
     def clear(self):
         self.fileName = None
-        self.transformation = Transform()
+        self.transformation = Identity
         self.color = None
 
     def __bool__(self):
