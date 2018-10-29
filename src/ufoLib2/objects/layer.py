@@ -5,7 +5,7 @@ from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-def _glyphsConverter(value):
+def _convert_glyphs(value):
     if isinstance(value, dict):
         return value
     result = {}
@@ -20,7 +20,7 @@ def _glyphsConverter(value):
 class Layer(object):
     _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
     _glyphs = attr.ib(
-        default=attr.Factory(dict), converter=_glyphsConverter, type=dict
+        default=attr.Factory(dict), converter=_convert_glyphs, type=dict
     )
     color = attr.ib(default=None, type=Optional[str])
     lib = attr.ib(default=attr.Factory(dict), type=dict)

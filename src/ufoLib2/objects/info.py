@@ -74,11 +74,11 @@ class WidthClass(IntEnum):
     ULTRA_EXPANDED = 9
 
 
-def _structure_optional_object(value, klass):
-    if value is None:
+def _convert_optional_list(lst, klass):
+    if lst is None:
         return
     result = []
-    for d in value:
+    for d in lst:
         if isinstance(d, klass):
             result.append(d)
         else:
@@ -86,11 +86,11 @@ def _structure_optional_object(value, klass):
     return result
 
 
-_structure_guidelines = partial(_structure_optional_object, klass=Guideline)
-_structure_gasp_range_records = partial(
-    _structure_optional_object, klass=GaspRangeRecord
+_convert_guidelines = partial(_convert_optional_list, klass=Guideline)
+_convert_gasp_range_records = partial(
+    _convert_optional_list, klass=GaspRangeRecord
 )
-_structure_name_records = partial(_structure_optional_object, klass=NameRecord)
+_convert_name_records = partial(_convert_optional_list, klass=NameRecord)
 
 
 @attr.s(slots=True)
@@ -121,7 +121,7 @@ class Info(object):
     note = attr.ib(default=None, type=OptText)
 
     _guidelines = attr.ib(
-        default=None, converter=_structure_guidelines, type=List[Guideline]
+        default=None, converter=_convert_guidelines, type=List[Guideline]
     )
 
     @property
@@ -130,11 +130,11 @@ class Info(object):
 
     @guidelines.setter
     def guidelines(self, value):
-        self._guidelines = _structure_guidelines(value)
+        self._guidelines = _convert_guidelines(value)
 
     _openTypeGaspRangeRecords = attr.ib(
         default=None,
-        converter=_structure_gasp_range_records,
+        converter=_convert_gasp_range_records,
         type=Optional[List[GaspRangeRecord]],
     )
 
@@ -144,7 +144,7 @@ class Info(object):
 
     @openTypeGaspRangeRecords.setter
     def openTypeGaspRangeRecords(self, value):
-        self._openTypeGaspRangeRecords = _structure_gasp_range_records(value)
+        self._openTypeGaspRangeRecords = _convert_gasp_range_records(value)
 
     openTypeHeadCreated = attr.ib(default=None, type=OptText)
     openTypeHeadLowestRecPPEM = attr.ib(
@@ -177,7 +177,7 @@ class Info(object):
 
     _openTypeNameRecords = attr.ib(
         default=None,
-        converter=_structure_name_records,
+        converter=_convert_name_records,
         type=Optional[List[NameRecord]],
     )
 
@@ -187,7 +187,7 @@ class Info(object):
 
     @openTypeNameRecords.setter
     def openTypeNameRecords(self, value):
-        self._openTypeNameRecords = _structure_name_records(value)
+        self._openTypeNameRecords = _convert_name_records(value)
 
     _openTypeOS2WidthClass = attr.ib(
         default=None,

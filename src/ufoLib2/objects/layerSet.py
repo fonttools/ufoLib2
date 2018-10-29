@@ -5,7 +5,7 @@ from ufoLib2.objects.layer import Layer
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-def _layersConverter(value):
+def _convert_layers(value):
     # takes an iterable of Layer objects and returns an OrderedDict keyed
     # by layer name
     if isinstance(value, OrderedDict):
@@ -24,7 +24,7 @@ def _layersConverter(value):
 
 @attr.s(slots=True, repr=False)
 class LayerSet(object):
-    _layers = attr.ib(default=(), converter=_layersConverter, type=OrderedDict)
+    _layers = attr.ib(default=(), converter=_convert_layers, type=OrderedDict)
     defaultLayer = attr.ib(default=None, type=Layer)
 
     _reader = attr.ib(default=None, init=False)
