@@ -1,56 +1,53 @@
 import attr
 from typing import Optional
-from fontTools.pens.pointPen import PointToSegmentPen
+
+try:
+    from collections.abc import MutableSequence
+except ImportError:
+    from collections import MutableSequence
+
 import warnings
+from fontTools.pens.pointPen import PointToSegmentPen
+
+from ufoLib2.objects.point import Point
 
 
 @attr.s(slots=True)
-class Contour(object):
-    _points = attr.ib(default=attr.Factory(list), type=list)
+class Contour(MutableSequence):
+    points = attr.ib(default=attr.Factory(list), type=list)
     identifier = attr.ib(default=None, repr=False, type=Optional[str])
 
-    # TODO: use collections.abc?
+    # collections.abc.MutableSequence interface
 
     def __delitem__(self, index):
-        del self._points[index]
+        del self.points[index]
 
     def __getitem__(self, index):
-        return self._points[index]
+        return self.points[index]
 
     def __setitem__(self, index, point):
-        self._points[index] = point
+        if not isinstance(point, Point):
+            raise TypeError("expected Point, found %s" % type(point).__name__)
+        self.points[index] = point
 
     def __iter__(self):
-        return iter(self._points)
+        return iter(self.points)
 
     def __len__(self):
-        return len(self._points)
-
-    def append(self, point):
-        self._points.append(point)
-
-    def clear(self):
-        self._points.clear()
-
-    def index(self, point):
-        return self._points.index(point)
+        return len(self.points)
 
     def insert(self, index, point):
-        self._points.insert(index, point)
-
-    def remove(self, point):
-        self._points.remove(point)
-
-    def reverse(self):
-        self._points.reverse()
+        if not isinstance(point, Point):
+            raise TypeError("expected Point, found %s" % type(point).__name__)
+        self.points.insert(index, point)
 
     # TODO: rotate method?
 
     @property
     def open(self):
-        if not self._points:
+        if not self.points:
             return True
-        return self._points[0].type == "move"
+        return self.points[0].type == "move"
 
     # -----------
     # Pen methods
@@ -63,7 +60,7 @@ class Contour(object):
     def drawPoints(self, pointPen):
         try:
             pointPen.beginPath(identifier=self.identifier)
-            for p in self._points:
+            for p in self.points:
                 pointPen.addPoint(
                     (p.x, p.y),
                     segmentType=p.type,
@@ -73,7 +70,7 @@ class Contour(object):
                 )
         except TypeError:
             pointPen.beginPath()
-            for p in self._points:
+            for p in self.points:
                 pointPen.addPoint(
                     (p.x, p.y),
                     segmentType=p.type,
