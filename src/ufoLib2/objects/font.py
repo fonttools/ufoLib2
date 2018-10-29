@@ -179,6 +179,8 @@ class Font(object):
     def appendGuideline(self, guideline):
         if not isinstance(guideline, Guideline):
             guideline = Guideline(**guideline)
+        if self.info.guidelines is None:
+            self.info.guidelines = []
         self.info.guidelines.append(guideline)
 
     def write(self, writer, saveAs=None):
