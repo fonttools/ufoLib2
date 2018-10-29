@@ -41,13 +41,11 @@ class Contour(MutableSequence):
             raise TypeError("expected Point, found %s" % type(point).__name__)
         self.points.insert(index, point)
 
-    # TODO: rotate method?
-
     @property
-    def open(self):
+    def closed(self):
         if not self.points:
-            return True
-        return self.points[0].type == "move"
+            return False
+        return self.points[0].type != "move"
 
     # -----------
     # Pen methods
