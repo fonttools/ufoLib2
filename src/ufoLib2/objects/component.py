@@ -1,6 +1,6 @@
 import attr
 from typing import Optional
-from fontTools.misc.transform import Transform
+from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.pointPen import PointToSegmentPen
 import warnings
 
@@ -9,6 +9,7 @@ import warnings
 class Component(object):
     baseGlyph = attr.ib(type=str)
     transformation = attr.ib(
+        default=Identity,
         convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
         type=Transform,
     )
