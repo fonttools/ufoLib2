@@ -26,7 +26,7 @@ class Glyph(object):
     _anchors = attr.ib(default=attr.Factory(list), type=list)
     components = attr.ib(default=attr.Factory(list), type=list)
     contours = attr.ib(default=attr.Factory(list), type=list)
-    guidelines = attr.ib(default=attr.Factory(list), type=list)
+    _guidelines = attr.ib(default=attr.Factory(list), type=list)
 
     def __len__(self):
         return len(self.contours)
