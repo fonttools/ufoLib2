@@ -118,7 +118,11 @@ class LayerSet(object):
         return self._layers[name]
 
     def __iter__(self):
-        return iter(self._layers.values())
+        for layer_name, layer_object in self._layers.items():
+            if layer_object is _NOT_LOADED:
+                yield self.loadLayer(layer_name)
+            else:
+                yield layer_object
 
     def __len__(self):
         return len(self._layers)
