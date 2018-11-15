@@ -121,7 +121,9 @@ class Info(object):
     note = attr.ib(default=None, type=OptText)
 
     _guidelines = attr.ib(
-        default=None, converter=_convert_guidelines, type=List[Guideline]
+        default=None,
+        converter=_convert_guidelines,
+        type=Optional[List[Guideline]],
     )
 
     @property

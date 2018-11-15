@@ -147,6 +147,8 @@ class Font(object):
 
     @property
     def guidelines(self):
+        if self.info.guidelines is None:
+            return []
         return self.info.guidelines
 
     @guidelines.setter
