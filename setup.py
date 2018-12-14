@@ -22,7 +22,7 @@ setup(
     include_package_data=True,
     python_requires=">=2.7",
     install_requires=[
-        "fonttools[ufo,lxml] >= 3.31.0",
+        "fonttools[ufo,lxml] >= 3.34.0",
         "attrs >= 18.2.0",
         "typing ; python_version < '3.5'",
         "enum34 ; python_version < '3.4'",

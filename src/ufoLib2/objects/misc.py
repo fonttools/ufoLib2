@@ -75,11 +75,16 @@ class DataStore(MutableMapping):
         if not saveAs:
             for fileName in self._scheduledForDeletion:
                 self.__class__.deletef(writer, fileName)
-        # write data
+        # Write data. Iterating over _data.items() prevents automatic loading.
         for fileName, data in self._data.items():
+            # Two paths:
+            # 1) We are saving in-place. Only write to disk what is loaded, it
+            #    might be modified.
+            # 2) We save elsewhere. Load all data files to write them back out.
             if data is _NOT_LOADED:
                 if saveAs:
                     data = self.__class__.readf(self._reader, fileName)
+                    self._data[fileName] = data
                 else:
                     continue
             self.__class__.writef(writer, fileName, data)
