@@ -13,7 +13,7 @@ class Image(Mapping):
     fileName = attr.ib(default=None, type=Optional[str])
     transformation = attr.ib(
         default=Identity,
-        convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
+        converter=lambda t: t if isinstance(t, Transform) else Transform(*t),
         type=Transform,
     )
     color = attr.ib(default=None, type=Optional[str])
