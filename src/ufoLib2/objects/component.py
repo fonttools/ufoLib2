@@ -10,7 +10,7 @@ class Component(object):
     baseGlyph = attr.ib(type=str)
     transformation = attr.ib(
         default=Identity,
-        convert=lambda t: t if isinstance(t, Transform) else Transform(*t),
+        converter=lambda t: t if isinstance(t, Transform) else Transform(*t),
         type=Transform,
     )
     identifier = attr.ib(default=None, type=Optional[str])
