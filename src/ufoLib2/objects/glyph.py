@@ -100,7 +100,9 @@ class Glyph(object):
 
     @image.setter
     def image(self, image):
-        if isinstance(image, Image):
+        if image is None:
+            self._image.clear()
+        elif isinstance(image, Image):
             self._image = image
         else:
             self._image = Image(
