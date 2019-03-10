@@ -39,6 +39,8 @@ class GlyphPointPen(AbstractPointPen):
             )
         )
 
-    def addComponent(self, baseGlyph, transformation, **kwargs):
-        component = Component(baseGlyph, transformation, **kwargs)
+    def addComponent(
+        self, baseGlyph, transformation, identifier=None, **kwargs
+    ):
+        component = Component(baseGlyph, transformation, identifier=identifier)
         self._glyph.components.append(component)
