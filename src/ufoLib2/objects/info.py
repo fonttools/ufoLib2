@@ -33,6 +33,13 @@ def _positive(instance, attribute, value):
 _optional_positive = attr.validators.optional(_positive)
 
 
+def _at_least_one_item(instance, attribute, value):
+    if not value:
+        raise ValueError(
+            "'{name}' must have at least one entry".format(name=attribute.name)
+        )
+
+
 # or maybe use IntFlag?
 class GaspBehavior(IntEnum):
     GRIDFIT = 0
@@ -59,6 +66,103 @@ class NameRecord(AttrDictMixin):
     encodingID = attr.ib(validator=_positive, type=Integer)
     languageID = attr.ib(validator=_positive, type=Integer)
     string = attr.ib(type=Text)
+
+
+@attr.s(slots=True)
+class WoffMetadataUniqueID(AttrDictMixin):
+    id = attr.ib(type=Text)
+
+
+@attr.s(slots=True)
+class WoffMetadataVendor(AttrDictMixin):
+    name = attr.ib(type=Text)
+    url = attr.ib(type=OptText)
+    dir = attr.ib(type=OptText)
+    klass = attr.ib(type=OptText)  # Meant to be "class"
+
+
+@attr.s(slots=True)
+class WoffMetadataCreditRecord(AttrDictMixin):
+    name = attr.ib(type=Text)
+    url = attr.ib(type=OptText)
+    role = attr.ib(type=OptText)
+    dir = attr.ib(type=OptText)
+    klass = attr.ib(type=OptText)  # Meant to be "class"
+
+
+@attr.s(slots=True)
+class WoffMetadataCredit(AttrDictMixin):
+    credits = attr.ib(validator=_at_least_one_item, type=List[WoffMetadataCreditRecord])
+
+
+@attr.s(slots=True)
+class WoffMetadataTextRecord(AttrDictMixin):
+    text = attr.ib(type=Text)
+    language = attr.ib(type=Text)
+    dir = attr.ib(type=OptText)
+    klass = attr.ib(type=OptText)  # Meant to be "class"
+
+
+@attr.s(slots=True)
+class WoffMetadataDescription(AttrDictMixin):
+    url = attr.ib(type=OptText)
+    text = attr.ib(validator=_at_least_one_item, type=List[WoffMetadataTextRecord])
+
+
+@attr.s(slots=True)
+class WoffMetadataLicense(AttrDictMixin):
+    url = attr.ib(type=OptText)
+    id = attr.ib(type=Text)
+    text = attr.ib(validator=_at_least_one_item, type=List[WoffMetadataTextRecord])
+
+
+@attr.s(slots=True)
+class WoffMetadataCopyright(AttrDictMixin):
+    text = attr.ib(validator=_at_least_one_item, type=List[WoffMetadataTextRecord])
+
+
+@attr.s(slots=True)
+class WoffMetadataTrademark(AttrDictMixin):
+    text = attr.ib(validator=_at_least_one_item, type=List[WoffMetadataTextRecord])
+
+
+@attr.s(slots=True)
+class WoffMetadataLicensee(AttrDictMixin):
+    name = attr.ib(type=Text)
+    dir = attr.ib(type=OptText)
+    klass = attr.ib(type=OptText)  # Meant to be "class"
+
+
+@attr.s(slots=True)
+class WoffMetadataExtensionName(AttrDictMixin):
+    text = attr.ib(type=Text)
+    language = attr.ib(type=Text)
+    dir = attr.ib(type=OptText)
+    klass = attr.ib(type=OptText)  # Meant to be "class"
+
+
+@attr.s(slots=True)
+class WoffMetadataExtensionValue(AttrDictMixin):
+    text = attr.ib(type=Text)
+    language = attr.ib(type=Text)
+    dir = attr.ib(type=OptText)
+    klass = attr.ib(type=OptText)  # Meant to be "class"
+
+
+@attr.s(slots=True)
+class WoffMetadataExtensionItem(AttrDictMixin):
+    id = attr.ib(type=Text)
+    names = attr.ib(validator=_at_least_one_item, type=List[WoffMetadataExtensionName])
+    values = attr.ib(
+        validator=_at_least_one_item, type=List[WoffMetadataExtensionValue]
+    )
+
+
+@attr.s(slots=True)
+class WoffMetadataExtension(AttrDictMixin):
+    id = attr.ib(type=Text)
+    names = attr.ib(type=List[WoffMetadataExtensionName])
+    items = attr.ib(validator=_at_least_one_item, type=List[WoffMetadataExtensionItem])
 
 
 class WidthClass(IntEnum):
@@ -256,6 +360,24 @@ class Info(object):
     postscriptWeightName = attr.ib(default=None, type=OptText)
     postscriptDefaultCharacter = attr.ib(default=None, type=OptText)
     postscriptWindowsCharacterSet = attr.ib(default=None, type=OptText)
+
+    woffMajorVersion = attr.ib(
+        default=None, validator=_optional_positive, type=OptInteger
+    )
+    woffMinorVersion = attr.ib(
+        default=None, validator=_optional_positive, type=OptInteger
+    )
+    woffMetadataUniqueID = attr.ib(default=None, type=Optional[WoffMetadataUniqueID])
+    woffMetadataVendor = attr.ib(default=None, type=Optional[WoffMetadataVendor])
+    woffMetadataCredits = attr.ib(default=None, type=Optional[WoffMetadataCredit])
+    woffMetadataDescription = attr.ib(
+        default=None, type=Optional[WoffMetadataDescription]
+    )
+    woffMetadataLicense = attr.ib(default=None, type=Optional[WoffMetadataLicense])
+    woffMetadataCopyright = attr.ib(default=None, type=Optional[WoffMetadataCopyright])
+    woffMetadataTrademark = attr.ib(default=None, type=Optional[WoffMetadataTrademark])
+    woffMetadataLicensee = attr.ib(default=None, type=Optional[WoffMetadataLicensee])
+    woffMetadataExtensions = attr.ib(default=None, type=Optional[WoffMetadataExtension])
 
     # old stuff
     macintoshFONDName = attr.ib(default=None, type=OptText)

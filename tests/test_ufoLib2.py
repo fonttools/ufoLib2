@@ -1,4 +1,5 @@
 import ufoLib2
+import fontTools.ufoLib
 from fontTools.misc.py23 import basestring
 from ufoLib2.objects.misc import _NOT_LOADED
 
@@ -40,3 +41,11 @@ def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData):
         v is _NOT_LOADED for k, v in ufo.data._data.items() if "T_S_I__0" not in k
     )
     assert ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] == some_data
+
+
+def test_Info_UFO3_level(ufo_UbuTestData):
+    ufo = ufoLib2.Font()
+
+    for attr in fontTools.ufoLib.fontInfoAttributesVersion3:
+        setattr(ufo.info, attr, getattr(ufo_UbuTestData.info, attr))
+        assert getattr(ufo.info, attr) == getattr(ufo_UbuTestData.info, attr)
