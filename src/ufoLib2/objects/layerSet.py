@@ -13,9 +13,7 @@ def _convert_layers(value):
     layers = OrderedDict()
     for layer in value:
         if not isinstance(layer, Layer):
-            raise TypeError(
-                "expected 'Layer', found '%s'" % type(layer).__name__
-            )
+            raise TypeError("expected 'Layer', found '%s'" % type(layer).__name__)
         if layer.name in layers:
             raise KeyError("duplicate layer name: '%s'" % layer.name)
         layers[layer.name] = layer
@@ -45,8 +43,7 @@ class LayerSet(object):
                     break
             else:
                 raise ValueError(
-                    "defaultLayer %r is not among the specified layers"
-                    % default
+                    "defaultLayer %r is not among the specified layers" % default
                 )
         elif len(self._layers) == 1:
             # there's only one, we assume it's the default

@@ -72,10 +72,7 @@ class Contour(MutableSequence):
             pointPen.beginPath()
             for p in self.points:
                 pointPen.addPoint(
-                    (p.x, p.y),
-                    segmentType=p.type,
-                    smooth=p.smooth,
-                    name=p.name,
+                    (p.x, p.y), segmentType=p.type, smooth=p.smooth, name=p.name
                 )
             warnings.warn(
                 "The pointPen needs an identifier kwarg. "

@@ -87,9 +87,7 @@ def _convert_optional_list(lst, klass):
 
 
 _convert_guidelines = partial(_convert_optional_list, klass=Guideline)
-_convert_gasp_range_records = partial(
-    _convert_optional_list, klass=GaspRangeRecord
-)
+_convert_gasp_range_records = partial(_convert_optional_list, klass=GaspRangeRecord)
 _convert_name_records = partial(_convert_optional_list, klass=NameRecord)
 
 
@@ -99,19 +97,13 @@ class Info(object):
     styleName = attr.ib(default=None, type=OptText)
     styleMapFamilyName = attr.ib(default=None, type=OptText)
     styleMapStyleName = attr.ib(default=None, type=OptText)
-    versionMajor = attr.ib(
-        default=None, validator=_optional_positive, type=OptInteger
-    )
-    versionMinor = attr.ib(
-        default=None, validator=_optional_positive, type=OptInteger
-    )
+    versionMajor = attr.ib(default=None, validator=_optional_positive, type=OptInteger)
+    versionMinor = attr.ib(default=None, validator=_optional_positive, type=OptInteger)
 
     copyright = attr.ib(default=None, type=OptText)
     trademark = attr.ib(default=None, type=OptText)
 
-    unitsPerEm = attr.ib(
-        default=None, validator=_optional_positive, type=OptNumber
-    )
+    unitsPerEm = attr.ib(default=None, validator=_optional_positive, type=OptNumber)
     descender = attr.ib(default=None, type=OptNumber)
     xHeight = attr.ib(default=None, type=OptNumber)
     capHeight = attr.ib(default=None, type=OptNumber)
@@ -121,9 +113,7 @@ class Info(object):
     note = attr.ib(default=None, type=OptText)
 
     _guidelines = attr.ib(
-        default=None,
-        converter=_convert_guidelines,
-        type=Optional[List[Guideline]],
+        default=None, converter=_convert_guidelines, type=Optional[List[Guideline]]
     )
 
     @property
@@ -178,9 +168,7 @@ class Info(object):
     openTypeNameWWSSubfamilyName = attr.ib(default=None, type=OptText)
 
     _openTypeNameRecords = attr.ib(
-        default=None,
-        converter=_convert_name_records,
-        type=Optional[List[NameRecord]],
+        default=None, converter=_convert_name_records, type=Optional[List[NameRecord]]
     )
 
     @property
@@ -203,18 +191,14 @@ class Info(object):
 
     @openTypeOS2WidthClass.setter
     def openTypeOS2WidthClass(self, value):
-        self._openTypeOS2WidthClass = (
-            value if value is None else WidthClass(value)
-        )
+        self._openTypeOS2WidthClass = value if value is None else WidthClass(value)
 
     openTypeOS2WeightClass = attr.ib(default=None, type=OptInteger)
 
     @openTypeOS2WeightClass.validator
     def _validate_weight_class(self, attribute, value):
         if value is not None and (value < 1 or value > 1000):
-            raise ValueError(
-                "'openTypeOS2WeightClass' must be between 1 and 1000"
-            )
+            raise ValueError("'openTypeOS2WeightClass' must be between 1 and 1000")
 
     openTypeOS2Selection = attr.ib(default=None, type=OptIntList)
     openTypeOS2VendorID = attr.ib(default=None, type=OptText)

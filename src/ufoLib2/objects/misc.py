@@ -20,9 +20,7 @@ class DataStore(MutableMapping):
     _data = attr.ib(default=attr.Factory(dict), type=dict)
 
     _reader = attr.ib(default=None, init=False, repr=False)
-    _scheduledForDeletion = attr.ib(
-        default=attr.Factory(set), init=False, repr=False
-    )
+    _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False)
 
     @classmethod
     def read(cls, reader, lazy=True):

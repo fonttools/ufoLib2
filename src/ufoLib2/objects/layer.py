@@ -19,9 +19,7 @@ def _convert_glyphs(value):
 @attr.s(slots=True, repr=False)
 class Layer(object):
     _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
-    _glyphs = attr.ib(
-        default=attr.Factory(dict), converter=_convert_glyphs, type=dict
-    )
+    _glyphs = attr.ib(default=attr.Factory(dict), converter=_convert_glyphs, type=dict)
     color = attr.ib(default=None, type=Optional[str])
     lib = attr.ib(default=attr.Factory(dict), type=dict)
 
@@ -74,9 +72,7 @@ class Layer(object):
             self.__class__.__module__,
             self.__class__.__name__,
             self._name,
-            "empty"
-            if n == 0
-            else "{} glyph{}".format(n, "s" if n > 1 else ""),
+            "empty" if n == 0 else "{} glyph{}".format(n, "s" if n > 1 else ""),
             hex(id(self)),
         )
 

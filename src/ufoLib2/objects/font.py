@@ -122,10 +122,7 @@ class Font(object):
         names = list(filter(None, [self.info.familyName, self.info.styleName]))
         fontName = " '{}'".format(" ".join(names)) if names else ""
         return "<{}.{}{} at {}>".format(
-            self.__class__.__module__,
-            self.__class__.__name__,
-            fontName,
-            hex(id(self)),
+            self.__class__.__module__, self.__class__.__name__, fontName, hex(id(self))
         )
 
     @property
@@ -204,17 +201,10 @@ class Font(object):
         self.images.write(writer, saveAs=saveAs)
 
     def save(
-        self,
-        path=None,
-        formatVersion=3,
-        structure=None,
-        overwrite=False,
-        validate=True,
+        self, path=None, formatVersion=3, structure=None, overwrite=False, validate=True
     ):
         if formatVersion != 3:
-            raise NotImplementedError(
-                "unsupported format version: %s" % formatVersion
-            )
+            raise NotImplementedError("unsupported format version: %s" % formatVersion)
         # validate 'structure' argument
         if structure is not None:
             structure = UFOFileStructure(structure)
@@ -240,18 +230,14 @@ class Font(object):
                 else:
                     import errno
 
-                    raise OSError(
-                        errno.EEXIST, "path %r already exists" % path
-                    )
+                    raise OSError(errno.EEXIST, "path %r already exists" % path)
         elif self.path is None:
             raise TypeError("'path' is required when saving a new Font")
         else:
             path = self.path
 
         try:
-            with UFOWriter(
-                path, structure=structure, validate=validate
-            ) as writer:
+            with UFOWriter(path, structure=structure, validate=validate) as writer:
                 self.write(writer, saveAs=saveAs)
             writer.setModificationTime()
         except Exception:
