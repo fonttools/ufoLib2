@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 DATA_DIRNAME = "data"
 DEFAULT_GLYPHS_DIRNAME = "glyphs"
 IMAGES_DIRNAME = "images"
