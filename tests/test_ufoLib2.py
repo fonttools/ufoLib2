@@ -1,11 +1,10 @@
 import ufoLib2
-from fontTools.misc.py23 import basestring
 from ufoLib2.objects.misc import _NOT_LOADED
 
 
 def test_import_version():
     assert hasattr(ufoLib2, "__version__")
-    assert isinstance(ufoLib2.__version__, basestring)
+    assert isinstance(ufoLib2.__version__, str)
 
 
 def test_LayerSet_load_layers_on_iteration(tmpdir):

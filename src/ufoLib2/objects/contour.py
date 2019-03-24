@@ -1,14 +1,9 @@
-import attr
+from collections.abc import MutableSequence
 from typing import Optional
-
-try:
-    from collections.abc import MutableSequence
-except ImportError:
-    from collections import MutableSequence
-
 import warnings
-from fontTools.pens.pointPen import PointToSegmentPen
 
+import attr
+from fontTools.pens.pointPen import PointToSegmentPen
 from ufoLib2.objects.point import Point
 
 

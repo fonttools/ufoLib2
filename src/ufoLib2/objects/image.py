@@ -1,11 +1,7 @@
-import attr
+from collections.abc import Mapping
 from typing import Optional
+import attr
 from fontTools.misc.transform import Identity, Transform
-
-try:
-    from collections.abc import Mapping  # python >= 3.3
-except ImportError:
-    from collections import Mapping
 
 
 @attr.s(slots=True)
@@ -26,9 +22,6 @@ class Image(Mapping):
     def __bool__(self):
         # Glyph.image evaluates to False if no fileName is set
         return self.fileName is not None
-
-    # alias for python 2
-    __nonzero__ = __bool__
 
     _transformation_keys_ = (
         "xScale",
