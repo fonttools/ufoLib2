@@ -8,10 +8,11 @@ env:
 
 matrix:
   include:
-  - env: TOXENV=py27-cov
-    python: 2.7
   - env: TOXENV=py36-cov,fix-lint
     python: 3.6
+  - env: TOXENV=py37-cov
+    dist: xenial
+    python: 3.7
 
 install: pip install tox
 
