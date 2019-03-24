@@ -21,12 +21,7 @@ setup(
     packages=find_packages("src"),
     include_package_data=True,
     python_requires=">=3.6",
-    install_requires=[
-        "fonttools[ufo,lxml] >= 3.34.0",
-        "attrs >= 18.2.0",
-        "typing ; python_version < '3.5'",
-        "enum34 ; python_version < '3.4'",
-    ],
+    install_requires=["fonttools[ufo,lxml] >= 3.34.0", "attrs >= 18.2.0"],
     setup_requires=["setuptools_scm"],
     classifiers=[
         "Development Status :: 4 - Beta",
