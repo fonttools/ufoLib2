@@ -5,7 +5,6 @@ from ufoLib2.types import (
     Optional,
     List,
     Text,
-    Integer,
     OptText,
     OptInteger,
     OptFloat,
@@ -43,7 +42,7 @@ class GaspBehavior(IntEnum):
 
 @attr.s(slots=True)
 class GaspRangeRecord(AttrDictMixin):
-    rangeMaxPPEM = attr.ib(validator=_positive, type=Integer)
+    rangeMaxPPEM = attr.ib(validator=_positive, type=int)
     rangeGaspBehavior = attr.ib(
         converter=lambda seq: [
             v if isinstance(v, GaspBehavior) else GaspBehavior(v) for v in seq
@@ -54,10 +53,10 @@ class GaspRangeRecord(AttrDictMixin):
 
 @attr.s(slots=True)
 class NameRecord(AttrDictMixin):
-    nameID = attr.ib(validator=_positive, type=Integer)
-    platformID = attr.ib(validator=_positive, type=Integer)
-    encodingID = attr.ib(validator=_positive, type=Integer)
-    languageID = attr.ib(validator=_positive, type=Integer)
+    nameID = attr.ib(validator=_positive, type=int)
+    platformID = attr.ib(validator=_positive, type=int)
+    encodingID = attr.ib(validator=_positive, type=int)
+    languageID = attr.ib(validator=_positive, type=int)
     string = attr.ib(type=Text)
 
 
