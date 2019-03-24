@@ -1,11 +1,7 @@
-import attr
+from collections.abc import Mapping
 from typing import Optional
+import attr
 from fontTools.misc.transform import Identity, Transform
-
-try:
-    from collections.abc import Mapping  # python >= 3.3
-except ImportError:
-    from collections import Mapping
 
 
 @attr.s(slots=True)

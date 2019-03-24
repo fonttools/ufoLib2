@@ -1,9 +1,5 @@
+from collections.abc import Mapping, MutableMapping
 import attr
-
-try:
-    from collections.abc import Mapping, MutableMapping
-except ImportError:
-    from collections import Mapping, MutableMapping
 
 
 # sentinel value to signal a "lazy" object hasn't been loaded yet
