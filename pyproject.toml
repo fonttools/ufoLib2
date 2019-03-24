@@ -1,2 +1,5 @@
 [build-system]
 requires = ["setuptools", "wheel", "setuptools_scm>=1.15"]
+
+[tool.black]
+target-version = ["py36"]
