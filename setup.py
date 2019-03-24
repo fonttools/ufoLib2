@@ -20,7 +20,7 @@ setup(
     package_dir={"": "src"},
     packages=find_packages("src"),
     include_package_data=True,
-    python_requires=">=2.7",
+    python_requires=">=3.6",
     install_requires=[
         "fonttools[ufo,lxml] >= 3.34.0",
         "attrs >= 18.2.0",
