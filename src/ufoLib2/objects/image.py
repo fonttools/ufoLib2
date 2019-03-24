@@ -23,9 +23,6 @@ class Image(Mapping):
         # Glyph.image evaluates to False if no fileName is set
         return self.fileName is not None
 
-    # alias for python 2
-    __nonzero__ = __bool__
-
     _transformation_keys_ = (
         "xScale",
         "xyScale",

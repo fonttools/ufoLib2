@@ -9,7 +9,5 @@ class Features(object):
     def __bool__(self):
         return bool(self.text)
 
-    __nonzero__ = __bool__
-
     def __str__(self):
         return self.text
