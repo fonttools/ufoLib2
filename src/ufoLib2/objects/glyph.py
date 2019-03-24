@@ -1,12 +1,12 @@
 import attr
-from typing import Optional, Union, List, Any, Dict
+from typing import Union, List, Any, Dict
 from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
 from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
 from fontTools.misc.transform import Transform
-from fontTools.misc.py23 import tounicode, unicode
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
+from ufoLib2.types import OptText
 
 
 @attr.s(slots=True, repr=False)
@@ -18,11 +18,7 @@ class Glyph(object):
 
     _image = attr.ib(default=attr.Factory(Image), type=Image)
     lib = attr.ib(default=attr.Factory(dict), type=Dict[str, Any])
-    note = attr.ib(
-        default=None,
-        converter=lambda n: tounicode(n) if n is not None else None,
-        type=Optional[unicode],
-    )
+    note = attr.ib(default=None, type=OptText)
     _anchors = attr.ib(default=attr.Factory(list), type=list)
     components = attr.ib(default=attr.Factory(list), type=list)
     contours = attr.ib(default=attr.Factory(list), type=list)

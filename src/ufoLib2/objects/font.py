@@ -9,11 +9,10 @@ from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.features import Features
-from fontTools.misc.py23 import basestring, PY3
 from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
 
 
-@attr.s(slots=True, kw_only=PY3, repr=False)
+@attr.s(slots=True, kw_only=True, repr=False)
 class Font(object):
     layers = attr.ib(
         default=attr.Factory(LayerSet),
@@ -214,7 +213,7 @@ class Font(object):
 
         if hasattr(path, "__fspath__"):
             path = path.__fspath__()
-        if isinstance(path, basestring):
+        if isinstance(path, str):
             path = os.path.normpath(path)
         # else we assume it's an fs.BaseFS and we pass it on to UFOWriter
 
@@ -222,7 +221,7 @@ class Font(object):
 
         saveAs = path is not None
         if saveAs:
-            if isinstance(path, basestring) and os.path.exists(path):
+            if isinstance(path, str) and os.path.exists(path):
                 if overwrite:
                     overwritePath = path
                     tmp = fs.tempfs.TempFS()
