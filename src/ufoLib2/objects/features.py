@@ -1,10 +1,9 @@
-from typing import Text
 import attr
 
 
 @attr.s(slots=True)
 class Features(object):
-    text = attr.ib(default="", type=Text)
+    text = attr.ib(default="", type=str)
 
     def __bool__(self):
         return bool(self.text)
