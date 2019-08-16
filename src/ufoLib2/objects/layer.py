@@ -1,14 +1,14 @@
 import attr
-from typing import Optional
+from typing import Optional, Dict
 from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-def _convert_glyphs(value):
+def _convert_glyphs(value) -> Dict[str, Glyph]:
     if isinstance(value, dict):
         return value
-    result = {}
+    result: Dict[str, Glyph] = {}
     for glyph in value:
         if glyph.name in result:
             raise KeyError("glyph %r already exists" % glyph.name)

@@ -12,6 +12,22 @@ from ufoLib2.objects.features import Features
 from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
 
 
+def _convert_Info(value) -> Info:
+    return value if isinstance(value, Info) else Info(**value)
+
+
+def _convert_DataSet(value) -> DataSet:
+    return value if isinstance(value, DataSet) else DataSet(**value)
+
+
+def _convert_ImageSet(value) -> ImageSet:
+    return value if isinstance(value, ImageSet) else ImageSet(**value)
+
+
+def _convert_Features(value) -> Features:
+    return value if isinstance(value, Features) else Features(value)
+
+
 @attr.s(slots=True, kw_only=True, repr=False)
 class Font(object):
     layers = attr.ib(
@@ -19,28 +35,18 @@ class Font(object):
         validator=attr.validators.instance_of(LayerSet),
         type=LayerSet,
     )
-    info = attr.ib(
-        default=attr.Factory(Info),
-        converter=lambda v: v if isinstance(v, Info) else Info(**v),
-        type=Info,
-    )
+    info = attr.ib(default=attr.Factory(Info), converter=_convert_Info, type=Info)
     features = attr.ib(
-        default=attr.Factory(Features),
-        converter=lambda v: v if isinstance(v, Features) else Features(v),
-        type=Features,
+        default=attr.Factory(Features), converter=_convert_Features, type=Features
     )
     groups = attr.ib(default=attr.Factory(dict), type=dict)
     kerning = attr.ib(default=attr.Factory(dict), type=dict)
     lib = attr.ib(default=attr.Factory(dict), type=dict)
     data = attr.ib(
-        default=attr.Factory(DataSet),
-        converter=lambda v: v if isinstance(v, DataSet) else DataSet(**v),
-        type=DataSet,
+        default=attr.Factory(DataSet), converter=_convert_DataSet, type=DataSet
     )
     images = attr.ib(
-        default=attr.Factory(ImageSet),
-        converter=lambda v: v if isinstance(v, ImageSet) else ImageSet(**v),
-        type=ImageSet,
+        default=attr.Factory(ImageSet), converter=_convert_ImageSet, type=ImageSet
     )
 
     _path = attr.ib(default=None, init=False)
