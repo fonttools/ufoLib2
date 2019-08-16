@@ -1,6 +1,5 @@
 import attr
 from enum import IntEnum
-from functools import partial
 from typing import Optional, List, Union
 from ufoLib2.objects.misc import AttrDictMixin
 from ufoLib2.objects.guideline import Guideline

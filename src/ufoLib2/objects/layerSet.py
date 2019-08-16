@@ -1,5 +1,5 @@
 import attr
-from typing import Iterable, Dict
+from typing import Iterable
 from collections import OrderedDict
 from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.objects.layer import Layer
