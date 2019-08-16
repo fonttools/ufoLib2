@@ -1,10 +1,15 @@
-sudo: false
 language: python
 
 env:
   global:
   - TWINE_USERNAME="anthrotype"
   - secure: mMkmziH6YxmH6DT1kIWU4OqNF8fAI4LXKdJz4BZQXO2S7gfYKUIh+/tl8uRBbtbWgZidOR8LCSr+5rL4ojFaGrrgGthYghiPCA5O7QgCEXVtUYtt9MbFH4T48pYYnTT4sES40H2E58WzXo5sA7qTDtJYmo2wOc6vSDe+m7WMG7N+K0kd8Vs+KEPGaJcyqwoyMf/R0mEYEI33qHdhPO4Dd3xttWGn1B1t8esNFON26VPkNmemh6wGoivFA74Oq1SbFZdblAzXSXQ+q3BkGGkpMQWgv1TUxT7V6Ku4HFKV2WvcAvUMl8T3U2plb/xYkDw0/V9uCVtgUnHuh+GTXr9U3AHME9OubQO3fURIIjqa41K8QQ/SAOE4xrensbERvR/Nw5yx/t2LD9/LnoJfXxOoN8qLJEwx0ZUFmAzefsjPjd6QuNMVJmU2xWYriSBBiqTj6YKWWy0EW9Gnr8BcI2FxQyUEtd8b1UhcbTOtxX6pCj9JderYjjBOkaIyA+oMRbmWT5PLaAThfaplgrkFN1yUMAhXz7JnIZQlINlql6H4diLWUxiRZhtk5xweeRH0NvaETOfc/LtEdSTy8cV2R1v9cT/7VOBilQlyLN1FBi9W3u90ev77OEqWh9hOUU1HwnC0ar3Vd8Kw62HKt3xPTaMS2JLvJfJIEKJw41qvVPgA2xk=
+
+# Prevent double-CI-ing on PRs from branches on the main repository.
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+.*$/
 
 matrix:
   include:
