@@ -75,15 +75,15 @@ def _convert_optional_list(lst, klass):
     return result
 
 
-def _convert_guidelines(values) -> List[Guideline]:
+def _convert_guidelines(values) -> Optional[List[Guideline]]:
     return _convert_optional_list(values, Guideline)
 
 
-def _convert_gasp_range_records(values) -> List[GaspRangeRecord]:
+def _convert_gasp_range_records(values) -> Optional[List[GaspRangeRecord]]:
     return _convert_optional_list(values, GaspRangeRecord)
 
 
-def _convert_name_records(values) -> List[NameRecord]:
+def _convert_name_records(values) -> Optional[List[NameRecord]]:
     return _convert_optional_list(values, NameRecord)
 
 
