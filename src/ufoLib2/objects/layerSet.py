@@ -1,16 +1,17 @@
 import attr
+from typing import Iterable
 from collections import OrderedDict
 from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.objects.layer import Layer
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-def _convert_layers(value):
+def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
     # takes an iterable of Layer objects and returns an OrderedDict keyed
     # by layer name
     if isinstance(value, OrderedDict):
         return value
-    layers = OrderedDict()
+    layers: OrderedDict[str, Layer] = OrderedDict()
     for layer in value:
         if not isinstance(layer, Layer):
             raise TypeError("expected 'Layer', found '%s'" % type(layer).__name__)
@@ -22,7 +23,9 @@ def _convert_layers(value):
 
 @attr.s(slots=True, repr=False)
 class LayerSet(object):
-    _layers = attr.ib(default=(), converter=_convert_layers, type=OrderedDict)
+    _layers = attr.ib(
+        default=attr.Factory(OrderedDict), converter=_convert_layers, type=OrderedDict
+    )
     defaultLayer = attr.ib(default=None, type=Layer)
 
     _reader = attr.ib(default=None, init=False)

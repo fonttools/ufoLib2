@@ -5,13 +5,15 @@ from fontTools.pens.pointPen import PointToSegmentPen
 import warnings
 
 
+def _convert_transform(t) -> Transform:
+    return t if isinstance(t, Transform) else Transform(*t)
+
+
 @attr.s(slots=True)
 class Component(object):
     baseGlyph = attr.ib(type=str)
     transformation = attr.ib(
-        default=Identity,
-        converter=lambda t: t if isinstance(t, Transform) else Transform(*t),
-        type=Transform,
+        default=Identity, converter=_convert_transform, type=Transform
     )
     identifier = attr.ib(default=None, type=Optional[str])
 

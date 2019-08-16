@@ -1,6 +1,5 @@
 import attr
 from enum import IntEnum
-from functools import partial
 from typing import Optional, List, Union
 from ufoLib2.objects.misc import AttrDictMixin
 from ufoLib2.objects.guideline import Guideline
@@ -29,13 +28,15 @@ class GaspBehavior(IntEnum):
     SYMMETRIC_GRIDFIT = 3
 
 
+def _convert_GaspBehavior(seq) -> List[GaspBehavior]:
+    return [v if isinstance(v, GaspBehavior) else GaspBehavior(v) for v in seq]
+
+
 @attr.s(slots=True)
 class GaspRangeRecord(AttrDictMixin):
     rangeMaxPPEM = attr.ib(validator=_positive, type=int)
     rangeGaspBehavior = attr.ib(
-        converter=lambda seq: [
-            v if isinstance(v, GaspBehavior) else GaspBehavior(v) for v in seq
-        ],
+        converter=_convert_GaspBehavior,
         type=List[GaspBehavior],  # use Set instead of List?
     )
 
@@ -74,9 +75,20 @@ def _convert_optional_list(lst, klass):
     return result
 
 
-_convert_guidelines = partial(_convert_optional_list, klass=Guideline)
-_convert_gasp_range_records = partial(_convert_optional_list, klass=GaspRangeRecord)
-_convert_name_records = partial(_convert_optional_list, klass=NameRecord)
+def _convert_guidelines(values) -> Optional[List[Guideline]]:
+    return _convert_optional_list(values, Guideline)
+
+
+def _convert_gasp_range_records(values) -> Optional[List[GaspRangeRecord]]:
+    return _convert_optional_list(values, GaspRangeRecord)
+
+
+def _convert_name_records(values) -> Optional[List[NameRecord]]:
+    return _convert_optional_list(values, NameRecord)
+
+
+def _convert_WidthClass(value) -> Optional[WidthClass]:
+    return value if value is None else WidthClass(value)
 
 
 @attr.s(slots=True)
@@ -174,9 +186,7 @@ class Info(object):
         self._openTypeNameRecords = _convert_name_records(value)
 
     _openTypeOS2WidthClass = attr.ib(
-        default=None,
-        converter=lambda v: v if v is None else WidthClass(v),
-        type=Optional[WidthClass],
+        default=None, converter=_convert_WidthClass, type=Optional[WidthClass]
     )
 
     @property

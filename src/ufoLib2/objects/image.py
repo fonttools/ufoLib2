@@ -4,13 +4,15 @@ import attr
 from fontTools.misc.transform import Identity, Transform
 
 
+def _convert_transform(t) -> Transform:
+    return t if isinstance(t, Transform) else Transform(*t)
+
+
 @attr.s(slots=True)
 class Image(Mapping):
     fileName = attr.ib(default=None, type=Optional[str])
     transformation = attr.ib(
-        default=Identity,
-        converter=lambda t: t if isinstance(t, Transform) else Transform(*t),
-        type=Transform,
+        default=Identity, converter=_convert_transform, type=Transform
     )
     color = attr.ib(default=None, type=Optional[str])
 
