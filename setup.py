@@ -21,8 +21,9 @@ setup(
     packages=find_packages("src"),
     include_package_data=True,
     python_requires=">=3.6",
-    install_requires=["fonttools[ufo,lxml] >= 3.34.0", "attrs >= 18.2.0"],
+    install_requires=["fonttools[ufo] >= 3.34.0", "attrs >= 18.2.0"],
     setup_requires=["setuptools_scm"],
+    extras_require={"lxml": ["lxml"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Operating System :: OS Independent",
