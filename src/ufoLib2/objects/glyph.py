@@ -1,4 +1,5 @@
 import attr
+from copy import deepcopy
 from typing import Union, List, Any, Dict, Optional
 from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.guideline import Guideline
@@ -144,6 +145,36 @@ class Glyph(object):
         if not isinstance(guideline, Guideline):
             guideline = Guideline(**guideline)
         self._guidelines.append(guideline)
+
+    def copy(self, name=None):
+        """Return a new Glyph (deep) copy, optionally override the new glyph name.
+        """
+        other = deepcopy(self)
+        if name is not None:
+            other._name = name
+        return other
+
+    def copyDataFromGlyph(self, glyph):
+        """Deep-copy everything from the other glyph, except for the name.
+        Existing glyph data is overwritten.
+
+        This method was added for compatibility with the defcon API, and
+        it may be removed in the future.
+        """
+        self.width = glyph.width
+        self.height = glyph.height
+        self.unicodes = list(glyph.unicodes)
+        self.image = deepcopy(glyph.image)
+        self.note = glyph.note
+        self.lib = deepcopy(glyph.lib)
+        self.anchors = deepcopy(glyph.anchors)
+        self.guidelines = deepcopy(glyph.guidelines)
+        # NOTE: defcon's copyDataFromGlyph appends instead of overwrites here,
+        # but we do the right thing, for consistency with the rest.
+        self.clearContours()
+        self.clearComponents()
+        pointPen = self.getPointPen()
+        glyph.drawPoints(pointPen)
 
     # -----------
     # Pen methods

@@ -1,15 +1,16 @@
-import py
+import pathlib
+import shutil
 import pytest
 import ufoLib2
 
 
 @pytest.fixture
 def datadir(request):
-    return py.path.local(request.fspath.dirname).join("data")
+    return pathlib.Path(__file__).parent / "data"
 
 
 @pytest.fixture
-def ufo_UbuTestData(tmpdir, datadir):
-    ufo_path = tmpdir.join("UbuTestData.ufo")
-    datadir.join("UbuTestData.ufo").copy(ufo_path)
-    return ufoLib2.Font.open(str(ufo_path))
+def ufo_UbuTestData(tmp_path, datadir):
+    ufo_path = tmp_path / "UbuTestData.ufo"
+    shutil.copytree(datadir / "UbuTestData.ufo", ufo_path)
+    return ufoLib2.Font.open(ufo_path)

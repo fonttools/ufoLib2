@@ -7,19 +7,19 @@ def test_import_version():
     assert isinstance(ufoLib2.__version__, str)
 
 
-def test_LayerSet_load_layers_on_iteration(tmpdir):
+def test_LayerSet_load_layers_on_iteration(tmp_path):
     ufo = ufoLib2.Font()
     ufo.layers.newLayer("test")
-    ufo_save_path = str(tmpdir.join("test.ufo"))
+    ufo_save_path = tmp_path / "test.ufo"
     ufo.save(ufo_save_path)
     ufo = ufoLib2.Font.open(ufo_save_path)
     for layer in ufo.layers:
         assert layer is not _NOT_LOADED
 
 
-def test_lazy_data_loading_saveas(ufo_UbuTestData, tmpdir):
+def test_lazy_data_loading_saveas(ufo_UbuTestData, tmp_path):
     ufo = ufo_UbuTestData
-    ufo_path = str(tmpdir.join("UbuTestData2.ufo"))
+    ufo_path = tmp_path / "UbuTestData2.ufo"
     ufo.save(ufo_path)
     assert all(v is not _NOT_LOADED for v in ufo.data._data.values())
 
