@@ -47,3 +47,29 @@ def test_copyDataFromGlyph(ufo_UbuTestData):
     assert b.guidelines == a.guidelines
     assert b.contours == a.contours
     assert b.components == a.components
+
+    c = a.copy()
+    assert c.name == a.name
+    assert c.width == a.width
+    assert c.height == a.height
+    assert c.unicodes == a.unicodes
+    assert c.image == a.image
+    assert c.note == a.note
+    assert c.lib == a.lib
+    assert c.anchors == a.anchors
+    assert c.guidelines == a.guidelines
+    assert c.contours == a.contours
+    assert c.components == a.components
+
+    d = a.copy(name="d")
+    assert d.name == "d"
+    assert d.width == a.width
+    assert d.height == a.height
+    assert d.unicodes == a.unicodes
+    assert d.image == a.image
+    assert d.note == a.note
+    assert d.lib == a.lib
+    assert d.anchors == a.anchors
+    assert d.guidelines == a.guidelines
+    assert d.contours == a.contours
+    assert d.components == a.components
