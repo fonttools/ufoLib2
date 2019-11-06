@@ -34,42 +34,39 @@ def test_copyDataFromGlyph(ufo_UbuTestData):
     assert b.contours != a.contours
     assert b.components != a.components
 
-    b.copyDataFromGlyph(a)
+    def _assert_equal_but_distinct_objects(glyph1, glyph2):
+        assert glyph1.width == glyph2.width
+        assert glyph1.height == glyph2.height
+        assert glyph1.unicodes == glyph2.unicodes
+        assert glyph1.unicodes is not glyph2.unicodes
+        assert glyph1.image == glyph2.image
+        assert glyph1.image is not glyph2.image
+        assert glyph1.note == glyph2.note
+        assert glyph1.lib == glyph2.lib
+        assert glyph1.lib is not glyph2.lib
+        assert glyph1.lib["bar"] == glyph2.lib["bar"]
+        assert glyph1.lib["bar"] is not glyph2.lib["bar"]
+        assert glyph1.anchors == glyph2.anchors
+        assert glyph1.anchors is not glyph2.anchors
+        assert glyph1.anchors[0] is not glyph2.anchors[0]
+        assert glyph1.guidelines == glyph2.guidelines
+        assert glyph1.guidelines is not glyph2.guidelines
+        assert glyph1.guidelines[0] is not glyph2.guidelines[0]
+        assert glyph1.contours == glyph2.contours
+        assert glyph1.contours is not glyph2.contours
+        assert glyph1.contours[0] is not glyph2.contours[0]
+        assert glyph1.components == glyph2.components
+        assert glyph1.components is not glyph2.components
+        assert glyph1.components[0] is not glyph2.components[0]
 
+    b.copyDataFromGlyph(a)
     assert b.name != a.name
-    assert b.width == a.width
-    assert b.height == a.height
-    assert b.unicodes == a.unicodes
-    assert b.image == a.image
-    assert b.note == a.note
-    assert b.lib == a.lib
-    assert b.anchors == a.anchors
-    assert b.guidelines == a.guidelines
-    assert b.contours == a.contours
-    assert b.components == a.components
+    _assert_equal_but_distinct_objects(b, a)
 
     c = a.copy()
     assert c.name == a.name
-    assert c.width == a.width
-    assert c.height == a.height
-    assert c.unicodes == a.unicodes
-    assert c.image == a.image
-    assert c.note == a.note
-    assert c.lib == a.lib
-    assert c.anchors == a.anchors
-    assert c.guidelines == a.guidelines
-    assert c.contours == a.contours
-    assert c.components == a.components
+    _assert_equal_but_distinct_objects(c, a)
 
     d = a.copy(name="d")
     assert d.name == "d"
-    assert d.width == a.width
-    assert d.height == a.height
-    assert d.unicodes == a.unicodes
-    assert d.image == a.image
-    assert d.note == a.note
-    assert d.lib == a.lib
-    assert d.anchors == a.anchors
-    assert d.guidelines == a.guidelines
-    assert d.contours == a.contours
-    assert d.components == a.components
+    _assert_equal_but_distinct_objects(d, a)
