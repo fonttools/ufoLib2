@@ -146,6 +146,14 @@ class Glyph(object):
             guideline = Guideline(**guideline)
         self._guidelines.append(guideline)
 
+    def copy(self, name=None):
+        """Return a new Glyph (deep) copy, optionally override the new glyph name.
+        """
+        other = deepcopy(self)
+        if name is not None:
+            other._name = name
+        return other
+
     def copyDataFromGlyph(self, glyph):
         """Deep-copy everything from the other glyph, except for the name.
         Existing glyph data is overwritten.
