@@ -141,7 +141,6 @@ class Font(object):
     @glyphOrder.setter
     def glyphOrder(self, value):
         if value is None or len(value) == 0:
-            value = 0
             if "public.glyphOrder" in self.lib:
                 del self.lib["public.glyphOrder"]
         else:
