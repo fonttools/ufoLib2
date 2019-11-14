@@ -1,8 +1,8 @@
 from collections.abc import Mapping
 from typing import Optional
+
 import attr
 from fontTools.misc.transform import Identity, Transform
-
 
 from .misc import _convert_transform
 

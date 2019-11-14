@@ -1,16 +1,18 @@
-import attr
 import os
 import shutil
+from typing import Any, Mapping, Union
+
+import attr
 import fs.tempfs
+from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
+
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.dataSet import DataSet
+from ufoLib2.objects.features import Features
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
-from ufoLib2.objects.features import Features
-from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
-from typing import Union, Any, Mapping
 
 
 def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:

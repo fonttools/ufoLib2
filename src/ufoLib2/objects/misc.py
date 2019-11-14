@@ -1,8 +1,8 @@
 from collections.abc import Mapping, MutableMapping
 from typing import Sequence, Union
-from fontTools.misc.transform import Transform
-import attr
 
+import attr
+from fontTools.misc.transform import Transform
 
 # sentinel value to signal a "lazy" object hasn't been loaded yet
 _NOT_LOADED = object()

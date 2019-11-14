@@ -1,8 +1,10 @@
+from typing import Dict, Optional, Sequence, Union
+
 import attr
-from typing import Optional, Dict, Sequence, Union
+
+from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.misc import _NOT_LOADED
-from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
 def _convert_glyphs(

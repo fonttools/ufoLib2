@@ -1,5 +1,6 @@
-import attr
 from typing import Optional, Union
+
+import attr
 
 
 @attr.s(slots=True)

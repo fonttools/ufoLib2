@@ -1,9 +1,10 @@
-import attr
 from enum import IntEnum
-from typing import Optional, List, Union, Sequence, Any
-from ufoLib2.objects.misc import AttrDictMixin
-from ufoLib2.objects.guideline import Guideline
+from typing import Any, List, Optional, Sequence, Union
 
+import attr
+
+from ufoLib2.objects.guideline import Guideline
+from ufoLib2.objects.misc import AttrDictMixin
 
 __all__ = ["Info", "GaspRangeRecord", "NameRecord", "WidthClass"]
 

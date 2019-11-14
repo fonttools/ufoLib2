@@ -1,8 +1,9 @@
-import attr
+import warnings
 from typing import Optional
+
+import attr
 from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.pointPen import PointToSegmentPen
-import warnings
 
 from .misc import _convert_transform
 
