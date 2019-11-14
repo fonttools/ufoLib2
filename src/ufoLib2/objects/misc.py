@@ -1,4 +1,6 @@
 from collections.abc import Mapping, MutableMapping
+from typing import Sequence, Union
+from fontTools.misc.transform import Transform
 import attr
 
 
@@ -110,3 +112,9 @@ class AttrDictMixin(Mapping):
 
     def __len__(self):
         return sum(1 for _ in self)
+
+
+def _convert_transform(t: Union[Transform, Sequence[Union[int, float]]]) -> Transform:
+    """Return a passed-in Transform as is, otherwise convert a sequence of
+    numbers to a Transform if need be."""
+    return t if isinstance(t, Transform) else Transform(*t)

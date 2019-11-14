@@ -1,11 +1,10 @@
 from collections.abc import Mapping
-from typing import Optional
+from typing import Optional, Sequence, Union
 import attr
 from fontTools.misc.transform import Identity, Transform
 
 
-def _convert_transform(t) -> Transform:
-    return t if isinstance(t, Transform) else Transform(*t)
+from .misc import _convert_transform
 
 
 @attr.s(slots=True)

@@ -4,9 +4,7 @@ from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.pointPen import PointToSegmentPen
 import warnings
 
-
-def _convert_transform(t) -> Transform:
-    return t if isinstance(t, Transform) else Transform(*t)
+from .misc import _convert_transform
 
 
 @attr.s(slots=True)

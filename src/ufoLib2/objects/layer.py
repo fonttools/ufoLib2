@@ -1,11 +1,13 @@
 import attr
-from typing import Optional, Dict
+from typing import Optional, Dict, Sequence, Union
 from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.misc import _NOT_LOADED
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-def _convert_glyphs(value) -> Dict[str, Glyph]:
+def _convert_glyphs(
+    value: Union[Dict[str, Glyph], Sequence[Glyph]]
+) -> Dict[str, Glyph]:
     if isinstance(value, dict):
         return value
     result: Dict[str, Glyph] = {}

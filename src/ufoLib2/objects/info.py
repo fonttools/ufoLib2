@@ -1,6 +1,6 @@
 import attr
 from enum import IntEnum
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Sequence, Any
 from ufoLib2.objects.misc import AttrDictMixin
 from ufoLib2.objects.guideline import Guideline
 
@@ -28,7 +28,9 @@ class GaspBehavior(IntEnum):
     SYMMETRIC_GRIDFIT = 3
 
 
-def _convert_GaspBehavior(seq) -> List[GaspBehavior]:
+def _convert_GaspBehavior(
+    seq: Sequence[Union[GaspBehavior, int]]
+) -> List[GaspBehavior]:
     return [v if isinstance(v, GaspBehavior) else GaspBehavior(v) for v in seq]
 
 
@@ -65,7 +67,7 @@ class WidthClass(IntEnum):
 
 def _convert_optional_list(lst, klass):
     if lst is None:
-        return
+        return None
     result = []
     for d in lst:
         if isinstance(d, klass):
@@ -75,20 +77,26 @@ def _convert_optional_list(lst, klass):
     return result
 
 
-def _convert_guidelines(values) -> Optional[List[Guideline]]:
+def _convert_guidelines(
+    values: Optional[Sequence[Union[Guideline, Any]]]
+) -> Optional[List[Guideline]]:
     return _convert_optional_list(values, Guideline)
 
 
-def _convert_gasp_range_records(values) -> Optional[List[GaspRangeRecord]]:
+def _convert_gasp_range_records(
+    values: Optional[Sequence[Union[GaspRangeRecord, Any]]]
+) -> Optional[List[GaspRangeRecord]]:
     return _convert_optional_list(values, GaspRangeRecord)
 
 
-def _convert_name_records(values) -> Optional[List[NameRecord]]:
+def _convert_name_records(
+    values: Optional[Sequence[Union[NameRecord, Any]]]
+) -> Optional[List[NameRecord]]:
     return _convert_optional_list(values, NameRecord)
 
 
-def _convert_WidthClass(value) -> Optional[WidthClass]:
-    return value if value is None else WidthClass(value)
+def _convert_WidthClass(value: Optional[int]) -> Optional[WidthClass]:
+    return None if value is None else WidthClass(value)
 
 
 @attr.s(slots=True)

@@ -10,21 +10,22 @@ from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.features import Features
 from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
+from typing import Union, Any, Mapping
 
 
-def _convert_Info(value) -> Info:
+def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
     return value if isinstance(value, Info) else Info(**value)
 
 
-def _convert_DataSet(value) -> DataSet:
+def _convert_DataSet(value: Union[DataSet, Mapping[str, Any]]) -> DataSet:
     return value if isinstance(value, DataSet) else DataSet(**value)
 
 
-def _convert_ImageSet(value) -> ImageSet:
+def _convert_ImageSet(value: Union[ImageSet, Mapping[str, Any]]) -> ImageSet:
     return value if isinstance(value, ImageSet) else ImageSet(**value)
 
 
-def _convert_Features(value) -> Features:
+def _convert_Features(value: Union[Features, str]) -> Features:
     return value if isinstance(value, Features) else Features(value)
 
 
