@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Optional, Sequence, Union
+from typing import Optional
 import attr
 from fontTools.misc.transform import Identity, Transform
 

@@ -95,8 +95,10 @@ class DataStore(MutableMapping):
 
 
 class AttrDictMixin(Mapping):
-    """ Read attribute values using mapping interface. For use with Anchors and
-    Guidelines classes, where client code expects them to behave as dict.
+    """Read attribute values using mapping interface.
+
+    For use with Anchors and Guidelines classes, where client code
+    expects them to behave as dict.
     """
 
     def __getitem__(self, key):
