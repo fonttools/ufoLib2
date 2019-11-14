@@ -11,7 +11,7 @@ source = ufoLib2
 source =
     src/ufoLib2
     .tox/*/lib/python*/site-packages/ufoLib2
-    .tox/pypy*/site-packages/ufoLib2
+    .tox/*/lib/site-packages/ufoLib2
 
 [report]
 # Regexes for lines to exclude from consideration
