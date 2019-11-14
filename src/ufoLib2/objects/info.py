@@ -92,7 +92,7 @@ def _convert_WidthClass(value) -> Optional[WidthClass]:
 
 
 @attr.s(slots=True)
-class Info(object):
+class Info:
     familyName = attr.ib(default=None, type=Optional[str])
     styleName = attr.ib(default=None, type=Optional[str])
     styleMapFamilyName = attr.ib(default=None, type=Optional[str])

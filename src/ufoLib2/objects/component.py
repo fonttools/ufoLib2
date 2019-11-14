@@ -10,7 +10,7 @@ def _convert_transform(t) -> Transform:
 
 
 @attr.s(slots=True)
-class Component(object):
+class Component:
     baseGlyph = attr.ib(type=str)
     transformation = attr.ib(
         default=Identity, converter=_convert_transform, type=Transform

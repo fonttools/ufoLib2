@@ -10,7 +10,7 @@ from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
 
 @attr.s(slots=True, repr=False)
-class Glyph(object):
+class Glyph:
     _name = attr.ib(type=str)
     width = attr.ib(default=0, type=Union[int, float])
     height = attr.ib(default=0, type=Union[int, float])

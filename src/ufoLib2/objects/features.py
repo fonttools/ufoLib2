@@ -2,7 +2,7 @@ import attr
 
 
 @attr.s(slots=True)
-class Features(object):
+class Features:
     text = attr.ib(default="", type=str)
 
     def __bool__(self):

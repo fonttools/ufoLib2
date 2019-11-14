@@ -17,7 +17,7 @@ def _convert_glyphs(value) -> Dict[str, Glyph]:
 
 
 @attr.s(slots=True, repr=False)
-class Layer(object):
+class Layer:
     _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
     _glyphs = attr.ib(default=attr.Factory(dict), converter=_convert_glyphs, type=dict)
     color = attr.ib(default=None, type=Optional[str])

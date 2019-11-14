@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 
 @attr.s(slots=True)
-class Point(object):
+class Point:
     x = attr.ib(type=Union[int, float])
     y = attr.ib(type=Union[int, float])
     type = attr.ib(type=Optional[str])

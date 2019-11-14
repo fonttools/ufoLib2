@@ -22,7 +22,7 @@ def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
 
 
 @attr.s(slots=True, repr=False)
-class LayerSet(object):
+class LayerSet:
     _layers = attr.ib(
         default=attr.Factory(OrderedDict), converter=_convert_layers, type=OrderedDict
     )

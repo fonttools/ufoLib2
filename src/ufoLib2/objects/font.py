@@ -29,7 +29,7 @@ def _convert_Features(value) -> Features:
 
 
 @attr.s(slots=True, kw_only=True, repr=False)
-class Font(object):
+class Font:
     layers = attr.ib(
         default=attr.Factory(LayerSet),
         validator=attr.validators.instance_of(LayerSet),
