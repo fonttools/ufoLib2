@@ -1,9 +1,11 @@
-import attr
-from typing import Iterable
 from collections import OrderedDict
-from ufoLib2.objects.misc import _NOT_LOADED
-from ufoLib2.objects.layer import Layer
+from typing import Iterable
+
+import attr
+
 from ufoLib2.constants import DEFAULT_LAYER_NAME
+from ufoLib2.objects.layer import Layer
+from ufoLib2.objects.misc import _NOT_LOADED
 
 
 def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
@@ -22,7 +24,7 @@ def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
 
 
 @attr.s(slots=True, repr=False)
-class LayerSet(object):
+class LayerSet:
     _layers = attr.ib(
         default=attr.Factory(OrderedDict), converter=_convert_layers, type=OrderedDict
     )

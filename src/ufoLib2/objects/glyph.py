@@ -1,16 +1,18 @@
-import attr
 from copy import deepcopy
-from typing import Union, List, Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
+
+import attr
+from fontTools.misc.transform import Transform
+from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
+
 from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
-from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
-from fontTools.misc.transform import Transform
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
 
 @attr.s(slots=True, repr=False)
-class Glyph(object):
+class Glyph:
     _name = attr.ib(type=str)
     width = attr.ib(default=0, type=Union[int, float])
     height = attr.ib(default=0, type=Union[int, float])

@@ -1,9 +1,10 @@
-import attr
 from typing import Optional, Union
+
+import attr
 
 
 @attr.s(slots=True)
-class Point(object):
+class Point:
     x = attr.ib(type=Union[int, float])
     y = attr.ib(type=Union[int, float])
     type = attr.ib(type=Optional[str])

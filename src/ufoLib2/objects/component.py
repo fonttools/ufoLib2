@@ -1,16 +1,15 @@
-import attr
+import warnings
 from typing import Optional
+
+import attr
 from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.pointPen import PointToSegmentPen
-import warnings
 
-
-def _convert_transform(t) -> Transform:
-    return t if isinstance(t, Transform) else Transform(*t)
+from .misc import _convert_transform
 
 
 @attr.s(slots=True)
-class Component(object):
+class Component:
     baseGlyph = attr.ib(type=str)
     transformation = attr.ib(
         default=Identity, converter=_convert_transform, type=Transform

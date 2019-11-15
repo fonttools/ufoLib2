@@ -1,35 +1,38 @@
-import attr
 import os
 import shutil
+from typing import Any, Mapping, Union
+
+import attr
 import fs.tempfs
+from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
+
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.dataSet import DataSet
+from ufoLib2.objects.features import Features
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
-from ufoLib2.objects.features import Features
-from fontTools.ufoLib import UFOReader, UFOWriter, UFOFileStructure
 
 
-def _convert_Info(value) -> Info:
+def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
     return value if isinstance(value, Info) else Info(**value)
 
 
-def _convert_DataSet(value) -> DataSet:
+def _convert_DataSet(value: Union[DataSet, Mapping[str, Any]]) -> DataSet:
     return value if isinstance(value, DataSet) else DataSet(**value)
 
 
-def _convert_ImageSet(value) -> ImageSet:
+def _convert_ImageSet(value: Union[ImageSet, Mapping[str, Any]]) -> ImageSet:
     return value if isinstance(value, ImageSet) else ImageSet(**value)
 
 
-def _convert_Features(value) -> Features:
+def _convert_Features(value: Union[Features, str]) -> Features:
     return value if isinstance(value, Features) else Features(value)
 
 
 @attr.s(slots=True, kw_only=True, repr=False)
-class Font(object):
+class Font:
     layers = attr.ib(
         default=attr.Factory(LayerSet),
         validator=attr.validators.instance_of(LayerSet),

@@ -1,6 +1,6 @@
+from fontTools.ufoLib import UFOReader, UFOWriter
+
 from ufoLib2.objects.misc import DataStore
-from fontTools.ufoLib import UFOReader
-from fontTools.ufoLib import UFOWriter
 
 
 class ImageSet(DataStore):

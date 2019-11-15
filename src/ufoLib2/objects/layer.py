@@ -1,11 +1,15 @@
+from typing import Dict, Optional, Sequence, Union
+
 import attr
-from typing import Optional, Dict
+
+from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.misc import _NOT_LOADED
-from ufoLib2.constants import DEFAULT_LAYER_NAME
 
 
-def _convert_glyphs(value) -> Dict[str, Glyph]:
+def _convert_glyphs(
+    value: Union[Dict[str, Glyph], Sequence[Glyph]]
+) -> Dict[str, Glyph]:
     if isinstance(value, dict):
         return value
     result: Dict[str, Glyph] = {}
@@ -17,7 +21,7 @@ def _convert_glyphs(value) -> Dict[str, Glyph]:
 
 
 @attr.s(slots=True, repr=False)
-class Layer(object):
+class Layer:
     _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
     _glyphs = attr.ib(default=attr.Factory(dict), converter=_convert_glyphs, type=dict)
     color = attr.ib(default=None, type=Optional[str])

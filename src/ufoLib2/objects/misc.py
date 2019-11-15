@@ -1,6 +1,8 @@
 from collections.abc import Mapping, MutableMapping
-import attr
+from typing import Sequence, Union
 
+import attr
+from fontTools.misc.transform import Transform
 
 # sentinel value to signal a "lazy" object hasn't been loaded yet
 _NOT_LOADED = object()
@@ -93,8 +95,10 @@ class DataStore(MutableMapping):
 
 
 class AttrDictMixin(Mapping):
-    """ Read attribute values using mapping interface. For use with Anchors and
-    Guidelines classes, where client code expects them to behave as dict.
+    """Read attribute values using mapping interface.
+
+    For use with Anchors and Guidelines classes, where client code
+    expects them to behave as dict.
     """
 
     def __getitem__(self, key):
@@ -110,3 +114,9 @@ class AttrDictMixin(Mapping):
 
     def __len__(self):
         return sum(1 for _ in self)
+
+
+def _convert_transform(t: Union[Transform, Sequence[Union[int, float]]]) -> Transform:
+    """Return a passed-in Transform as is, otherwise convert a sequence of
+    numbers to a Transform if need be."""
+    return t if isinstance(t, Transform) else Transform(*t)

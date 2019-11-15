@@ -1,4 +1,5 @@
 from fontTools.pens.pointPen import AbstractPointPen
+
 from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.point import Point

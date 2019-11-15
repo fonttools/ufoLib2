@@ -32,7 +32,7 @@ def test_lazy_data_loading_inplace_no_load(ufo_UbuTestData):
 
 def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData):
     ufo = ufo_UbuTestData
-    some_data = "abc".encode("ascii")
+    some_data = b"abc"
     ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] = some_data
     ufo.save()
     assert all(

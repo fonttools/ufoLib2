@@ -1,9 +1,10 @@
+import warnings
 from collections.abc import MutableSequence
 from typing import Optional
-import warnings
 
 import attr
 from fontTools.pens.pointPen import PointToSegmentPen
+
 from ufoLib2.objects.point import Point
 
 

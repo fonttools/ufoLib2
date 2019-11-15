@@ -1,5 +1,7 @@
-import attr
 from typing import Optional, Union
+
+import attr
+
 from ufoLib2.objects.misc import AttrDictMixin
 
 
