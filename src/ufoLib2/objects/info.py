@@ -25,8 +25,8 @@ _optional_positive = attr.validators.optional(_positive)
 class GaspBehavior(IntEnum):
     GRIDFIT = 0
     DOGRAY = 1
-    SYMMETRIC_SMOOTHING = 2
-    SYMMETRIC_GRIDFIT = 3
+    SYMMETRIC_GRIDFIT = 2
+    SYMMETRIC_SMOOTHING = 3
 
 
 def _convert_GaspBehavior(
