@@ -39,3 +39,24 @@ def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData):
         v is _NOT_LOADED for k, v in ufo.data._data.items() if "T_S_I__0" not in k
     )
     assert ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] == some_data
+
+
+def test_constructor_from_path(datadir):
+    path = datadir / "UbuTestData.ufo"
+    font = ufoLib2.Font(path)
+
+    assert font._path == path
+    assert font._lazy is True
+    assert font._validate is True
+    assert font._reader is not None
+
+    font2 = ufoLib2.Font(path, lazy=False, validate=False)
+
+    assert font2._path == path
+    assert font2._lazy is False
+    assert font2._validate is False
+    assert font2._reader is None
+
+    font.unlazify()
+
+    assert font == font2
