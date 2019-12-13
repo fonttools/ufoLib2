@@ -30,7 +30,7 @@ class LayerSet:
     )
     defaultLayer = attr.ib(default=None, type=Layer)
 
-    _reader = attr.ib(default=None, init=False, cmp=False)
+    _reader = attr.ib(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self):
         if not self._layers:

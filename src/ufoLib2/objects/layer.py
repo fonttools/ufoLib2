@@ -27,7 +27,7 @@ class Layer:
     color = attr.ib(default=None, type=Optional[str])
     lib = attr.ib(default=attr.Factory(dict), type=dict)
 
-    _glyphSet = attr.ib(default=None, init=False, cmp=False)
+    _glyphSet = attr.ib(default=None, init=False, eq=False)
 
     @classmethod
     def read(cls, name, glyphSet, lazy=True):

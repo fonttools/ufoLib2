@@ -36,7 +36,7 @@ class Font:
     # this is the only positional argument, and it is added for compatibility with
     # the defcon-style Font(path) constructor. If defcon compatibility is not a concern
     # we recommend to use the alternative `open` classmethod constructor.
-    _path = attr.ib(default=None, cmp=False)
+    _path = attr.ib(default=None, eq=False)
 
     layers = attr.ib(
         default=attr.Factory(LayerSet),
@@ -69,11 +69,11 @@ class Font:
         kw_only=True,
     )
 
-    _lazy = attr.ib(default=True, kw_only=True, cmp=False)
-    _validate = attr.ib(default=True, kw_only=True, cmp=False)
+    _lazy = attr.ib(default=True, kw_only=True, eq=False)
+    _validate = attr.ib(default=True, kw_only=True, eq=False)
 
-    _reader = attr.ib(default=None, init=False, cmp=False)
-    _fileStructure = attr.ib(default=None, init=False, cmp=False)
+    _reader = attr.ib(default=None, init=False, eq=False)
+    _fileStructure = attr.ib(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self):
         if self._path is not None:
