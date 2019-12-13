@@ -46,6 +46,13 @@ class Layer:
         glyphSet.readLayerInfo(self)
         return self
 
+    def unlazify(self, close_reader=False):
+        for _ in self:
+            pass
+        if close_reader:
+            self._glyphSet.close()
+        self._glyphSet = None
+
     def __contains__(self, name):
         return name in self._glyphs
 

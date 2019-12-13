@@ -83,6 +83,13 @@ class LayerSet:
 
         return self
 
+    def unlazify(self, close_reader=False):
+        for layer in self:
+            layer.unlazify()
+        if close_reader:
+            self._reader.close()
+        self._reader = None
+
     @staticmethod
     def _loadLayer(reader, layerName, lazy=True, default=False):
         # UFOReader.getGlyphSet method doesn't support 'defaultLayer'

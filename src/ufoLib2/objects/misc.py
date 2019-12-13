@@ -32,6 +32,13 @@ class DataStore(MutableMapping):
             self._reader = reader
         return self
 
+    def unlazify(self, close_reader=False):
+        for _ in self.items():
+            pass
+        if close_reader:
+            self._reader.close()
+        self._reader = None
+
     # MutableMapping methods
 
     def __len__(self):
