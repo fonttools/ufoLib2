@@ -31,30 +31,65 @@ def _convert_Features(value: Union[Features, str]) -> Features:
     return value if isinstance(value, Features) else Features(value)
 
 
-@attr.s(slots=True, kw_only=True, repr=False)
+@attr.s(slots=True, repr=False)
 class Font:
+    # this is the only positional argument, and it is added for compatibility with
+    # the defcon-style Font(path) constructor. If defcon compatibility is not a concern
+    # we recommend to use the alternative `open` classmethod constructor.
+    _path = attr.ib(default=None, cmp=False)
+
     layers = attr.ib(
         default=attr.Factory(LayerSet),
         validator=attr.validators.instance_of(LayerSet),
         type=LayerSet,
+        kw_only=True,
     )
-    info = attr.ib(default=attr.Factory(Info), converter=_convert_Info, type=Info)
+    info = attr.ib(
+        default=attr.Factory(Info), converter=_convert_Info, type=Info, kw_only=True
+    )
     features = attr.ib(
-        default=attr.Factory(Features), converter=_convert_Features, type=Features
+        default=attr.Factory(Features),
+        converter=_convert_Features,
+        type=Features,
+        kw_only=True,
     )
-    groups = attr.ib(default=attr.Factory(dict), type=dict)
-    kerning = attr.ib(default=attr.Factory(dict), type=dict)
-    lib = attr.ib(default=attr.Factory(dict), type=dict)
+    groups = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
+    kerning = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
+    lib = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
     data = attr.ib(
-        default=attr.Factory(DataSet), converter=_convert_DataSet, type=DataSet
+        default=attr.Factory(DataSet),
+        converter=_convert_DataSet,
+        type=DataSet,
+        kw_only=True,
     )
     images = attr.ib(
-        default=attr.Factory(ImageSet), converter=_convert_ImageSet, type=ImageSet
+        default=attr.Factory(ImageSet),
+        converter=_convert_ImageSet,
+        type=ImageSet,
+        kw_only=True,
     )
 
-    _path = attr.ib(default=None, init=False)
-    _reader = attr.ib(default=None, init=False)
-    _fileStructure = attr.ib(default=None, init=False)
+    _lazy = attr.ib(default=True, kw_only=True, cmp=False)
+    _validate = attr.ib(default=True, kw_only=True, cmp=False)
+
+    _reader = attr.ib(default=None, init=False, cmp=False)
+    _fileStructure = attr.ib(default=None, init=False, cmp=False)
+
+    def __attrs_post_init__(self):
+        if self._path is not None:
+            reader = UFOReader(self._path, validate=self._validate)
+            self.layers = LayerSet.read(reader, lazy=self._lazy)
+            self.data = DataSet.read(reader, lazy=self._lazy)
+            self.images = ImageSet.read(reader, lazy=self._lazy)
+            self.info = Info.read(reader)
+            self.features = Features(reader.readFeatures())
+            self.groups = reader.readGroups()
+            self.kerning = reader.readKerning()
+            self.lib = reader.readLib()
+            self._fileStructure = reader.fileStructure
+            if self._lazy:
+                # keep the reader around so we can close it when done
+                self._reader = reader
 
     @classmethod
     def open(cls, path, lazy=True, validate=True):
@@ -71,26 +106,17 @@ class Font:
 
     @classmethod
     def read(cls, reader, lazy=True):
-        layers = LayerSet.read(reader, lazy=lazy)
-        data = DataSet.read(reader, lazy=lazy)
-        images = ImageSet.read(reader, lazy=lazy)
-        info = Info()
-        reader.readInfo(info)
-        features = Features(reader.readFeatures())
-        groups = reader.readGroups()
-        kerning = reader.readKerning()
-        lib = reader.readLib()
-        self = cls(
-            layers=layers,
-            info=info,
-            features=features,
-            groups=groups,
-            kerning=kerning,
-            lib=lib,
-            data=data,
-            images=images,
+        return cls(
+            layers=LayerSet.read(reader, lazy=lazy),
+            data=DataSet.read(reader, lazy=lazy),
+            images=ImageSet.read(reader, lazy=lazy),
+            info=Info.read(reader),
+            features=Features(reader.readFeatures()),
+            groups=reader.readGroups(),
+            kerning=reader.readKerning(),
+            lib=reader.readLib(),
+            lazy=lazy,
         )
-        return self
 
     def __contains__(self, name):
         return name in self.layers.defaultLayer
@@ -137,6 +163,19 @@ class Font:
     def reader(self):
         return self._reader
 
+    def unlazify(self):
+        if self._lazy:
+            for layer in self.layers:
+                for _ in layer:
+                    pass
+            for _ in self.data.items():
+                pass
+            for _ in self.images.items():
+                pass
+            self._reader.close()
+            self._reader = None
+        self._lazy = False
+
     @property
     def glyphOrder(self):
         return list(self.lib.get("public.glyphOrder", []))
@@ -162,10 +201,7 @@ class Font:
 
     @property
     def path(self):
-        try:
-            return self._path
-        except AttributeError:
-            return
+        return self._path
 
     def addGlyph(self, glyph):
         self.layers.defaultLayer.addGlyph(glyph)
