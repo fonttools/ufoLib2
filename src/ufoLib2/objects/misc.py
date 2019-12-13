@@ -17,7 +17,7 @@ class DataStore(MutableMapping):
 
     _data = attr.ib(default=attr.Factory(dict), type=dict)
 
-    _reader = attr.ib(default=None, init=False, repr=False)
+    _reader = attr.ib(default=None, init=False, repr=False, cmp=False)
     _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False)
 
     @classmethod
