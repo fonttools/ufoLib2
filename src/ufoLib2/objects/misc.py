@@ -1,4 +1,5 @@
 from collections.abc import Mapping, MutableMapping
+from copy import deepcopy
 from typing import Sequence, Union
 
 import attr
@@ -6,6 +7,21 @@ from fontTools.misc.transform import Transform
 
 # sentinel value to signal a "lazy" object hasn't been loaded yet
 _NOT_LOADED = object()
+
+
+def _deepcopy_unlazify_attrs(self, memo):
+
+    if getattr(self, "_lazy", True) and hasattr(self, "unlazify"):
+        self.unlazify()
+    return self.__class__(
+        **{
+            (a.name if a.name[0] != "_" else a.name[1:]): deepcopy(
+                getattr(self, a.name), memo
+            )
+            for a in attr.fields(self.__class__)
+            if a.init and a.metadata.get("copyable", True)
+        },
+    )
 
 
 @attr.s(slots=True, repr=False)
@@ -17,7 +33,7 @@ class DataStore(MutableMapping):
 
     _data = attr.ib(default=attr.Factory(dict), type=dict)
 
-    _reader = attr.ib(default=None, init=False, repr=False)
+    _reader = attr.ib(default=None, init=False, repr=False, eq=False)
     _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False)
 
     @classmethod
@@ -31,6 +47,12 @@ class DataStore(MutableMapping):
         if lazy:
             self._reader = reader
         return self
+
+    def unlazify(self):
+        for _ in self.items():
+            pass
+
+    __deepcopy__ = _deepcopy_unlazify_attrs
 
     # MutableMapping methods
 

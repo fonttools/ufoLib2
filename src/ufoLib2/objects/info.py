@@ -282,3 +282,9 @@ class Info:
     macintoshFONDName = attr.ib(default=None, type=Optional[str])
     macintoshFONDFamilyID = attr.ib(default=None, type=Optional[int])
     year = attr.ib(default=None, type=Optional[int])
+
+    @classmethod
+    def read(cls, reader):
+        self = cls()
+        reader.readInfo(self)
+        return self

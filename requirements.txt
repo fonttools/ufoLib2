@@ -1,2 +1,2 @@
 fonttools==3.39.0
-attrs==19.1.0
+attrs==19.2.0

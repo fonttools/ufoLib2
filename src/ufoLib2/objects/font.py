@@ -13,6 +13,7 @@ from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
+from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
 
 
 def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
@@ -31,65 +32,95 @@ def _convert_Features(value: Union[Features, str]) -> Features:
     return value if isinstance(value, Features) else Features(value)
 
 
-@attr.s(slots=True, kw_only=True, repr=False)
+@attr.s(slots=True, repr=False, eq=False)
 class Font:
+    # this is the only positional argument, and it is added for compatibility with
+    # the defcon-style Font(path) constructor. If defcon compatibility is not a concern
+    # we recommend to use the alternative `open` classmethod constructor.
+    _path = attr.ib(default=None, metadata=dict(copyable=False))
+
     layers = attr.ib(
         default=attr.Factory(LayerSet),
         validator=attr.validators.instance_of(LayerSet),
         type=LayerSet,
+        kw_only=True,
     )
-    info = attr.ib(default=attr.Factory(Info), converter=_convert_Info, type=Info)
+    info = attr.ib(
+        default=attr.Factory(Info), converter=_convert_Info, type=Info, kw_only=True
+    )
     features = attr.ib(
-        default=attr.Factory(Features), converter=_convert_Features, type=Features
+        default=attr.Factory(Features),
+        converter=_convert_Features,
+        type=Features,
+        kw_only=True,
     )
-    groups = attr.ib(default=attr.Factory(dict), type=dict)
-    kerning = attr.ib(default=attr.Factory(dict), type=dict)
-    lib = attr.ib(default=attr.Factory(dict), type=dict)
+    groups = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
+    kerning = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
+    lib = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
     data = attr.ib(
-        default=attr.Factory(DataSet), converter=_convert_DataSet, type=DataSet
+        default=attr.Factory(DataSet),
+        converter=_convert_DataSet,
+        type=DataSet,
+        kw_only=True,
     )
     images = attr.ib(
-        default=attr.Factory(ImageSet), converter=_convert_ImageSet, type=ImageSet
+        default=attr.Factory(ImageSet),
+        converter=_convert_ImageSet,
+        type=ImageSet,
+        kw_only=True,
     )
 
-    _path = attr.ib(default=None, init=False)
-    _reader = attr.ib(default=None, init=False)
+    _lazy = attr.ib(default=None, kw_only=True)
+    _validate = attr.ib(default=True, kw_only=True)
+
+    _reader = attr.ib(default=None, kw_only=True, init=False)
     _fileStructure = attr.ib(default=None, init=False)
+
+    def __attrs_post_init__(self):
+        if self._path is not None:
+            # if lazy argument is not set, default to lazy=True if path is provided
+            if self._lazy is None:
+                self._lazy = True
+            reader = UFOReader(self._path, validate=self._validate)
+            self.layers = LayerSet.read(reader, lazy=self._lazy)
+            self.data = DataSet.read(reader, lazy=self._lazy)
+            self.images = ImageSet.read(reader, lazy=self._lazy)
+            self.info = Info.read(reader)
+            self.features = Features(reader.readFeatures())
+            self.groups = reader.readGroups()
+            self.kerning = reader.readKerning()
+            self.lib = reader.readLib()
+            self._fileStructure = reader.fileStructure
+            if self._lazy:
+                # keep the reader around so we can close it when done
+                self._reader = reader
 
     @classmethod
     def open(cls, path, lazy=True, validate=True):
         reader = UFOReader(path, validate=validate)
         self = cls.read(reader, lazy=lazy)
         self._path = path
-        self._fileStructure = reader.fileStructure
-        if lazy:
-            # keep the reader around so we can close it when done
-            self._reader = reader
-        else:
+        if not lazy:
             reader.close()
         return self
 
     @classmethod
     def read(cls, reader, lazy=True):
-        layers = LayerSet.read(reader, lazy=lazy)
-        data = DataSet.read(reader, lazy=lazy)
-        images = ImageSet.read(reader, lazy=lazy)
-        info = Info()
-        reader.readInfo(info)
-        features = Features(reader.readFeatures())
-        groups = reader.readGroups()
-        kerning = reader.readKerning()
-        lib = reader.readLib()
         self = cls(
-            layers=layers,
-            info=info,
-            features=features,
-            groups=groups,
-            kerning=kerning,
-            lib=lib,
-            data=data,
-            images=images,
+            layers=LayerSet.read(reader, lazy=lazy),
+            data=DataSet.read(reader, lazy=lazy),
+            images=ImageSet.read(reader, lazy=lazy),
+            info=Info.read(reader),
+            features=Features(reader.readFeatures()),
+            groups=reader.readGroups(),
+            kerning=reader.readKerning(),
+            lib=reader.readLib(),
+            lazy=lazy,
         )
+        self._fileStructure = reader.fileStructure
+        if lazy:
+            # keep the reader around so we can close it when done
+            self._reader = reader
         return self
 
     def __contains__(self, name):
@@ -133,9 +164,54 @@ class Font:
             self.__class__.__module__, self.__class__.__name__, fontName, hex(id(self))
         )
 
+    def __eq__(self, other):
+        # same as attrs-defined __eq__ method, only that it un-lazifies fonts if needed
+        if other.__class__ is not self.__class__:
+            return NotImplemented
+
+        for font in (self, other):
+            if font._lazy:
+                font.unlazify()
+
+        return (
+            self.layers,
+            self.info,
+            self.features,
+            self.groups,
+            self.kerning,
+            self.lib,
+            self.data,
+            self.images,
+        ) == (
+            other.layers,
+            other.info,
+            other.features,
+            other.groups,
+            other.kerning,
+            other.lib,
+            other.data,
+            other.images,
+        )
+
+    def __ne__(self, other):
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return NotImplemented
+        return not result
+
     @property
     def reader(self):
         return self._reader
+
+    def unlazify(self):
+        if self._lazy:
+            assert self._reader is not None
+            self.layers.unlazify()
+            self.data.unlazify()
+            self.images.unlazify()
+        self._lazy = False
+
+    __deepcopy__ = _deepcopy_unlazify_attrs
 
     @property
     def glyphOrder(self):
@@ -162,10 +238,7 @@ class Font:
 
     @property
     def path(self):
-        try:
-            return self._path
-        except AttributeError:
-            return
+        return self._path
 
     def addGlyph(self, glyph):
         self.layers.defaultLayer.addGlyph(glyph)

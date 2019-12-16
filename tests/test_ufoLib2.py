@@ -1,3 +1,7 @@
+from copy import deepcopy
+
+from fontTools import ufoLib
+
 import ufoLib2
 from ufoLib2.objects.misc import _NOT_LOADED
 
@@ -39,3 +43,77 @@ def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData):
         v is _NOT_LOADED for k, v in ufo.data._data.items() if "T_S_I__0" not in k
     )
     assert ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] == some_data
+
+
+def test_constructor_from_path(datadir):
+    path = datadir / "UbuTestData.ufo"
+    font = ufoLib2.Font(path)
+
+    assert font._path == path
+    assert font._lazy is True
+    assert font._validate is True
+    assert font._reader is not None
+
+    font2 = ufoLib2.Font(path, lazy=False, validate=False)
+
+    assert font2._path == path
+    assert font2._lazy is False
+    assert font2._validate is False
+    assert font2._reader is None
+
+    assert font == font2
+
+
+def test_deepcopy_lazy_object(datadir):
+    path = datadir / "UbuTestData.ufo"
+    font1 = ufoLib2.Font.open(path, lazy=True)
+
+    font2 = deepcopy(font1)
+
+    assert font1 is not font2
+    assert font1 == font2
+
+    assert font1.layers is not font2.layers
+    assert font1.layers == font2.layers
+
+    assert font1.layers.defaultLayer is not font2.layers.defaultLayer
+    assert font1.layers.defaultLayer == font2.layers.defaultLayer
+
+    assert font1.data is not font2.data
+    assert font1.data == font2.data
+
+    assert font1.images is not font2.images
+    assert font1.images == font2.images
+
+    assert font1.reader is not None
+    assert not font1.reader.fs.isclosed()
+    assert not font1._lazy
+
+    assert font2.reader is None
+    assert not font2._lazy
+
+    assert font1.path == path
+    assert font2.path is None
+
+
+def test_unlazify(datadir):
+    reader = ufoLib.UFOReader(datadir / "UbuTestData.ufo")
+    font = ufoLib2.Font.read(reader, lazy=True)
+
+    assert font._reader is reader
+    assert not reader.fs.isclosed()
+
+    font.unlazify()
+
+    assert font._lazy is False
+
+
+def test_font_eq_and_ne(ufo_UbuTestData):
+    font1 = ufo_UbuTestData
+    font2 = deepcopy(font1)
+
+    assert font1 == font2
+
+    font1["a"].contours[0].points[0].x = 0
+
+    assert font1 != font2

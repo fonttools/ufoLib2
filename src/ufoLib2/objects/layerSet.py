@@ -5,7 +5,7 @@ import attr
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.layer import Layer
-from ufoLib2.objects.misc import _NOT_LOADED
+from ufoLib2.objects.misc import _NOT_LOADED, _deepcopy_unlazify_attrs
 
 
 def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
@@ -30,7 +30,7 @@ class LayerSet:
     )
     defaultLayer = attr.ib(default=None, type=Layer)
 
-    _reader = attr.ib(default=None, init=False)
+    _reader = attr.ib(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self):
         if not self._layers:
@@ -82,6 +82,12 @@ class LayerSet:
             self._reader = reader
 
         return self
+
+    def unlazify(self):
+        for layer in self:
+            layer.unlazify()
+
+    __deepcopy__ = _deepcopy_unlazify_attrs
 
     @staticmethod
     def _loadLayer(reader, layerName, lazy=True, default=False):
