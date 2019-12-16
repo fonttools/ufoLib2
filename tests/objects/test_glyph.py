@@ -1,4 +1,6 @@
-from ufoLib2.objects import Anchor, Component, Glyph, Guideline, Image
+from ufoLib2.objects import Anchor, Contour, Component, Glyph, Guideline, Image, Point
+
+import pytest
 
 
 def test_copyDataFromGlyph(ufo_UbuTestData):
@@ -70,3 +72,20 @@ def test_copyDataFromGlyph(ufo_UbuTestData):
     d = a.copy(name="d")
     assert d.name == "d"
     _assert_equal_but_distinct_objects(d, a)
+
+
+def test_appendContour(ufo_UbuTestData):
+    font = ufo_UbuTestData
+
+    A = font["A"]
+    n = len(A.contours)
+
+    c = Contour(points=[Point(0, 0), Point(1, 1)])
+
+    A.appendContour(c)
+
+    assert len(A.contours) == n + 1
+    assert A.contours[-1] is c
+
+    with pytest.raises(TypeError, match="Expected Contour, found object"):
+        A.appendContour(object())
