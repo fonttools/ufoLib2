@@ -4,7 +4,7 @@ import attr
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
-from ufoLib2.objects.misc import _NOT_LOADED
+from ufoLib2.objects.misc import _NOT_LOADED, _deepcopy_unlazify_attrs
 
 
 def _convert_glyphs(
@@ -46,12 +46,11 @@ class Layer:
         glyphSet.readLayerInfo(self)
         return self
 
-    def unlazify(self, close_reader=False):
+    def unlazify(self):
         for _ in self:
             pass
-        if close_reader:
-            self._glyphSet.close()
-        self._glyphSet = None
+
+    __deepcopy__ = _deepcopy_unlazify_attrs
 
     def __contains__(self, name):
         return name in self._glyphs

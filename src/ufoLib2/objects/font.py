@@ -13,6 +13,7 @@ from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
+from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
 
 
 def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
@@ -72,14 +73,11 @@ class Font:
     _lazy = attr.ib(default=None, kw_only=True)
     _validate = attr.ib(default=True, kw_only=True)
 
-    _reader = attr.ib(default=None, kw_only=True)
+    _reader = attr.ib(default=None, kw_only=True, init=False)
     _fileStructure = attr.ib(default=None, init=False)
 
     def __attrs_post_init__(self):
         if self._path is not None:
-            assert (
-                self._reader is None
-            ), "path and reader arguments are mutually exclusive"
             # if lazy argument is not set, default to lazy=True if path is provided
             if self._lazy is None:
                 self._lazy = True
@@ -102,14 +100,13 @@ class Font:
         reader = UFOReader(path, validate=validate)
         self = cls.read(reader, lazy=lazy)
         self._path = path
-        self._fileStructure = reader.fileStructure
         if not lazy:
             reader.close()
         return self
 
     @classmethod
     def read(cls, reader, lazy=True):
-        return cls(
+        self = cls(
             layers=LayerSet.read(reader, lazy=lazy),
             data=DataSet.read(reader, lazy=lazy),
             images=ImageSet.read(reader, lazy=lazy),
@@ -119,8 +116,12 @@ class Font:
             kerning=reader.readKerning(),
             lib=reader.readLib(),
             lazy=lazy,
-            reader=reader if lazy else None,
         )
+        self._fileStructure = reader.fileStructure
+        if lazy:
+            # keep the reader around so we can close it when done
+            self._reader = reader
+        return self
 
     def __contains__(self, name):
         return name in self.layers.defaultLayer
@@ -202,29 +203,15 @@ class Font:
     def reader(self):
         return self._reader
 
-    def unlazify(self, close_reader=False):
-        if self._reader:
+    def unlazify(self):
+        if self._lazy:
+            assert self._reader is not None
             self.layers.unlazify()
             self.data.unlazify()
             self.images.unlazify()
-            if close_reader:
-                self._reader.close()
-            self._reader = None
         self._lazy = False
 
-    def __deepcopy__(self, memo):
-        from copy import deepcopy
-
-        if self._reader:
-            self.unlazify()
-        return attr.evolve(
-            self,
-            **{
-                k: deepcopy(getattr(self, k), memo)
-                for k, v in attr.fields_dict(self.__class__).items()
-                if not k.startswith("_")
-            },
-        )
+    __deepcopy__ = _deepcopy_unlazify_attrs
 
     @property
     def glyphOrder(self):

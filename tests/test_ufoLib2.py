@@ -70,10 +70,26 @@ def test_deepcopy_lazy_object(datadir):
     font2 = deepcopy(font1)
 
     assert font1 is not font2
+    assert font1 == font2
+
     assert font1.layers is not font2.layers
+    assert font1.layers == font2.layers
+
     assert font1.layers.defaultLayer is not font2.layers.defaultLayer
+    assert font1.layers.defaultLayer == font2.layers.defaultLayer
+
     assert font1.data is not font2.data
+    assert font1.data == font2.data
+
     assert font1.images is not font2.images
+    assert font1.images == font2.images
+
+    assert font1.reader is not None
+    assert not font1.reader.fs.isclosed()
+    assert not font1._lazy
+
+    assert font2.reader is None
+    assert not font2._lazy
 
 
 def test_unlazify(datadir):
@@ -83,23 +99,9 @@ def test_unlazify(datadir):
     assert font._reader is reader
     assert not reader.fs.isclosed()
 
-    font.unlazify()  # close_reader=False by default
+    font.unlazify()
 
-    assert font._reader is None
-    assert not reader.fs.isclosed()
-
-
-def test_unlazify_close_reader(datadir):
-    reader = ufoLib.UFOReader(datadir / "UbuTestData.ufo")
-    font = ufoLib2.Font.read(reader, lazy=True)
-
-    assert font._reader is reader
-    assert not reader.fs.isclosed()
-
-    font.unlazify(close_reader=True)
-
-    assert font._reader is None
-    assert reader.fs.isclosed()
+    assert font._lazy is False
 
 
 def test_font_eq_and_ne(ufo_UbuTestData):
