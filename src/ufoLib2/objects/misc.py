@@ -9,6 +9,20 @@ from fontTools.misc.transform import Transform
 _NOT_LOADED = object()
 
 
+def _eq_unlazify_attrs(self, other):
+    if other.__class__ is not self.__class__:
+        return NotImplemented
+
+    for obj in (self, other):
+        if getattr(self, "_lazy", True) and hasattr(self, "unlazify"):
+            self.unlazify()
+
+    for a in attr.fields(self.__class__):
+        if a.eq and getattr(self, a.name) != getattr(other, a.name):
+            return False
+    return True
+
+
 def _deepcopy_unlazify_attrs(self, memo):
 
     if getattr(self, "_lazy", True) and hasattr(self, "unlazify"):
