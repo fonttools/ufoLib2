@@ -6,6 +6,7 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
 
 from ufoLib2.objects.anchor import Anchor
+from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
@@ -147,6 +148,13 @@ class Glyph:
         if not isinstance(guideline, Guideline):
             guideline = Guideline(**guideline)
         self._guidelines.append(guideline)
+
+    def appendContour(self, contour):
+        if not isinstance(contour, Contour):
+            raise TypeError(
+                f"Expected {Contour.__name__}, found {type(contour).__name__}"
+            )
+        self.contours.append(contour)
 
     def copy(self, name=None):
         """Return a new Glyph (deep) copy, optionally override the new glyph name.
