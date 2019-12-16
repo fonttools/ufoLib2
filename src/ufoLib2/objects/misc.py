@@ -19,7 +19,7 @@ def _deepcopy_unlazify_attrs(self, memo):
                 getattr(self, a.name), memo
             )
             for a in attr.fields(self.__class__)
-            if a.init
+            if a.init and a.metadata.get("copyable", True)
         },
     )
 

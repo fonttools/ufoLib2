@@ -65,7 +65,8 @@ def test_constructor_from_path(datadir):
 
 
 def test_deepcopy_lazy_object(datadir):
-    font1 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=True)
+    path = datadir / "UbuTestData.ufo"
+    font1 = ufoLib2.Font.open(path, lazy=True)
 
     font2 = deepcopy(font1)
 
@@ -90,6 +91,9 @@ def test_deepcopy_lazy_object(datadir):
 
     assert font2.reader is None
     assert not font2._lazy
+
+    assert font1.path == path
+    assert font2.path is None
 
 
 def test_unlazify(datadir):

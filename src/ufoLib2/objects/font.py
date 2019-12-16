@@ -37,7 +37,7 @@ class Font:
     # this is the only positional argument, and it is added for compatibility with
     # the defcon-style Font(path) constructor. If defcon compatibility is not a concern
     # we recommend to use the alternative `open` classmethod constructor.
-    _path = attr.ib(default=None)
+    _path = attr.ib(default=None, metadata=dict(copyable=False))
 
     layers = attr.ib(
         default=attr.Factory(LayerSet),
