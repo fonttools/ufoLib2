@@ -89,3 +89,15 @@ def test_appendContour(ufo_UbuTestData):
 
     with pytest.raises(TypeError, match="Expected Contour, found object"):
         A.appendContour(object())
+
+
+def test_glyph_without_name():
+    assert Glyph().name is None
+
+
+def test_glyph_repr():
+    g = Glyph()
+    assert repr(g) == f"<ufoLib2.objects.glyph.Glyph at {hex(id(g))}>"
+
+    g = Glyph("a")
+    assert repr(g) == f"<ufoLib2.objects.glyph.Glyph 'a' at {hex(id(g))}>"

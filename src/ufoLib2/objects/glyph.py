@@ -14,7 +14,7 @@ from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
 @attr.s(slots=True, repr=False)
 class Glyph:
-    _name = attr.ib(type=str)
+    _name = attr.ib(default=None, type=Optional[str])
     width = attr.ib(default=0, type=Union[int, float])
     height = attr.ib(default=0, type=Union[int, float])
     unicodes = attr.ib(default=attr.Factory(list), type=List[int])
@@ -40,10 +40,10 @@ class Glyph:
         return iter(self.contours)
 
     def __repr__(self):
-        return "<{}.{} '{}' at {}>".format(
+        return "<{}.{} {}at {}>".format(
             self.__class__.__module__,
             self.__class__.__name__,
-            self._name,
+            f"'{self._name}' " if self._name is not None else "",
             hex(id(self)),
         )
 
