@@ -10,13 +10,38 @@ from ufoLib2.objects.misc import _NOT_LOADED, _deepcopy_unlazify_attrs
 def _convert_glyphs(
     value: Union[Dict[str, Glyph], Sequence[Glyph]]
 ) -> Dict[str, Glyph]:
-    if isinstance(value, dict):
-        return value
     result: Dict[str, Glyph] = {}
-    for glyph in value:
-        if glyph.name in result:
-            raise KeyError("glyph %r already exists" % glyph.name)
-        result[glyph.name] = glyph
+    glyph_ids = set()
+    if isinstance(value, dict):
+        for name, glyph in value.items():
+            if glyph is not _NOT_LOADED:
+                if not isinstance(glyph, Glyph):
+                    raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
+                glyph_id = id(glyph)
+                if glyph_id in glyph_ids:
+                    raise KeyError(f"{glyph!r} can't be added twice")
+                glyph_ids.add(glyph_id)
+                if glyph.name is None:
+                    glyph._name = name
+                elif glyph.name != name:
+                    raise ValueError(
+                        "glyph has incorrect name: "
+                        f"expected '{name}', found '{glyph.name}'"
+                    )
+            result[name] = glyph
+    else:
+        for glyph in value:
+            if not isinstance(glyph, Glyph):
+                raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
+            glyph_id = id(glyph)
+            if glyph_id in glyph_ids:
+                raise KeyError(f"{glyph!r} can't be added twice")
+            glyph_ids.add(glyph_id)
+            if glyph.name is None:
+                raise ValueError(f"{glyph!r} has no name; can't add it to Layer")
+            if glyph.name in result:
+                raise KeyError(f"glyph named '{glyph.name}' already exists")
+            result[glyph.name] = glyph
     return result
 
 
@@ -65,7 +90,7 @@ class Layer:
 
     def __setitem__(self, name, glyph):
         if not isinstance(glyph, Glyph):
-            raise TypeError("Expected Glyph, found %s" % type(glyph).__name__)
+            raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
         glyph._name = name
         self._glyphs[name] = glyph
 
@@ -111,8 +136,17 @@ class Layer:
         return self._name
 
     def addGlyph(self, glyph):
-        if glyph.name in self._glyphs:
-            raise KeyError("glyph %r already exists" % glyph.name)
+        self.insertGlyph(glyph, overwrite=False, copy=False)
+
+    def insertGlyph(self, glyph, name=None, overwrite=True, copy=True):
+        if copy:
+            glyph = glyph.copy()
+        if name is not None:
+            glyph._name = name
+        if glyph.name is None:
+            raise ValueError(f"{glyph!r} has no name; can't add it to Layer")
+        if not overwrite and glyph.name in self._glyphs:
+            raise KeyError(f"glyph named '{glyph.name}' already exists")
         self._glyphs[glyph.name] = glyph
 
     def loadGlyph(self, name):
@@ -123,7 +157,7 @@ class Layer:
 
     def newGlyph(self, name):
         if name in self._glyphs:
-            raise KeyError("glyph %r already exists" % name)
+            raise KeyError(f"glyph named '{name}' already exists")
         self._glyphs[name] = glyph = Glyph(name)
         return glyph
 
@@ -131,12 +165,16 @@ class Layer:
         if name == newName:
             return
         if not overwrite and newName in self._glyphs:
-            raise KeyError("target glyph %r already exists" % newName)
+            raise KeyError(f"target glyph named '{newName}' already exists")
         # pop and set name
         glyph = self.pop(name)
         glyph._name = newName
         # add it back
         self._glyphs[newName] = glyph
+
+    def instantiateGlyphObject(self):
+        # only for defcon API compatibility
+        return Glyph()
 
     def write(self, glyphSet, saveAs=True):
         glyphs = self._glyphs
