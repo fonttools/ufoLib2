@@ -10,13 +10,38 @@ from ufoLib2.objects.misc import _NOT_LOADED, _deepcopy_unlazify_attrs
 def _convert_glyphs(
     value: Union[Dict[str, Glyph], Sequence[Glyph]]
 ) -> Dict[str, Glyph]:
-    if isinstance(value, dict):
-        return value
     result: Dict[str, Glyph] = {}
-    for glyph in value:
-        if glyph.name in result:
-            raise KeyError("glyph %r already exists" % glyph.name)
-        result[glyph.name] = glyph
+    glyph_ids = set()
+    if isinstance(value, dict):
+        for name, glyph in value.items():
+            if glyph is not _NOT_LOADED:
+                if not isinstance(glyph, Glyph):
+                    raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
+                glyph_id = id(glyph)
+                if glyph_id in glyph_ids:
+                    raise KeyError(f"{glyph!r} can't be added twice")
+                glyph_ids.add(glyph_id)
+                if glyph.name is None:
+                    glyph._name = name
+                elif glyph.name != name:
+                    raise ValueError(
+                        "glyph has incorrect name: "
+                        f"expected '{name}', found '{glyph.name}'"
+                    )
+            result[name] = glyph
+    else:
+        for glyph in value:
+            if not isinstance(glyph, Glyph):
+                raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
+            glyph_id = id(glyph)
+            if glyph_id in glyph_ids:
+                raise KeyError(f"{glyph!r} can't be added twice")
+            glyph_ids.add(glyph_id)
+            if glyph.name is None:
+                raise ValueError(f"{glyph!r} has no name; can't add it to Layer")
+            if glyph.name in result:
+                raise KeyError(f"glyph named '{glyph.name}' already exists")
+            result[glyph.name] = glyph
     return result
 
 
