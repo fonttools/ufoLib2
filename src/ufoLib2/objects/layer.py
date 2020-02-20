@@ -90,7 +90,7 @@ class Layer:
 
     def __setitem__(self, name, glyph):
         if not isinstance(glyph, Glyph):
-            raise TypeError("Expected Glyph, found %s" % type(glyph).__name__)
+            raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
         glyph._name = name
         self._glyphs[name] = glyph
 
@@ -136,8 +136,17 @@ class Layer:
         return self._name
 
     def addGlyph(self, glyph):
-        if glyph.name in self._glyphs:
-            raise KeyError("glyph %r already exists" % glyph.name)
+        self.insertGlyph(glyph, overwrite=False, copy=False)
+
+    def insertGlyph(self, glyph, name=None, overwrite=True, copy=True):
+        if copy:
+            glyph = glyph.copy()
+        if name is not None:
+            glyph._name = name
+        if glyph.name is None:
+            raise ValueError(f"{glyph!r} has no name; can't add it to Layer")
+        if not overwrite and glyph.name in self._glyphs:
+            raise KeyError(f"glyph named '{glyph.name}' already exists")
         self._glyphs[glyph.name] = glyph
 
     def loadGlyph(self, name):
@@ -148,7 +157,7 @@ class Layer:
 
     def newGlyph(self, name):
         if name in self._glyphs:
-            raise KeyError("glyph %r already exists" % name)
+            raise KeyError(f"glyph named '{name}' already exists")
         self._glyphs[name] = glyph = Glyph(name)
         return glyph
 
@@ -156,7 +165,7 @@ class Layer:
         if name == newName:
             return
         if not overwrite and newName in self._glyphs:
-            raise KeyError("target glyph %r already exists" % newName)
+            raise KeyError(f"target glyph named '{newName}' already exists")
         # pop and set name
         glyph = self.pop(name)
         glyph._name = newName
