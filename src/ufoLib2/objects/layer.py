@@ -172,6 +172,10 @@ class Layer:
         # add it back
         self._glyphs[newName] = glyph
 
+    def instantiateGlyphObject(self):
+        # only for defcon API compatibility
+        return Glyph()
+
     def write(self, glyphSet, saveAs=True):
         glyphs = self._glyphs
         if not saveAs:
