@@ -1,4 +1,13 @@
-from ufoLib2.objects import Anchor, Contour, Component, Glyph, Guideline, Image, Point
+from ufoLib2.objects import (
+    Anchor,
+    Contour,
+    Component,
+    Glyph,
+    Guideline,
+    Image,
+    Layer,
+    Point,
+)
 
 import pytest
 
@@ -101,3 +110,39 @@ def test_glyph_repr():
 
     g = Glyph("a")
     assert repr(g) == f"<ufoLib2.objects.glyph.Glyph 'a' at {hex(id(g))}>"
+
+
+def test_glyph_get_bounds():
+    a = Glyph("a")
+    pen = a.getPen()
+    pen.moveTo((0, 0))
+    pen.curveTo((10, 10), (10, 20), (0, 20))
+    pen.closePath()
+
+    b = Glyph("b", components=[Component("a", (1, 0, 0, 1, -50, 100))])
+
+    layer = Layer(glyphs=[a, b])
+
+    assert a.getBounds(layer) == Glyph.BoundingBox(xMin=0, yMin=0, xMax=7.5, yMax=20)
+
+    assert a.getControlBounds(layer) == Glyph.BoundingBox(
+        xMin=0, yMin=0, xMax=10, yMax=20
+    )
+
+    with pytest.raises(
+        TypeError, match="layer is required to compute bounds of components"
+    ):
+        b.getBounds()
+    with pytest.raises(
+        TypeError, match="layer is required to compute bounds of components"
+    ):
+        b.getControlBounds()
+
+    assert b.getBounds(layer) == (-50, 100, -42.5, 120)  # namedtuple is a tuple
+    assert b.getControlBounds(layer) == (-50, 100, -40, 120)
+
+
+def test_glyph_get_bounds_empty():
+    g = Glyph()
+    assert g.getBounds() is None
+    assert g.getControlBounds() is None
