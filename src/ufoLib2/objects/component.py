@@ -16,6 +16,10 @@ class Component:
     )
     identifier = attr.ib(default=None, type=Optional[str])
 
+    def move(self, delta):
+        x, y = delta
+        self.transformation = self.transformation.translate(x, y)
+
     # -----------
     # Pen methods
     # -----------

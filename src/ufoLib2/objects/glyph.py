@@ -1,9 +1,11 @@
+from collections import namedtuple
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Union
 
 import attr
 from fontTools.misc.transform import Transform
 from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
+from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 
 from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.contour import Contour
@@ -186,6 +188,14 @@ class Glyph:
         pointPen = self.getPointPen()
         glyph.drawPoints(pointPen)
 
+    def move(self, delta):
+        for contour in self.contours:
+            contour.move(delta)
+        for component in self.components:
+            component.move(delta)
+        for anchor in self.anchors:
+            anchor.move(delta)
+
     # -----------
     # Pen methods
     # -----------
@@ -231,3 +241,96 @@ class Glyph:
             self.lib["public.verticalOrigin"] = value
         elif "public.verticalOrigin" in self.lib:
             del self.lib["public.verticalOrigin"]
+
+    # bounds and side-bearings
+
+    BoundingBox = namedtuple("BoundingBox", "xMin yMin xMax yMax")
+
+    def getBounds(self, layer=None):
+        if layer is None and self.components:
+            raise TypeError("layer is required to compute bounds of components")
+
+        pen = BoundsPen(layer)
+        self.draw(pen)
+        return pen.bounds if pen.bounds is None else self.BoundingBox(*pen.bounds)
+
+    def getControlBounds(self, layer=None):
+        if layer is None and self.components:
+            raise TypeError("layer is required to compute bounds of components")
+
+        pen = ControlBoundsPen(layer)
+        self.draw(pen)
+        return pen.bounds if pen.bounds is None else self.BoundingBox(*pen.bounds)
+
+    def getLeftMargin(self, layer=None):
+        bounds = self.getBounds(layer)
+        if bounds is None:
+            return None
+        return bounds.xMin
+
+    def setLeftMargin(self, value, layer=None):
+        bounds = self.getBounds(layer)
+        if bounds is None:
+            return None
+        diff = value - bounds.xMin
+        if diff:
+            self.width += diff
+            self.move((diff, 0))
+
+    def getRightMargin(self, layer=None):
+        bounds = self.getBounds(layer)
+        if bounds is None:
+            return None
+        return self.width - bounds.xMax
+
+    def setRightMargin(self, value, layer=None):
+        bounds = self.getBounds(layer)
+        if bounds is None:
+            return None
+        self.width = bounds.xMax + value
+
+    def getBottomMargin(self, layer=None):
+        bounds = self.getBounds(layer)
+        if bounds is None:
+            return None
+        if self.verticalOrigin is None:
+            return bounds.yMin
+        else:
+            return bounds.yMin - (self.verticalOrigin - self.height)
+
+    def setBottomMargin(self, value, layer=None):
+        bounds = self.getBounds(layer)
+        if bounds is None:
+            return None
+        # blindly copied from defcon Glyph._set_bottomMargin; not sure it's correct
+        if self.verticalOrigin is None:
+            oldValue = bounds.yMin
+            self.verticalOrigin = self.height
+        else:
+            oldValue = bounds.yMin - (self.verticalOrigin - self.height)
+        diff = value - oldValue
+        if diff:
+            self.height += diff
+
+    def getTopMargin(self, layer=None):
+        bounds = self.getBounds(layer)
+        if bounds is None:
+            return None
+        if self.verticalOrigin is None:
+            return self.height - bounds.yMax
+        else:
+            return self.verticalOrigin - bounds.yMax
+
+    def setTopMargin(self, value, layer=None):
+        bounds = self.getBounds(layer)
+        if bounds is None:
+            return
+        if self.verticalOrigin is None:
+            oldValue = self.height - bounds.yMax
+        else:
+            oldValue = self.verticalOrigin - bounds.yMax
+        diff = value - oldValue
+        if oldValue != value:
+            # Is this still correct when verticalOrigin was not previously set?
+            self.verticalOrigin = bounds.yMax + value
+            self.height += diff

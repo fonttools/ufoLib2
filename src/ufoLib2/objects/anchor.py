@@ -12,3 +12,8 @@ class Anchor(AttrDictMixin):
     name = attr.ib(default=None, type=Optional[str])
     color = attr.ib(default=None, type=Optional[str])
     identifier = attr.ib(default=None, type=Optional[str])
+
+    def move(self, delta):
+        x, y = delta
+        self.x += x
+        self.y += y

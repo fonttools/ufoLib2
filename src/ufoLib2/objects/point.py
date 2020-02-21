@@ -16,3 +16,8 @@ class Point:
     def segmentType(self):
         # alias for backward compatibility with defcon API
         return self.type
+
+    def move(self, delta):
+        x, y = delta
+        self.x += x
+        self.y += y
