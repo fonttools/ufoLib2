@@ -1,16 +1,15 @@
-from collections import namedtuple
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Union
 
 import attr
 from fontTools.misc.transform import Transform
 from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
-from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 
 from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
+from ufoLib2.objects.misc import getBounds, getControlBounds
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 
 
@@ -244,23 +243,17 @@ class Glyph:
 
     # bounds and side-bearings
 
-    BoundingBox = namedtuple("BoundingBox", "xMin yMin xMax yMax")
-
     def getBounds(self, layer=None):
         if layer is None and self.components:
             raise TypeError("layer is required to compute bounds of components")
 
-        pen = BoundsPen(layer)
-        self.draw(pen)
-        return pen.bounds if pen.bounds is None else self.BoundingBox(*pen.bounds)
+        return getBounds(self, layer)
 
     def getControlBounds(self, layer=None):
         if layer is None and self.components:
             raise TypeError("layer is required to compute bounds of components")
 
-        pen = ControlBoundsPen(layer)
-        self.draw(pen)
-        return pen.bounds if pen.bounds is None else self.BoundingBox(*pen.bounds)
+        return getControlBounds(self, layer)
 
     def getLeftMargin(self, layer=None):
         bounds = self.getBounds(layer)

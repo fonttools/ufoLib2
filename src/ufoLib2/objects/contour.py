@@ -6,6 +6,7 @@ import attr
 from fontTools.pens.pointPen import PointToSegmentPen
 
 from ufoLib2.objects.point import Point
+from ufoLib2.objects.misc import getBounds, getControlBounds
 
 
 @attr.s(slots=True)
@@ -48,6 +49,17 @@ class Contour(MutableSequence):
     def move(self, delta):
         for point in self.points:
             point.move(delta)
+
+    def getBounds(self, layer=None):
+        return getBounds(self, layer)
+
+    @property
+    def bounds(self):
+        # also add a property getter like defcon's, since we can...
+        return self.getBounds()
+
+    def getControlBounds(self, layer=None):
+        return getControlBounds(self, layer)
 
     # -----------
     # Pen methods

@@ -5,7 +5,7 @@ import attr
 from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.pointPen import PointToSegmentPen
 
-from .misc import _convert_transform
+from .misc import _convert_transform, getBounds, getControlBounds
 
 
 @attr.s(slots=True)
@@ -19,6 +19,12 @@ class Component:
     def move(self, delta):
         x, y = delta
         self.transformation = self.transformation.translate(x, y)
+
+    def getBounds(self, layer):
+        return getBounds(self, layer)
+
+    def getControlBounds(self, layer):
+        return getControlBounds(self, layer)
 
     # -----------
     # Pen methods

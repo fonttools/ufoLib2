@@ -1,12 +1,33 @@
+from collections import namedtuple
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
 from typing import Sequence, Union
 
 import attr
 from fontTools.misc.transform import Transform
+from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 
 # sentinel value to signal a "lazy" object hasn't been loaded yet
 _NOT_LOADED = object()
+
+
+BoundingBox = namedtuple("BoundingBox", "xMin yMin xMax yMax")
+
+
+def getBounds(drawable, layer):
+    pen = BoundsPen(layer)
+    # raise 'KeyError' when a referenced component is missing from glyph set
+    pen.skipMissingComponents = False
+    drawable.draw(pen)
+    return pen.bounds if pen.bounds is None else BoundingBox(*pen.bounds)
+
+
+def getControlBounds(drawable, layer):
+    pen = ControlBoundsPen(layer)
+    # raise 'KeyError' when a referenced component is missing from glyph set
+    pen.skipMissingComponents = False
+    drawable.draw(pen)
+    return pen.bounds if pen.bounds is None else BoundingBox(*pen.bounds)
 
 
 def _deepcopy_unlazify_attrs(self, memo):
