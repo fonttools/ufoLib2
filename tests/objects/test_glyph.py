@@ -8,6 +8,7 @@ from ufoLib2.objects import (
     Layer,
     Point,
 )
+from ufoLib2.objects.misc import BoundingBox
 
 import pytest
 
@@ -123,11 +124,9 @@ def test_glyph_get_bounds():
 
     layer = Layer(glyphs=[a, b])
 
-    assert a.getBounds(layer) == Glyph.BoundingBox(xMin=0, yMin=0, xMax=7.5, yMax=20)
+    assert a.getBounds(layer) == BoundingBox(xMin=0, yMin=0, xMax=7.5, yMax=20)
 
-    assert a.getControlBounds(layer) == Glyph.BoundingBox(
-        xMin=0, yMin=0, xMax=10, yMax=20
-    )
+    assert a.getControlBounds(layer) == BoundingBox(xMin=0, yMin=0, xMax=10, yMax=20)
 
     with pytest.raises(
         TypeError, match="layer is required to compute bounds of components"
