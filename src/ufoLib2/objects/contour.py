@@ -45,6 +45,10 @@ class Contour(MutableSequence):
             return True
         return self.points[0].type == "move"
 
+    def move(self, delta):
+        for point in self.points:
+            point.move(delta)
+
     # -----------
     # Pen methods
     # -----------

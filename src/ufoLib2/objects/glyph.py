@@ -186,6 +186,14 @@ class Glyph:
         pointPen = self.getPointPen()
         glyph.drawPoints(pointPen)
 
+    def move(self, delta):
+        for contour in self.contours:
+            contour.move(delta)
+        for component in self.components:
+            component.move(delta)
+        for anchor in self.anchors:
+            anchor.move(delta)
+
     # -----------
     # Pen methods
     # -----------
