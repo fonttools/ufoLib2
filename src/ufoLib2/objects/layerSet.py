@@ -136,7 +136,10 @@ class LayerSet:
         return len(self._layers)
 
     def get(self, name, default=None):
-        return self._layers.get(name, default)
+        try:
+            return self[name]
+        except KeyError:
+            return default
 
     def keys(self):
         return self._layers.keys()
@@ -178,7 +181,7 @@ class LayerSet:
             raise KeyError("name %r is not in layer set" % name)
         # prepare destination, delete if overwrite=True or error
         for layer in self:
-            if newName in self._layers:
+            if newName in layer:
                 if overwrite:
                     del layer[newName]
                 else:
@@ -194,7 +197,9 @@ class LayerSet:
             return
         if not overwrite and newName in self._layers:
             raise KeyError("target name %r already exists" % newName)
-        self._layers[newName] = layer = self._layers.pop(name)
+        layer = self[name]
+        del self._layers[name]
+        self._layers[newName] = layer
         layer._name = newName
 
     def write(self, writer, saveAs=None):
