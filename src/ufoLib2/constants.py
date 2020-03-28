@@ -1,1 +1,1 @@
-DEFAULT_LAYER_NAME = "public.default"
+DEFAULT_LAYER_NAME: str = "public.default"

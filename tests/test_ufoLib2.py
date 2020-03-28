@@ -17,6 +17,7 @@ def test_LayerSet_load_layers_on_iteration(tmp_path):
     ufo_save_path = tmp_path / "test.ufo"
     ufo.save(ufo_save_path)
     ufo = ufoLib2.Font.open(ufo_save_path)
+    assert set(ufo.layers.keys()) == {"public.default", "test"}
     for layer in ufo.layers:
         assert layer is not _NOT_LOADED
 
