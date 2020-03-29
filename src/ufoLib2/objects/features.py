@@ -1,9 +1,9 @@
 import attr
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class Features:
-    text = attr.ib(default="", type=str)
+    text: str = ""
 
     def __bool__(self):
         return bool(self.text)

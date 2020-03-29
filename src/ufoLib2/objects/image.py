@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Optional
+from typing import Iterator, Optional, Tuple
 
 import attr
 from fontTools.misc.transform import Identity, Transform
@@ -7,24 +7,22 @@ from fontTools.misc.transform import Identity, Transform
 from .misc import _convert_transform
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class Image(Mapping):
-    fileName = attr.ib(default=None, type=Optional[str])
-    transformation = attr.ib(
-        default=Identity, converter=_convert_transform, type=Transform
-    )
-    color = attr.ib(default=None, type=Optional[str])
+    fileName: Optional[str] = None
+    transformation: Transform = attr.ib(default=Identity, converter=_convert_transform)
+    color: Optional[str] = None
 
-    def clear(self):
+    def clear(self) -> None:
         self.fileName = None
         self.transformation = Identity
         self.color = None
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         # Glyph.image evaluates to False if no fileName is set
         return self.fileName is not None
 
-    _transformation_keys_ = (
+    _transformation_keys_: Tuple[str, str, str, str, str, str] = (
         "xScale",
         "xyScale",
         "yxScale",
@@ -32,7 +30,9 @@ class Image(Mapping):
         "xOffset",
         "yOffset",
     )
-    _valid_keys_ = ("fileName",) + _transformation_keys_ + ("color",)
+    _valid_keys_: Tuple[str, str, str, str, str, str, str, str] = (
+        "fileName",
+    ) + _transformation_keys_ + ("color",)
 
     # implementation of collections.abc.Mapping abstract methods.
     # the fontTools.ufoLib.validators.imageValidator requires that image is a

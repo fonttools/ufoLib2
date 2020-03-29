@@ -1,18 +1,19 @@
-from typing import Optional, Union
+from typing import Optional
 
 import attr
 
 from ufoLib2.objects.misc import AttrDictMixin
+from ufoLib2.typing import Number
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class Guideline(AttrDictMixin):
-    x = attr.ib(default=None, type=Optional[Union[int, float]])
-    y = attr.ib(default=None, type=Optional[Union[int, float]])
-    angle = attr.ib(default=None, type=Optional[Union[int, float]])
-    name = attr.ib(default=None, type=Optional[str])
-    color = attr.ib(default=None, type=Optional[str])
-    identifier = attr.ib(default=None, type=Optional[str])
+    x: Optional[Number] = None
+    y: Optional[Number] = None
+    angle: Optional[Number] = None
+    name: Optional[str] = None
+    color: Optional[str] = None
+    identifier: Optional[str] = None
 
     def __attrs_post_init__(self):
         x, y, angle = self.x, self.y, self.angle

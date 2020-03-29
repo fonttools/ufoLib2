@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Iterable
+from typing import Any, Iterable, MutableMapping, Optional
 
 import attr
 
@@ -23,14 +23,14 @@ def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
     return layers
 
 
-@attr.s(slots=True, repr=False)
+@attr.s(auto_attribs=True, slots=True, repr=False)
 class LayerSet:
-    _layers = attr.ib(
-        default=attr.Factory(OrderedDict), converter=_convert_layers, type=OrderedDict
+    _layers: MutableMapping[str, Layer] = attr.ib(
+        factory=OrderedDict, converter=_convert_layers
     )
-    defaultLayer = attr.ib(default=None, type=Layer)
+    defaultLayer: Optional[Layer] = None
 
-    _reader = attr.ib(default=None, init=False, eq=False)
+    _reader: Optional[Any] = attr.ib(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self):
         if not self._layers:

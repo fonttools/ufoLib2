@@ -1,6 +1,6 @@
 import warnings
 from collections.abc import MutableSequence
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import attr
 from fontTools.pens.pointPen import PointToSegmentPen
@@ -9,10 +9,10 @@ from ufoLib2.objects.point import Point
 from ufoLib2.objects.misc import getBounds, getControlBounds
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class Contour(MutableSequence):
-    points = attr.ib(default=attr.Factory(list), type=list)
-    identifier = attr.ib(default=None, repr=False, type=Optional[str])
+    points: List[Point] = attr.ib(factory=list)
+    identifier: Optional[str] = attr.ib(default=None, repr=False)
 
     # collections.abc.MutableSequence interface
 

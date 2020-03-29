@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import attr
 
@@ -45,14 +45,14 @@ def _convert_glyphs(
     return result
 
 
-@attr.s(slots=True, repr=False)
+@attr.s(auto_attribs=True, slots=True, repr=False)
 class Layer:
-    _name = attr.ib(default=DEFAULT_LAYER_NAME, type=str)
-    _glyphs = attr.ib(default=attr.Factory(dict), converter=_convert_glyphs, type=dict)
-    color = attr.ib(default=None, type=Optional[str])
-    lib = attr.ib(default=attr.Factory(dict), type=dict)
+    _name: str = DEFAULT_LAYER_NAME
+    _glyphs: Dict[str, Glyph] = attr.ib(factory=dict, converter=_convert_glyphs)
+    color: Optional[str] = None
+    lib: Dict[str, Any] = attr.ib(factory=dict)
 
-    _glyphSet = attr.ib(default=None, init=False, eq=False)
+    _glyphSet: Any = attr.ib(default=None, init=False, eq=False)
 
     @classmethod
     def read(cls, name, glyphSet, lazy=True):

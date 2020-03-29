@@ -8,13 +8,11 @@ from fontTools.pens.pointPen import PointToSegmentPen
 from .misc import _convert_transform, getBounds, getControlBounds
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class Component:
-    baseGlyph = attr.ib(type=str)
-    transformation = attr.ib(
-        default=Identity, converter=_convert_transform, type=Transform
-    )
-    identifier = attr.ib(default=None, type=Optional[str])
+    baseGlyph: str
+    transformation: Transform = attr.ib(default=Identity, converter=_convert_transform)
+    identifier: Optional[str] = None
 
     def move(self, delta):
         x, y = delta
