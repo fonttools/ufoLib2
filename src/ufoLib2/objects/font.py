@@ -14,6 +14,7 @@ from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
+from ufoLib2.typing import Number
 
 
 def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
@@ -62,7 +63,7 @@ class Font:
     _reader: Optional[Any] = attr.ib(default=None, kw_only=True, init=False)
     _fileStructure: Optional[Any] = attr.ib(default=None, init=False)
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if self._path is not None:
             # if lazy argument is not set, default to lazy=True if path is provided
             if self._lazy is None:

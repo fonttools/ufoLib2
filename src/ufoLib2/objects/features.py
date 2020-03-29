@@ -5,8 +5,8 @@ import attr
 class Features:
     text: str = ""
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(self.text)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.text

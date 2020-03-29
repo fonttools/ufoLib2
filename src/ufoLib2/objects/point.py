@@ -19,7 +19,7 @@ class Point:
         # alias for backward compatibility with defcon API
         return self.type
 
-    def move(self, delta):
+    def move(self, delta: Tuple[Number, Number]) -> None:
         x, y = delta
         self.x += x
         self.y += y

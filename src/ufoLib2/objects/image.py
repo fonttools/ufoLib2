@@ -49,8 +49,8 @@ class Image(Mapping):
         else:
             return self.transformation[i]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._valid_keys_)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self._valid_keys_)

@@ -5,8 +5,9 @@ from typing import List, Optional, Tuple
 import attr
 from fontTools.pens.pointPen import PointToSegmentPen
 
-from ufoLib2.objects.point import Point
 from ufoLib2.objects.misc import getBounds, getControlBounds
+from ufoLib2.objects.point import Point
+from ufoLib2.typing import Number
 
 
 @attr.s(auto_attribs=True, slots=True)
@@ -46,7 +47,7 @@ class Contour(MutableSequence):
             return True
         return self.points[0].type == "move"
 
-    def move(self, delta):
+    def move(self, delta: Tuple[Number, Number]) -> None:
         for point in self.points:
             point.move(delta)
 

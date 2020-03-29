@@ -189,7 +189,7 @@ class Glyph:
         pointPen = self.getPointPen()
         glyph.drawPoints(pointPen)
 
-    def move(self, delta):
+    def move(self, delta: Tuple[Number, Number]) -> None:
         for contour in self.contours:
             contour.move(delta)
         for component in self.components:

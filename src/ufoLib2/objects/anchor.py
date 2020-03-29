@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Tuple
 
 import attr
 
@@ -14,7 +14,7 @@ class Anchor(AttrDictMixin):
     color: Optional[str] = None
     identifier: Optional[str] = None
 
-    def move(self, delta):
+    def move(self, delta: Tuple[Number, Number]) -> None:
         x, y = delta
         self.x += x
         self.y += y
