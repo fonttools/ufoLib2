@@ -1,22 +1,22 @@
 import warnings
-from typing import Optional
+from typing import Optional, Tuple
 
 import attr
 from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.pointPen import PointToSegmentPen
 
+from ufoLib2.typing import Number
+
 from .misc import _convert_transform, getBounds, getControlBounds
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class Component:
-    baseGlyph = attr.ib(type=str)
-    transformation = attr.ib(
-        default=Identity, converter=_convert_transform, type=Transform
-    )
-    identifier = attr.ib(default=None, type=Optional[str])
+    baseGlyph: str
+    transformation: Transform = attr.ib(default=Identity, converter=_convert_transform)
+    identifier: Optional[str] = None
 
-    def move(self, delta):
+    def move(self, delta: Tuple[Number, Number]) -> None:
         x, y = delta
         self.transformation = self.transformation.translate(x, y)
 

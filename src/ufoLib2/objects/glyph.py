@@ -1,32 +1,34 @@
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import attr
 from fontTools.misc.transform import Transform
 from fontTools.pens.pointPen import PointToSegmentPen, SegmentToPointPen
 
 from ufoLib2.objects.anchor import Anchor
+from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
 from ufoLib2.objects.misc import getBounds, getControlBounds
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
+from ufoLib2.typing import Number
 
 
-@attr.s(slots=True, repr=False)
+@attr.s(auto_attribs=True, slots=True, repr=False)
 class Glyph:
-    _name = attr.ib(default=None, type=Optional[str])
-    width = attr.ib(default=0, type=Union[int, float])
-    height = attr.ib(default=0, type=Union[int, float])
-    unicodes = attr.ib(default=attr.Factory(list), type=List[int])
+    _name: Optional[str] = None
+    width: Number = 0
+    height: Number = 0
+    unicodes: List[int] = attr.ib(factory=list)
 
-    _image = attr.ib(default=attr.Factory(Image), type=Image)
-    lib = attr.ib(default=attr.Factory(dict), type=Dict[str, Any])
-    note = attr.ib(default=None, type=Optional[str])
-    _anchors = attr.ib(default=attr.Factory(list), type=list)
-    components = attr.ib(default=attr.Factory(list), type=list)
-    contours = attr.ib(default=attr.Factory(list), type=list)
-    _guidelines = attr.ib(default=attr.Factory(list), type=list)
+    _image: Image = attr.ib(factory=Image)
+    lib: Dict[str, Any] = attr.ib(factory=dict)
+    note: Optional[str] = None
+    _anchors: List[Anchor] = attr.ib(factory=list)
+    components: List[Component] = attr.ib(factory=list)
+    contours: List[Contour] = attr.ib(factory=list)
+    _guidelines: List[Guideline] = attr.ib(factory=list)
 
     def __len__(self):
         return len(self.contours)
@@ -187,7 +189,7 @@ class Glyph:
         pointPen = self.getPointPen()
         glyph.drawPoints(pointPen)
 
-    def move(self, delta):
+    def move(self, delta: Tuple[Number, Number]) -> None:
         for contour in self.contours:
             contour.move(delta)
         for component in self.components:

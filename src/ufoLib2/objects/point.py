@@ -1,23 +1,25 @@
-from typing import Optional, Union
+from typing import Optional, Tuple
 
 import attr
 
+from ufoLib2.typing import Number
 
-@attr.s(slots=True)
+
+@attr.s(auto_attribs=True, slots=True)
 class Point:
-    x = attr.ib(type=Union[int, float])
-    y = attr.ib(type=Union[int, float])
-    type = attr.ib(default=None, type=Optional[str])
-    smooth = attr.ib(default=False, type=bool)
-    name = attr.ib(default=None, type=Optional[str])
-    identifier = attr.ib(default=None, type=Optional[str])
+    x: Number
+    y: Number
+    type: Optional[str] = None
+    smooth: bool = False
+    name: Optional[str] = None
+    identifier: Optional[str] = None
 
     @property
     def segmentType(self):
         # alias for backward compatibility with defcon API
         return self.type
 
-    def move(self, delta):
+    def move(self, delta: Tuple[Number, Number]) -> None:
         x, y = delta
         self.x += x
         self.y += y

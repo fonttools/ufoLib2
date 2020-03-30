@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Any, Mapping, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import attr
 import fs.tempfs
@@ -14,6 +14,7 @@ from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
+from ufoLib2.typing import Number
 
 
 def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
@@ -32,51 +33,37 @@ def _convert_Features(value: Union[Features, str]) -> Features:
     return value if isinstance(value, Features) else Features(value)
 
 
-@attr.s(slots=True, repr=False, eq=False)
+@attr.s(auto_attribs=True, slots=True, repr=False, eq=False)
 class Font:
     # this is the only positional argument, and it is added for compatibility with
     # the defcon-style Font(path) constructor. If defcon compatibility is not a concern
     # we recommend to use the alternative `open` classmethod constructor.
-    _path = attr.ib(default=None, metadata=dict(copyable=False))
+    _path: Optional[os.PathLike] = attr.ib(default=None, metadata=dict(copyable=False))
 
-    layers = attr.ib(
-        default=attr.Factory(LayerSet),
-        validator=attr.validators.instance_of(LayerSet),
-        type=LayerSet,
-        kw_only=True,
+    layers: LayerSet = attr.ib(
+        factory=LayerSet, validator=attr.validators.instance_of(LayerSet), kw_only=True,
     )
-    info = attr.ib(
-        default=attr.Factory(Info), converter=_convert_Info, type=Info, kw_only=True
+    info: Info = attr.ib(factory=Info, converter=_convert_Info, kw_only=True)
+    features: Features = attr.ib(
+        factory=Features, converter=_convert_Features, kw_only=True,
     )
-    features = attr.ib(
-        default=attr.Factory(Features),
-        converter=_convert_Features,
-        type=Features,
-        kw_only=True,
+    groups: Dict[str, List[str]] = attr.ib(factory=dict, kw_only=True)
+    kerning: Dict[Tuple[str, str], Number] = attr.ib(factory=dict, kw_only=True)
+    lib: Dict[str, Any] = attr.ib(factory=dict, kw_only=True)
+    data: DataSet = attr.ib(
+        factory=DataSet, converter=_convert_DataSet, kw_only=True,
     )
-    groups = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
-    kerning = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
-    lib = attr.ib(default=attr.Factory(dict), type=dict, kw_only=True)
-    data = attr.ib(
-        default=attr.Factory(DataSet),
-        converter=_convert_DataSet,
-        type=DataSet,
-        kw_only=True,
-    )
-    images = attr.ib(
-        default=attr.Factory(ImageSet),
-        converter=_convert_ImageSet,
-        type=ImageSet,
-        kw_only=True,
+    images: ImageSet = attr.ib(
+        factory=ImageSet, converter=_convert_ImageSet, kw_only=True,
     )
 
-    _lazy = attr.ib(default=None, kw_only=True)
-    _validate = attr.ib(default=True, kw_only=True)
+    _lazy: Optional[bool] = attr.ib(default=None, kw_only=True)
+    _validate: bool = attr.ib(default=True, kw_only=True)
 
-    _reader = attr.ib(default=None, kw_only=True, init=False)
-    _fileStructure = attr.ib(default=None, init=False)
+    _reader: Optional[Any] = attr.ib(default=None, kw_only=True, init=False)
+    _fileStructure: Optional[Any] = attr.ib(default=None, init=False)
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if self._path is not None:
             # if lazy argument is not set, default to lazy=True if path is provided
             if self._lazy is None:

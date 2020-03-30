@@ -1,19 +1,20 @@
-from typing import Optional, Union
+from typing import Optional, Tuple
 
 import attr
 
 from ufoLib2.objects.misc import AttrDictMixin
+from ufoLib2.typing import Number
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class Anchor(AttrDictMixin):
-    x = attr.ib(type=Union[int, float])
-    y = attr.ib(type=Union[int, float])
-    name = attr.ib(default=None, type=Optional[str])
-    color = attr.ib(default=None, type=Optional[str])
-    identifier = attr.ib(default=None, type=Optional[str])
+    x: Number
+    y: Number
+    name: Optional[str] = None
+    color: Optional[str] = None
+    identifier: Optional[str] = None
 
-    def move(self, delta):
+    def move(self, delta: Tuple[Number, Number]) -> None:
         x, y = delta
         self.x += x
         self.y += y

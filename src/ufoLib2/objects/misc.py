@@ -1,11 +1,13 @@
 from collections import namedtuple
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
-from typing import Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Set, Union
 
 import attr
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
+
+from ufoLib2.typing import Number
 
 # sentinel value to signal a "lazy" object hasn't been loaded yet
 _NOT_LOADED = object()
@@ -31,7 +33,6 @@ def getControlBounds(drawable, layer):
 
 
 def _deepcopy_unlazify_attrs(self, memo):
-
     if getattr(self, "_lazy", True) and hasattr(self, "unlazify"):
         self.unlazify()
     return self.__class__(
@@ -45,17 +46,17 @@ def _deepcopy_unlazify_attrs(self, memo):
     )
 
 
-@attr.s(slots=True, repr=False)
+@attr.s(auto_attribs=True, slots=True, repr=False)
 class DataStore(MutableMapping):
-    listdir = None
-    readf = None
-    writef = None
-    deletef = None
+    listdir: Optional[Any] = None
+    readf: Optional[Any] = None
+    writef: Optional[Any] = None
+    deletef: Optional[Any] = None
 
-    _data = attr.ib(default=attr.Factory(dict), type=dict)
+    _data: Dict[str, Any] = attr.ib(factory=dict)
 
-    _reader = attr.ib(default=None, init=False, repr=False, eq=False)
-    _scheduledForDeletion = attr.ib(default=attr.Factory(set), init=False, repr=False)
+    _reader: Optional[Any] = attr.ib(default=None, init=False, repr=False, eq=False)
+    _scheduledForDeletion: Set[str] = attr.ib(factory=set, init=False, repr=False)
 
     @classmethod
     def read(cls, reader, lazy=True):
@@ -159,7 +160,7 @@ class AttrDictMixin(Mapping):
         return sum(1 for _ in self)
 
 
-def _convert_transform(t: Union[Transform, Sequence[Union[int, float]]]) -> Transform:
+def _convert_transform(t: Union[Transform, Sequence[Number]]) -> Transform:
     """Return a passed-in Transform as is, otherwise convert a sequence of
     numbers to a Transform if need be."""
     return t if isinstance(t, Transform) else Transform(*t)

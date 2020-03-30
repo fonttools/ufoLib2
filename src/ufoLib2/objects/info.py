@@ -5,6 +5,7 @@ import attr
 
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.misc import AttrDictMixin
+from ufoLib2.typing import Number
 
 __all__ = ["Info", "GaspRangeRecord", "NameRecord", "WidthClass"]
 
@@ -35,22 +36,20 @@ def _convert_GaspBehavior(
     return [v if isinstance(v, GaspBehavior) else GaspBehavior(v) for v in seq]
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class GaspRangeRecord(AttrDictMixin):
-    rangeMaxPPEM = attr.ib(validator=_positive, type=int)
-    rangeGaspBehavior = attr.ib(
-        converter=_convert_GaspBehavior,
-        type=List[GaspBehavior],  # use Set instead of List?
-    )
+    rangeMaxPPEM: int = attr.ib(validator=_positive)
+    # Use Set[GaspBehavior] instead of List?
+    rangeGaspBehavior: List[GaspBehavior] = attr.ib(converter=_convert_GaspBehavior)
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class NameRecord(AttrDictMixin):
-    nameID = attr.ib(validator=_positive, type=int)
-    platformID = attr.ib(validator=_positive, type=int)
-    encodingID = attr.ib(validator=_positive, type=int)
-    languageID = attr.ib(validator=_positive, type=int)
-    string = attr.ib(type=str)
+    nameID: int = attr.ib(validator=_positive)
+    platformID: int = attr.ib(validator=_positive)
+    encodingID: int = attr.ib(validator=_positive)
+    languageID: int = attr.ib(validator=_positive)
+    string: str = ""
 
 
 class WidthClass(IntEnum):
@@ -100,35 +99,29 @@ def _convert_WidthClass(value: Optional[int]) -> Optional[WidthClass]:
     return None if value is None else WidthClass(value)
 
 
-@attr.s(slots=True)
+@attr.s(auto_attribs=True, slots=True)
 class Info:
-    familyName = attr.ib(default=None, type=Optional[str])
-    styleName = attr.ib(default=None, type=Optional[str])
-    styleMapFamilyName = attr.ib(default=None, type=Optional[str])
-    styleMapStyleName = attr.ib(default=None, type=Optional[str])
-    versionMajor = attr.ib(
-        default=None, validator=_optional_positive, type=Optional[int]
-    )
-    versionMinor = attr.ib(
-        default=None, validator=_optional_positive, type=Optional[int]
-    )
+    familyName: Optional[str] = None
+    styleName: Optional[str] = None
+    styleMapFamilyName: Optional[str] = None
+    styleMapStyleName: Optional[str] = None
+    versionMajor: Optional[int] = attr.ib(default=None, validator=_optional_positive)
+    versionMinor: Optional[int] = attr.ib(default=None, validator=_optional_positive)
 
-    copyright = attr.ib(default=None, type=Optional[str])
-    trademark = attr.ib(default=None, type=Optional[str])
+    copyright: Optional[str] = None
+    trademark: Optional[str] = None
 
-    unitsPerEm = attr.ib(
-        default=None, validator=_optional_positive, type=Optional[Union[float, int]]
-    )
-    descender = attr.ib(default=None, type=Optional[Union[float, int]])
-    xHeight = attr.ib(default=None, type=Optional[Union[float, int]])
-    capHeight = attr.ib(default=None, type=Optional[Union[float, int]])
-    ascender = attr.ib(default=None, type=Optional[Union[float, int]])
-    italicAngle = attr.ib(default=None, type=Optional[Union[float, int]])
+    unitsPerEm: Optional[Number] = attr.ib(default=None, validator=_optional_positive)
+    descender: Optional[Number] = None
+    xHeight: Optional[Number] = None
+    capHeight: Optional[Number] = None
+    ascender: Optional[Number] = None
+    italicAngle: Optional[Number] = None
 
-    note = attr.ib(default=None, type=Optional[str])
+    note: Optional[str] = None
 
-    _guidelines = attr.ib(
-        default=None, converter=_convert_guidelines, type=Optional[List[Guideline]]
+    _guidelines: Optional[List[Guideline]] = attr.ib(
+        default=None, converter=_convert_guidelines
     )
 
     @property
@@ -139,10 +132,8 @@ class Info:
     def guidelines(self, value):
         self._guidelines = _convert_guidelines(value)
 
-    _openTypeGaspRangeRecords = attr.ib(
-        default=None,
-        converter=_convert_gasp_range_records,
-        type=Optional[List[GaspRangeRecord]],
+    _openTypeGaspRangeRecords: Optional[List[GaspRangeRecord]] = attr.ib(
+        default=None, converter=_convert_gasp_range_records,
     )
 
     @property
@@ -153,37 +144,37 @@ class Info:
     def openTypeGaspRangeRecords(self, value):
         self._openTypeGaspRangeRecords = _convert_gasp_range_records(value)
 
-    openTypeHeadCreated = attr.ib(default=None, type=Optional[str])
-    openTypeHeadLowestRecPPEM = attr.ib(
-        default=None, validator=_optional_positive, type=Optional[int]
+    openTypeHeadCreated: Optional[str] = None
+    openTypeHeadLowestRecPPEM: Optional[int] = attr.ib(
+        default=None, validator=_optional_positive,
     )
-    openTypeHeadFlags = attr.ib(default=None, type=Optional[List[int]])
+    openTypeHeadFlags: Optional[List[int]] = None
 
-    openTypeHheaAscender = attr.ib(default=None, type=Optional[int])
-    openTypeHheaDescender = attr.ib(default=None, type=Optional[int])
-    openTypeHheaLineGap = attr.ib(default=None, type=Optional[int])
-    openTypeHheaCaretSlopeRise = attr.ib(default=None, type=Optional[int])
-    openTypeHheaCaretSlopeRun = attr.ib(default=None, type=Optional[int])
-    openTypeHheaCaretOffset = attr.ib(default=None, type=Optional[int])
+    openTypeHheaAscender: Optional[int] = None
+    openTypeHheaDescender: Optional[int] = None
+    openTypeHheaLineGap: Optional[int] = None
+    openTypeHheaCaretSlopeRise: Optional[int] = None
+    openTypeHheaCaretSlopeRun: Optional[int] = None
+    openTypeHheaCaretOffset: Optional[int] = None
 
-    openTypeNameDesigner = attr.ib(default=None, type=Optional[str])
-    openTypeNameDesignerURL = attr.ib(default=None, type=Optional[str])
-    openTypeNameManufacturer = attr.ib(default=None, type=Optional[str])
-    openTypeNameManufacturerURL = attr.ib(default=None, type=Optional[str])
-    openTypeNameLicense = attr.ib(default=None, type=Optional[str])
-    openTypeNameLicenseURL = attr.ib(default=None, type=Optional[str])
-    openTypeNameVersion = attr.ib(default=None, type=Optional[str])
-    openTypeNameUniqueID = attr.ib(default=None, type=Optional[str])
-    openTypeNameDescription = attr.ib(default=None, type=Optional[str])
-    openTypeNamePreferredFamilyName = attr.ib(default=None, type=Optional[str])
-    openTypeNamePreferredSubfamilyName = attr.ib(default=None, type=Optional[str])
-    openTypeNameCompatibleFullName = attr.ib(default=None, type=Optional[str])
-    openTypeNameSampleText = attr.ib(default=None, type=Optional[str])
-    openTypeNameWWSFamilyName = attr.ib(default=None, type=Optional[str])
-    openTypeNameWWSSubfamilyName = attr.ib(default=None, type=Optional[str])
+    openTypeNameDesigner: Optional[str] = None
+    openTypeNameDesignerURL: Optional[str] = None
+    openTypeNameManufacturer: Optional[str] = None
+    openTypeNameManufacturerURL: Optional[str] = None
+    openTypeNameLicense: Optional[str] = None
+    openTypeNameLicenseURL: Optional[str] = None
+    openTypeNameVersion: Optional[str] = None
+    openTypeNameUniqueID: Optional[str] = None
+    openTypeNameDescription: Optional[str] = None
+    openTypeNamePreferredFamilyName: Optional[str] = None
+    openTypeNamePreferredSubfamilyName: Optional[str] = None
+    openTypeNameCompatibleFullName: Optional[str] = None
+    openTypeNameSampleText: Optional[str] = None
+    openTypeNameWWSFamilyName: Optional[str] = None
+    openTypeNameWWSSubfamilyName: Optional[str] = None
 
-    _openTypeNameRecords = attr.ib(
-        default=None, converter=_convert_name_records, type=Optional[List[NameRecord]]
+    _openTypeNameRecords: Optional[List[NameRecord]] = attr.ib(
+        default=None, converter=_convert_name_records
     )
 
     @property
@@ -194,8 +185,8 @@ class Info:
     def openTypeNameRecords(self, value):
         self._openTypeNameRecords = _convert_name_records(value)
 
-    _openTypeOS2WidthClass = attr.ib(
-        default=None, converter=_convert_WidthClass, type=Optional[WidthClass]
+    _openTypeOS2WidthClass: Optional[WidthClass] = attr.ib(
+        default=None, converter=_convert_WidthClass
     )
 
     @property
@@ -206,82 +197,74 @@ class Info:
     def openTypeOS2WidthClass(self, value):
         self._openTypeOS2WidthClass = value if value is None else WidthClass(value)
 
-    openTypeOS2WeightClass = attr.ib(default=None, type=Optional[int])
+    openTypeOS2WeightClass: Optional[int] = attr.ib(default=None)
 
     @openTypeOS2WeightClass.validator
     def _validate_weight_class(self, attribute, value):
         if value is not None and (value < 1 or value > 1000):
             raise ValueError("'openTypeOS2WeightClass' must be between 1 and 1000")
 
-    openTypeOS2Selection = attr.ib(default=None, type=Optional[List[int]])
-    openTypeOS2VendorID = attr.ib(default=None, type=Optional[str])
-    openTypeOS2Panose = attr.ib(default=None, type=Optional[List[int]])
-    openTypeOS2FamilyClass = attr.ib(default=None, type=Optional[List[int]])
-    openTypeOS2UnicodeRanges = attr.ib(default=None, type=Optional[List[int]])
-    openTypeOS2CodePageRanges = attr.ib(default=None, type=Optional[List[int]])
-    openTypeOS2TypoAscender = attr.ib(default=None, type=Optional[int])
-    openTypeOS2TypoDescender = attr.ib(default=None, type=Optional[int])
-    openTypeOS2TypoLineGap = attr.ib(default=None, type=Optional[int])
-    openTypeOS2WinAscent = attr.ib(
-        default=None, validator=_optional_positive, type=Optional[int]
+    openTypeOS2Selection: Optional[List[int]] = None
+    openTypeOS2VendorID: Optional[str] = None
+    openTypeOS2Panose: Optional[List[int]] = None
+    openTypeOS2FamilyClass: Optional[List[int]] = None
+    openTypeOS2UnicodeRanges: Optional[List[int]] = None
+    openTypeOS2CodePageRanges: Optional[List[int]] = None
+    openTypeOS2TypoAscender: Optional[int] = None
+    openTypeOS2TypoDescender: Optional[int] = None
+    openTypeOS2TypoLineGap: Optional[int] = None
+    openTypeOS2WinAscent: Optional[int] = attr.ib(
+        default=None, validator=_optional_positive
     )
-    openTypeOS2WinDescent = attr.ib(
-        default=None, validator=_optional_positive, type=Optional[int]
+    openTypeOS2WinDescent: Optional[int] = attr.ib(
+        default=None, validator=_optional_positive
     )
-    openTypeOS2Type = attr.ib(default=None, type=Optional[List[int]])
-    openTypeOS2SubscriptXSize = attr.ib(default=None, type=Optional[int])
-    openTypeOS2SubscriptYSize = attr.ib(default=None, type=Optional[int])
-    openTypeOS2SubscriptXOffset = attr.ib(default=None, type=Optional[int])
-    openTypeOS2SubscriptYOffset = attr.ib(default=None, type=Optional[int])
-    openTypeOS2SuperscriptXSize = attr.ib(default=None, type=Optional[int])
-    openTypeOS2SuperscriptYSize = attr.ib(default=None, type=Optional[int])
-    openTypeOS2SuperscriptXOffset = attr.ib(default=None, type=Optional[int])
-    openTypeOS2SuperscriptYOffset = attr.ib(default=None, type=Optional[int])
-    openTypeOS2StrikeoutSize = attr.ib(default=None, type=Optional[int])
-    openTypeOS2StrikeoutPosition = attr.ib(default=None, type=Optional[int])
+    openTypeOS2Type: Optional[List[int]] = None
+    openTypeOS2SubscriptXSize: Optional[int] = None
+    openTypeOS2SubscriptYSize: Optional[int] = None
+    openTypeOS2SubscriptXOffset: Optional[int] = None
+    openTypeOS2SubscriptYOffset: Optional[int] = None
+    openTypeOS2SuperscriptXSize: Optional[int] = None
+    openTypeOS2SuperscriptYSize: Optional[int] = None
+    openTypeOS2SuperscriptXOffset: Optional[int] = None
+    openTypeOS2SuperscriptYOffset: Optional[int] = None
+    openTypeOS2StrikeoutSize: Optional[int] = None
+    openTypeOS2StrikeoutPosition: Optional[int] = None
 
-    openTypeVheaVertTypoAscender = attr.ib(default=None, type=Optional[int])
-    openTypeVheaVertTypoDescender = attr.ib(default=None, type=Optional[int])
-    openTypeVheaVertTypoLineGap = attr.ib(default=None, type=Optional[int])
-    openTypeVheaCaretSlopeRise = attr.ib(default=None, type=Optional[int])
-    openTypeVheaCaretSlopeRun = attr.ib(default=None, type=Optional[int])
-    openTypeVheaCaretOffset = attr.ib(default=None, type=Optional[int])
+    openTypeVheaVertTypoAscender: Optional[int] = None
+    openTypeVheaVertTypoDescender: Optional[int] = None
+    openTypeVheaVertTypoLineGap: Optional[int] = None
+    openTypeVheaCaretSlopeRise: Optional[int] = None
+    openTypeVheaCaretSlopeRun: Optional[int] = None
+    openTypeVheaCaretOffset: Optional[int] = None
 
-    postscriptFontName = attr.ib(default=None, type=Optional[str])
-    postscriptFullName = attr.ib(default=None, type=Optional[str])
-    postscriptSlantAngle = attr.ib(default=None, type=Optional[Union[float, int]])
-    postscriptUniqueID = attr.ib(default=None, type=Optional[int])
-    postscriptUnderlineThickness = attr.ib(
-        default=None, type=Optional[Union[float, int]]
-    )
-    postscriptUnderlinePosition = attr.ib(
-        default=None, type=Optional[Union[float, int]]
-    )
-    postscriptIsFixedPitch = attr.ib(default=None, type=Optional[bool])
-    postscriptBlueValues = attr.ib(default=None, type=Optional[List[Union[float, int]]])
-    postscriptOtherBlues = attr.ib(default=None, type=Optional[List[Union[float, int]]])
-    postscriptFamilyBlues = attr.ib(
-        default=None, type=Optional[List[Union[float, int]]]
-    )
-    postscriptFamilyOtherBlues = attr.ib(
-        default=None, type=Optional[List[Union[float, int]]]
-    )
-    postscriptStemSnapH = attr.ib(default=None, type=Optional[List[Union[float, int]]])
-    postscriptStemSnapV = attr.ib(default=None, type=Optional[List[Union[float, int]]])
-    postscriptBlueFuzz = attr.ib(default=None, type=Optional[Union[float, int]])
-    postscriptBlueShift = attr.ib(default=None, type=Optional[Union[float, int]])
-    postscriptBlueScale = attr.ib(default=None, type=Optional[float])
-    postscriptForceBold = attr.ib(default=None, type=Optional[bool])
-    postscriptDefaultWidthX = attr.ib(default=None, type=Optional[Union[float, int]])
-    postscriptNominalWidthX = attr.ib(default=None, type=Optional[Union[float, int]])
-    postscriptWeightName = attr.ib(default=None, type=Optional[str])
-    postscriptDefaultCharacter = attr.ib(default=None, type=Optional[str])
-    postscriptWindowsCharacterSet = attr.ib(default=None, type=Optional[str])
+    postscriptFontName: Optional[str] = None
+    postscriptFullName: Optional[str] = None
+    postscriptSlantAngle: Optional[Number] = None
+    postscriptUniqueID: Optional[int] = None
+    postscriptUnderlineThickness: Optional[Number] = None
+    postscriptUnderlinePosition: Optional[Number] = None
+    postscriptIsFixedPitch: Optional[bool] = None
+    postscriptBlueValues: Optional[List[Number]] = None
+    postscriptOtherBlues: Optional[List[Number]] = None
+    postscriptFamilyBlues: Optional[List[Number]] = None
+    postscriptFamilyOtherBlues: Optional[List[Number]] = None
+    postscriptStemSnapH: Optional[List[Number]] = None
+    postscriptStemSnapV: Optional[List[Number]] = None
+    postscriptBlueFuzz: Optional[Number] = None
+    postscriptBlueShift: Optional[Number] = None
+    postscriptBlueScale: Optional[float] = None
+    postscriptForceBold: Optional[bool] = None
+    postscriptDefaultWidthX: Optional[Number] = None
+    postscriptNominalWidthX: Optional[Number] = None
+    postscriptWeightName: Optional[str] = None
+    postscriptDefaultCharacter: Optional[str] = None
+    postscriptWindowsCharacterSet: Optional[str] = None
 
     # old stuff
-    macintoshFONDName = attr.ib(default=None, type=Optional[str])
-    macintoshFONDFamilyID = attr.ib(default=None, type=Optional[int])
-    year = attr.ib(default=None, type=Optional[int])
+    macintoshFONDName: Optional[str] = None
+    macintoshFONDFamilyID: Optional[int] = None
+    year: Optional[int] = None
 
     @classmethod
     def read(cls, reader):
