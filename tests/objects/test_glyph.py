@@ -1,7 +1,9 @@
+import pytest
+
 from ufoLib2.objects import (
     Anchor,
-    Contour,
     Component,
+    Contour,
     Glyph,
     Guideline,
     Image,
@@ -9,8 +11,6 @@ from ufoLib2.objects import (
     Point,
 )
 from ufoLib2.objects.misc import BoundingBox
-
-import pytest
 
 
 def test_copyDataFromGlyph(ufo_UbuTestData):

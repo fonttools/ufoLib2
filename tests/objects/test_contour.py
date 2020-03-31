@@ -1,6 +1,6 @@
-from ufoLib2.objects import Glyph
-
 import pytest
+
+from ufoLib2.objects import Glyph
 
 
 @pytest.fixture

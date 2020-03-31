@@ -1,6 +1,6 @@
-from ufoLib2.objects import Component, Glyph, Layer
-
 import pytest
+
+from ufoLib2.objects import Component, Glyph, Layer
 
 
 @pytest.fixture

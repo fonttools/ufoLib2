@@ -1,6 +1,6 @@
-from ufoLib2.objects import Layer, Glyph
-
 import pytest
+
+from ufoLib2.objects import Glyph, Layer
 
 
 def test_init_layer_with_glyphs_dict():

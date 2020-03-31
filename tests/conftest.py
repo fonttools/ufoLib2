@@ -1,6 +1,8 @@
 import pathlib
 import shutil
+
 import pytest
+
 import ufoLib2
 
 
