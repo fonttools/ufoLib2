@@ -1,7 +1,8 @@
 [run]
 # measure 'branch' coverage in addition to 'statement' coverage
-# See: http://coverage.readthedocs.org/en/coverage-4.0.3/branch.html#branch
+# See: http://coverage.readthedocs.org/en/latest/branch.html#branch
 branch = True
+parallel = True
 
 # list of directories or packages to measure
 source = ufoLib2
@@ -10,8 +11,7 @@ source = ufoLib2
 [paths]
 source =
     src/ufoLib2
-    .tox/*/lib/python*/site-packages/ufoLib2
-    .tox/*/lib/site-packages/ufoLib2
+    */site-packages/ufoLib2
 
 [report]
 # Regexes for lines to exclude from consideration
@@ -29,6 +29,3 @@ exclude_lines =
 
 # ignore source code that can’t be found
 ignore_errors = True
-
-# when running a summary report, show missing lines
-show_missing = True
