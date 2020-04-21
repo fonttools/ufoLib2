@@ -6,6 +6,12 @@ from ufoLib2.objects.point import Point
 
 
 class GlyphPointPen(AbstractPointPen):
+    """A point pen.
+
+    See :mod:`fontTools.pens.basePen` and :mod:`fontTools.pens.pointPen` for an
+    introduction to pens.
+    """
+
     __slots__ = "_glyph", "_contour"
 
     def __init__(self, glyph):
