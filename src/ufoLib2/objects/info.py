@@ -101,6 +101,13 @@ def _convert_WidthClass(value: Optional[int]) -> Optional[WidthClass]:
 
 @attr.s(auto_attribs=True, slots=True)
 class Info:
+    """A data class representing the contents of fontinfo.plist.
+
+    The attributes are formally specified at
+    http://unifiedfontobject.org/versions/ufo3/fontinfo.plist/. Value validation is
+    mostly done during saving and loading.
+    """
+
     familyName: Optional[str] = None
     styleName: Optional[str] = None
     styleMapFamilyName: Optional[str] = None
@@ -268,6 +275,8 @@ class Info:
 
     @classmethod
     def read(cls, reader):
+        """Instantiates a Info object from a
+        :class:`fontTools.ufoLib.UFOReader`."""
         self = cls()
         reader.readInfo(self)
         return self
