@@ -35,27 +35,103 @@ def _convert_Features(value: Union[Features, str]) -> Features:
 
 @attr.s(auto_attribs=True, slots=True, repr=False, eq=False)
 class Font:
-    # this is the only positional argument, and it is added for compatibility with
-    # the defcon-style Font(path) constructor. If defcon compatibility is not a concern
-    # we recommend to use the alternative `open` classmethod constructor.
-    _path: Optional[os.PathLike] = attr.ib(default=None, metadata=dict(copyable=False))
+    """A data class representing a single Unified Font Object (UFO).
+
+    Font uses :class:`fontTools.ufoLib.UFOReader` and
+    :class:`fontTools.ufoLib.UFOWriter` to read and write UFO data from and to disk.
+    It will default to reading lazily, loading glyphs, data and images as they are
+    accessed. Copying a font implicitly loads everything eagerly before.
+
+    The data model is formally specified at
+    http://unifiedfontobject.org/versions/ufo3/index.html.
+
+    Parameters:
+        path: The path to the UFO to load. The only positional parameter and a
+            defcon-API-compatibility parameter. We recommend to use the
+            :meth:`.Font.open` class method instead.
+        layers (LayerSet): A mapping of layer names to Layer objects.
+        info (Info): The font Info object.
+        features (Features): The font Features object.
+        groups (Dict[str, List[str]]): A mapping of group names to a list of glyph
+            names.
+        kerning (Dict[Tuple[str, str], Number]): A mapping of a tuple of first and
+            second kerning pair to a kerning value.
+        lib (Dict[str, Any]): A mapping of keys to arbitrary values.
+        data (DataSet): A mapping of data file paths to arbitrary data.
+        images (ImageSet): A mapping of image file paths to arbitrary image data.
+
+    Behavior:
+        The Font object has some dict-like behavior for quick access to glyphs on the
+        the default layer. For example, to get a glyph by name from the default layer::
+
+            glyph = font["aGlyphName"]
+
+        To iterate over all glyphs in the default layer::
+
+            for glyph in font:
+                pass
+
+        To get the number of glyphs in the default layer::
+
+            glyphCount = len(font)
+
+        To find out if a font contains a particular glyph in the default layer by name::
+
+            exists = "aGlyphName" in font
+
+        To remove a glyph from the default layer by name::
+
+            del font["aGlyphName"]
+
+        To replace a glyph in the default layer with another :class:`.Glyph` object::
+
+            font["aGlyphName"] = otherGlyph
+
+        To copy a font::
+
+            import copy
+            fontCopy = copy.deepcopy(font)
+
+        Layers behave the same, for when you're working on something other than the
+        default layer.
+    """
+
+    _path: Optional[Union[str, bytes, os.PathLike]] = attr.ib(
+        default=None, metadata=dict(copyable=False)
+    )
 
     layers: LayerSet = attr.ib(
         factory=LayerSet, validator=attr.validators.instance_of(LayerSet), kw_only=True,
     )
+    """LayerSet: A mapping of layer names to Layer objects."""
+
     info: Info = attr.ib(factory=Info, converter=_convert_Info, kw_only=True)
+    """Info: The font Info object."""
+
     features: Features = attr.ib(
         factory=Features, converter=_convert_Features, kw_only=True,
     )
+    """Features: The font Features object."""
+
     groups: Dict[str, List[str]] = attr.ib(factory=dict, kw_only=True)
+    """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
+
     kerning: Dict[Tuple[str, str], Number] = attr.ib(factory=dict, kw_only=True)
+    """Dict[Tuple[str, str], Number]: A mapping of a tuple of first and second kerning
+    pair to a kerning value."""
+
     lib: Dict[str, Any] = attr.ib(factory=dict, kw_only=True)
+    """Dict[str, Any]: A mapping of keys to arbitrary values."""
+
     data: DataSet = attr.ib(
         factory=DataSet, converter=_convert_DataSet, kw_only=True,
     )
+    """DataSet: A mapping of data file paths to arbitrary data."""
+
     images: ImageSet = attr.ib(
         factory=ImageSet, converter=_convert_ImageSet, kw_only=True,
     )
+    """ImageSet: A mapping of image file paths to arbitrary image data."""
 
     _lazy: Optional[bool] = attr.ib(default=None, kw_only=True)
     _validate: bool = attr.ib(default=True, kw_only=True)
@@ -84,6 +160,15 @@ class Font:
 
     @classmethod
     def open(cls, path, lazy=True, validate=True):
+        """Instantiates a new Font object from a path to a UFO.
+
+        Args:
+            path: The path to the UFO to load.
+            lazy: If True, load glyphs, data files and images as they are accessed. If
+                False, load everything up front.
+            validate: If True, enable UFO data model validation during loading. If
+                False, load whatever is deserializable.
+        """
         reader = UFOReader(path, validate=validate)
         self = cls.read(reader, lazy=lazy)
         self._path = path
@@ -93,6 +178,13 @@ class Font:
 
     @classmethod
     def read(cls, reader, lazy=True):
+        """Instantiates a Font object from a :class:`fontTools.ufoLib.UFOReader`.
+
+        Args:
+            path: The path to the UFO to load.
+            lazy: If True, load glyphs, data files and images as they are accessed. If
+                False, load everything up front.
+        """
         self = cls(
             layers=LayerSet.read(reader, lazy=lazy),
             data=DataSet.read(reader, lazy=lazy),
@@ -129,16 +221,22 @@ class Font:
         return len(self.layers.defaultLayer)
 
     def get(self, name, default=None):
+        """Return the :class:`.Glyph` object for name if it is present in the
+        default layer, otherwise return ``default``."""
         return self.layers.defaultLayer.get(name, default)
 
     def keys(self):
+        """Return a list of glyph names in the default layer."""
         return self.layers.defaultLayer.keys()
 
     def close(self):
+        """Closes the UFOReader if it still exists to finalize any outstanding
+        file operations."""
         if self._reader is not None:
             self._reader.close()
 
     def __enter__(self):
+        # TODO: Document an example for this.
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
@@ -188,9 +286,12 @@ class Font:
 
     @property
     def reader(self):
+        """Returns the underlying :class:`fontTools.ufoLib.UFOReader`."""
         return self._reader
 
     def unlazify(self):
+        """Load all glyphs, data files and images if the Font object loaded
+        them lazily previously."""
         if self._lazy:
             assert self._reader is not None
             self.layers.unlazify()
@@ -202,6 +303,22 @@ class Font:
 
     @property
     def glyphOrder(self):
+        """The font's glyph order.
+
+        See http://unifiedfontobject.org/versions/ufo3/lib.plist/#publicglyphorder for
+        semantics.
+
+        Getter:
+            Return the font's glyph order, if it is set in lib, or an empty list.
+
+        Note:
+            The getter always returns a new list, modifications to it do not change
+            the lib content.
+
+        Setter:
+            Sets the font's glyph order. If ``value`` is None or an empty list, the
+            glyph order key will be deleted from the lib if it exists.
+        """
         return list(self.lib.get("public.glyphOrder", []))
 
     @glyphOrder.setter
@@ -214,6 +331,15 @@ class Font:
 
     @property
     def guidelines(self):
+        """The font's global guidelines.
+
+        Getter:
+            Returns the font's global guidelines or an empty list.
+
+        Setter:
+            Appends the list of Guidelines to the global Guidelines.
+                XXX Should it replace them?
+        """
         if self.info.guidelines is None:
             return []
         return self.info.guidelines
@@ -225,24 +351,64 @@ class Font:
 
     @property
     def path(self):
+        """Return the path of the UFO, if it was set, or None."""
         return self._path
 
     def addGlyph(self, glyph):
+        """Appends glyph object to the default layer unless its name is already
+        taken.
+
+        Note:
+            Call the method on the layer directly if you want to overwrite entries
+            with the same name or append copies of the glyph.
+        """
         self.layers.defaultLayer.addGlyph(glyph)
 
     def newGlyph(self, name):
+        """Creates and returns new :class:`.Glyph` object in default layer with
+        name."""
         return self.layers.defaultLayer.newGlyph(name)
 
     def newLayer(self, name, **kwargs):
+        """Creates and returns a new :class:`.Layer`.
+
+        Args:
+            name: The name of the new layer.
+            kwargs: The arguments passed to the Layer object constructor.
+        """
         return self.layers.newLayer(name, **kwargs)
 
     def renameGlyph(self, name, newName, overwrite=False):
+        """Renames a :class:`.Glyph` object in the default layer.
+
+        Args:
+            name: The old name.
+            newName: The new name.
+            overwrite: If False, raises exception if newName is already taken.
+                If True, overwrites (read: deletes) the old :class:`.Glyph` object.
+        """
         self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
 
     def renameLayer(self, name, newName, overwrite=False):
+        """Renames a :class:`.Layer`.
+
+        Args:
+            name: The old name.
+            newName: The new name.
+            overwrite: If False, raises exception if newName is already taken.
+                If True, overwrites (read: deletes) the old :class:`.Layer` object.
+        """
         self.layers.renameLayer(name, newName, overwrite)
 
     def appendGuideline(self, guideline):
+        """Appends a guideline to the list of the font's global guidelines.
+
+        Args:
+            guideline: A :class:`.Guideline` object or a mapping for the Guideline
+                constructor.
+
+        Creates the global guideline list unless it already exists.
+        """
         if not isinstance(guideline, Guideline):
             guideline = Guideline(**guideline)
         if self.info.guidelines is None:
@@ -250,6 +416,14 @@ class Font:
         self.info.guidelines.append(guideline)
 
     def write(self, writer, saveAs=None):
+        """Writes this Font to a :class:`fontTools.ufoLib.UFOWriter`.
+
+        Args:
+            writer: The :class:`fontTools.ufoLib.UFOWriter` to write to.
+            saveAs: If True, tells the writer to save out-of-place. If False, tells the
+                writer to save in-place. This affects how resources are cleaned before
+                writing.
+        """
         if saveAs is None:
             saveAs = self._reader is not writer
         # TODO move this check to fontTools UFOWriter
@@ -270,6 +444,24 @@ class Font:
     def save(
         self, path=None, formatVersion=3, structure=None, overwrite=False, validate=True
     ):
+        """Saves the font to ``path``.
+
+        Args:
+            path: The target path. If it is None, the path from the last save (except
+                when that was a ``fs.base.FS``) or when the font was first opened will
+                be used.
+            formatVersion: The version to save the UFO as. Only version 3 is supported
+                currently.
+            structure (fontTools.ufoLib.UFOFileStructure): How to store the UFO.
+                Can be either None, "zip" or "package". If None, it tries to use the
+                same structure as the original UFO at the output path. If "zip", the
+                UFO will be saved as compressed archive. If "package", it is saved as
+                a regular folder or "package".
+            overwrite: If False, raises OSError when the target path exists. If True,
+                overwrites the target path.
+            validate: If True, will validate the data in Font before writing it out. If
+                False, will write out whatever is serializable.
+        """
         if formatVersion != 3:
             raise NotImplementedError("unsupported format version: %s" % formatVersion)
         # validate 'structure' argument
