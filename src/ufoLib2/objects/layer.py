@@ -47,15 +47,63 @@ def _convert_glyphs(
 
 @attr.s(auto_attribs=True, slots=True, repr=False)
 class Layer:
+    """Represents a Layer that holds Glyph objects.
+
+    See http://unifiedfontobject.org/versions/ufo3/glyphs/layerinfo.plist/.
+
+    Note:
+        Various methods that work on Glyph objects take a ``layer`` attribute, because
+        the UFO data model prescribes that Components within a Glyph object refer to
+        glyphs *within the same layer*.
+
+    Behavior:
+        Layer behaves **partly** like a dictionary of type ``Dict[str, Glyph]``.
+        Unless the font is loaded eagerly (with ``lazy=False``), the Glyph objects
+        by default are only loaded into memory when accessed.
+
+        To get the number of glyphs in the layer::
+
+            glyphCount = len(layer)
+
+        To iterate over all glyphs::
+
+            for glyph in layer:
+                ...
+
+        To check if a specific glyph exists::
+
+            exists = "myGlyphName" in layer
+
+        To get a specific glyph::
+
+            layer["myGlyphName"]
+
+        To delete a specific glyph::
+
+            del layer["myGlyphName"]
+    """
+
     _name: str = DEFAULT_LAYER_NAME
     _glyphs: Dict[str, Glyph] = attr.ib(factory=dict, converter=_convert_glyphs)
     color: Optional[str] = None
+    """The color assigned to the layer."""
+
     lib: Dict[str, Any] = attr.ib(factory=dict)
+    """The layer's lib for mapping string keys to arbitrary data."""
 
     _glyphSet: Any = attr.ib(default=None, init=False, eq=False)
 
     @classmethod
     def read(cls, name, glyphSet, lazy=True):
+        """Instantiates a Layer object from a
+        :class:`fontTools.ufoLib.glifLib.GlyphSet`.
+
+        Args:
+            name: The name of the layer.
+            glyphSet: The GlyphSet object to read from.
+            lazy: If True, load glyphs as they are accessed. If False, load everything
+                up front.
+        """
         glyphNames = glyphSet.keys()
         if lazy:
             glyphs = {gn: _NOT_LOADED for gn in glyphNames}
@@ -72,6 +120,7 @@ class Layer:
         return self
 
     def unlazify(self):
+        """Load all glyphs into memory."""
         for _ in self:
             pass
 
@@ -112,15 +161,25 @@ class Layer:
         )
 
     def get(self, name, default=None):
+        """Return the Glyph object for name if it is present in this layer,
+        otherwise return ``default``."""
         try:
             return self[name]
         except KeyError:
             return default
 
     def keys(self):
+        """Returns a list of glyph names."""
         return self._glyphs.keys()
 
     def pop(self, name, default=KeyError):
+        """Remove and return glyph from layer.
+
+        Args:
+            name: The name of the glyph.
+            default: What to return if there is no glyph with the given name.
+        """
+        # XXX: make `default` a None instead of KeyError?
         try:
             glyph = self[name]
         except KeyError:
@@ -133,12 +192,25 @@ class Layer:
 
     @property
     def name(self):
+        """The name of the layer."""
         return self._name
 
     def addGlyph(self, glyph):
+        """Appends glyph object to the this layer unless its name is already
+        taken."""
         self.insertGlyph(glyph, overwrite=False, copy=False)
 
     def insertGlyph(self, glyph, name=None, overwrite=True, copy=True):
+        """Inserts Glyph object into this layer.
+
+        Args:
+            glyph: The Glyph object.
+            name: The name of the glyph.
+            overwrite: If True, overwrites (read: deletes) glyph with the same name if
+                it exists. If False, raises KeyError.
+            copy: If True, copies the Glyph object before insertion. If False, inserts
+                as is.
+        """
         if copy:
             glyph = glyph.copy()
         if name is not None:
@@ -150,18 +222,29 @@ class Layer:
         self._glyphs[glyph.name] = glyph
 
     def loadGlyph(self, name):
+        """Load and return Glyph object."""
+        # XXX: Remove and let __getitem__ do it?
         glyph = Glyph(name)
         self._glyphSet.readGlyph(name, glyph, glyph.getPointPen())
         self._glyphs[name] = glyph
         return glyph
 
     def newGlyph(self, name):
+        """Creates and returns new Glyph object in this layer with name."""
         if name in self._glyphs:
             raise KeyError(f"glyph named '{name}' already exists")
         self._glyphs[name] = glyph = Glyph(name)
         return glyph
 
     def renameGlyph(self, name, newName, overwrite=False):
+        """Renames a Glyph object in this layer.
+
+        Args:
+            name: The old name.
+            newName: The new name.
+            overwrite: If False, raises exception if newName is already taken.
+                If True, overwrites (read: deletes) the old Glyph object.
+        """
         if name == newName:
             return
         if not overwrite and newName in self._glyphs:
@@ -174,9 +257,21 @@ class Layer:
 
     def instantiateGlyphObject(self):
         # only for defcon API compatibility
+        """Returns a new Glyph instance.
+
+        |defcon_compat|
+        """
         return Glyph()
 
     def write(self, glyphSet, saveAs=True):
+        """Write Layer to a :class:`fontTools.ufoLib.glifLib.GlyphSet`.
+
+        Args:
+            glyphSet: The GlyphSet object to write to.
+            saveAs: If True, tells the writer to save out-of-place. If False, tells the
+                writer to save in-place. This affects how resources are cleaned before
+                writing.
+        """
         glyphs = self._glyphs
         if not saveAs:
             for name in set(glyphSet.contents).difference(glyphs):
