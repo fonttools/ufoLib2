@@ -21,6 +21,20 @@ jobs:
         pip install tox
         tox -e lint
 
+  docs:  # To see if they build.
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.8'
+    - name: Lint
+      run: |
+        pip install tox
+        tox -e docs
+
   build:
     runs-on: ${{ matrix.platform }}
     strategy:
