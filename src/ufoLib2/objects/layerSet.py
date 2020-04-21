@@ -25,10 +25,44 @@ def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
 
 @attr.s(auto_attribs=True, slots=True, repr=False)
 class LayerSet:
+    """Represents a mapping of layer names to Layer objects.
+
+    See http://unifiedfontobject.org/versions/ufo3/layercontents.plist/ for layer
+    semantics.
+
+    Behavior:
+        LayerSet behaves **partly** like a dictionary of type ``Dict[str, Layer]``,
+        but creating and loading layers is done through their own methods. Unless the
+        font is loaded eagerly (with ``lazy=False``), the layer objects and their
+        glyphs are by default only loaded into memory when accessed.
+
+        To get the number of layers in the font::
+
+            layerCount = len(font.layers)
+
+        To iterate over all layers::
+
+            for layer in font.layers:
+                ...
+
+        To check if a specific layer exists::
+
+            exists = "myLayerName" in font.layers
+
+        To get a specific layer::
+
+            font.layers["myLayerName"]
+
+        To delete a specific layer::
+
+            del font.layers["myLayerName"]
+    """
+
     _layers: MutableMapping[str, Layer] = attr.ib(
         factory=OrderedDict, converter=_convert_layers
     )
     defaultLayer: Optional[Layer] = None
+    """The default layer of the UFO, typically named ``public.default``."""
 
     _reader: Optional[Any] = attr.ib(default=None, init=False, eq=False)
 
@@ -61,6 +95,13 @@ class LayerSet:
     @classmethod
     def read(cls, reader, lazy=True):
         layers = OrderedDict()
+        """Instantiates a LayerSet object from a :class:`fontTools.ufoLib.UFOReader`.
+
+        Args:
+            path: The path to the UFO to load.
+            lazy: If True, load glyphs, data files and images as they are accessed. If
+                False, load everything up front.
+        """
         defaultLayer = None
 
         defaultLayerName = reader.getDefaultLayerName()
@@ -84,6 +125,7 @@ class LayerSet:
         return self
 
     def unlazify(self):
+        """Load all layers into memory."""
         for layer in self:
             layer.unlazify()
 
@@ -156,6 +198,19 @@ class LayerSet:
 
     @property
     def layerOrder(self):
+        """The font's layer order.
+
+        Getter:
+            Returns the font's layer order.
+
+        Note:
+            The getter always returns a new list, modifications to it do not change
+            the LayerSet.
+
+        Setter:
+            Sets the font's layer order. The set order value must contain all layers
+            that are present in the LayerSet.
+        """
         return list(self._layers)
 
     @layerOrder.setter
@@ -167,12 +222,26 @@ class LayerSet:
         self._layers = layers
 
     def newLayer(self, name, **kwargs):
+        """Creates and returns a named layer.
+
+        Args:
+            name: The layer name.
+            kwargs: Arguments passed to the constructor of Layer.
+        """
         if name in self._layers:
             raise KeyError("layer %r already exists" % name)
         self._layers[name] = layer = Layer(name, **kwargs)
         return layer
 
     def renameGlyph(self, name, newName, overwrite=False):
+        """Renames a glyph across all layers.
+
+        Args:
+            name: The old name.
+            newName: The new name.
+            overwrite: If False, raises exception if newName is already taken in any
+                layer. If True, overwrites (read: deletes) the old Glyph object.
+        """
         # Note: this would be easier if the glyph contained the layers!
         if name == newName:
             return
@@ -193,6 +262,14 @@ class LayerSet:
                 glyph._name = newName
 
     def renameLayer(self, name, newName, overwrite=False):
+        """Renames a layer.
+
+        Args:
+            name: The old name.
+            newName: The new name.
+            overwrite: If False, raises exception if newName is already taken. If True,
+                overwrites (read: deletes) the old Layer object.
+        """
         if name == newName:
             return
         if not overwrite and newName in self._layers:
@@ -203,6 +280,14 @@ class LayerSet:
         layer._name = newName
 
     def write(self, writer, saveAs=None):
+        """Writes this LayerSet to a :class:`fontTools.ufoLib.UFOWriter`.
+
+        Args:
+            writer(fontTools.ufoLib.UFOWriter): The writer to write to.
+            saveAs: If True, tells the writer to save out-of-place. If False, tells the
+                writer to save in-place. This affects how resources are cleaned before
+                writing.
+        """
         if saveAs is None:
             saveAs = self._reader is not writer
         # if in-place, remove deleted layers
