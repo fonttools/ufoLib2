@@ -12,18 +12,47 @@ from .misc import _convert_transform, getBounds, getControlBounds
 
 @attr.s(auto_attribs=True, slots=True)
 class Component:
+    """Represents a reference to another glyph in the same layer.
+
+    See http://unifiedfontobject.org/versions/ufo3/glyphs/glif/#component.
+
+    Note:
+        Components always refer to glyphs in the same layer. Referencing different
+        layers is currently not possible in the UFO data model.
+    """
+
     baseGlyph: str
+    """The name of the glyph in the same layer to insert."""
+
     transformation: Transform = attr.ib(default=Identity, converter=_convert_transform)
+    """The affine transformation to apply to the :attr:`.Component.baseGlyph`."""
+
     identifier: Optional[str] = None
+    """The globally unique identifier of the component."""
 
     def move(self, delta: Tuple[Number, Number]) -> None:
+        """Moves this component by (x, y) font units."""
         x, y = delta
         self.transformation = self.transformation.translate(x, y)
 
     def getBounds(self, layer):
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the component,
+        taking the actual contours into account.
+
+        Args:
+            layer: The layer of the containing glyph to look up components.
+        """
         return getBounds(self, layer)
 
     def getControlBounds(self, layer):
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the component,
+        taking only the control points into account.
+
+        Gives inaccurate results with extruding curvatures.
+
+        Args:
+            layer: The layer of the containing glyph to look up components.
+        """
         return getControlBounds(self, layer)
 
     # -----------
@@ -31,10 +60,12 @@ class Component:
     # -----------
 
     def draw(self, pen):
+        """Draws component with given pen."""
         pointPen = PointToSegmentPen(pen)
         self.drawPoints(pointPen)
 
     def drawPoints(self, pointPen):
+        """Draws points of component with given point pen."""
         try:
             pointPen.addComponent(
                 self.baseGlyph, self.transformation, identifier=self.identifier

@@ -8,12 +8,29 @@ from ufoLib2.typing import Number
 
 @attr.s(auto_attribs=True, slots=True)
 class Guideline(AttrDictMixin):
+    """Represents a single guideline.
+
+    See http://unifiedfontobject.org/versions/ufo3/glyphs/glif/#guideline. Has some
+    data composition restrictions.
+    """
+
     x: Optional[Number] = None
+    """The origin x coordinate of the guideline."""
+
     y: Optional[Number] = None
+    """The origin y coordinate of the guideline."""
+
     angle: Optional[Number] = None
+    """The angle of the guideline."""
+
     name: Optional[str] = None
+    """The name of the guideline, no uniqueness required."""
+
     color: Optional[str] = None
+    """The color of the guideline."""
+
     identifier: Optional[str] = None
+    """The globally unique identifier of the guideline."""
 
     def __attrs_post_init__(self):
         x, y, angle = self.x, self.y, self.angle
