@@ -31,7 +31,7 @@ copy::
     import copy
     copy.deepcopy(font)
     copy.deepcopy(font.layers["myLayer"])
-    copy.deepcopy(font["glyphName"])  # Attention: also copies name!
+    copy.deepcopy(font["glyphName"])
     copy.deepcopy(font["glyphName"].contours[0])
     copy.deepcopy(font["glyphName"].contours[0].points[0])
 
