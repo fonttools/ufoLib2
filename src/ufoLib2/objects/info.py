@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Type, TypeVar, Union
 
 import attr
 from fontTools.ufoLib import UFOReader
@@ -66,10 +66,12 @@ class WidthClass(IntEnum):
     ULTRA_EXPANDED = 9
 
 
+Tc = TypeVar("Tc", Guideline, GaspRangeRecord, NameRecord)
+
+
 def _convert_optional_list(
-    lst: Optional[Sequence[Any]],
-    klass: Any,  # Should be "Type[T]", but mypy chokes on that.
-) -> Optional[List[Any]]:  # Should be "-> Optional[List[T]]"
+    lst: Optional[Sequence[Any]], klass: Type[Tc],
+) -> Optional[List[Tc]]:
     if lst is None:
         return None
     result = []
