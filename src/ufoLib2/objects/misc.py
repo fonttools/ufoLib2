@@ -1,11 +1,13 @@
+from abc import abstractmethod
 from collections import namedtuple
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Set, Union
+from typing import Any, Dict, List, Optional, Sequence, Set, Union
 
 import attr
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
+from fontTools.ufoLib import UFOReader, UFOWriter
 
 from ufoLib2.typing import Number
 
@@ -48,24 +50,49 @@ def _deepcopy_unlazify_attrs(self, memo):
 
 @attr.s(auto_attribs=True, slots=True, repr=False)
 class DataStore(MutableMapping):
-    listdir: Optional[Any] = None
-    readf: Optional[Any] = None
-    writef: Optional[Any] = None
-    deletef: Optional[Any] = None
+    """Represents the base class for ImageSet and DataSet.
+
+    Both behave like a dictionary that loads its "values" lazily by default and only
+    differ in which reader and writer methods they call.
+    """
 
     _data: Dict[str, Any] = attr.ib(factory=dict)
 
     _reader: Optional[Any] = attr.ib(default=None, init=False, repr=False, eq=False)
     _scheduledForDeletion: Set[str] = attr.ib(factory=set, init=False, repr=False)
 
+    @staticmethod
+    @abstractmethod
+    def list_contents(reader: UFOReader) -> List[str]:
+        """Returns a list of POSIX filename strings in the data store."""
+        ...
+
+    @staticmethod
+    @abstractmethod
+    def read_data(reader: UFOReader, filename: str) -> bytes:
+        """Returns the data at filename within the store."""
+        ...
+
+    @staticmethod
+    @abstractmethod
+    def write_data(writer: UFOWriter, filename: str, data: bytes) -> None:
+        """Writes the data to filename within the store."""
+        ...
+
+    @staticmethod
+    @abstractmethod
+    def remove_data(writer: UFOWriter, filename: str) -> None:
+        """Remove the data at filename within the store."""
+        ...
+
     @classmethod
     def read(cls, reader, lazy=True):
         self = cls()
-        for fileName in cls.listdir(reader):
+        for fileName in cls.list_contents(reader):
             if lazy:
                 self._data[fileName] = _NOT_LOADED
             else:
-                self._data[fileName] = cls.readf(reader, fileName)
+                self._data[fileName] = cls.read_data(reader, fileName)
         if lazy:
             self._reader = reader
         return self
@@ -86,7 +113,7 @@ class DataStore(MutableMapping):
 
     def __getitem__(self, fileName):
         if self._data[fileName] is _NOT_LOADED:
-            self._data[fileName] = self.__class__.readf(self._reader, fileName)
+            self._data[fileName] = self.read_data(self._reader, fileName)
         return self._data[fileName]
 
     def __setitem__(self, fileName, data):
@@ -114,7 +141,7 @@ class DataStore(MutableMapping):
         # if in-place, remove deleted data
         if not saveAs:
             for fileName in self._scheduledForDeletion:
-                self.__class__.deletef(writer, fileName)
+                self.remove_data(writer, fileName)
         # Write data. Iterating over _data.items() prevents automatic loading.
         for fileName, data in self._data.items():
             # Two paths:
@@ -123,11 +150,11 @@ class DataStore(MutableMapping):
             # 2) We save elsewhere. Load all data files to write them back out.
             if data is _NOT_LOADED:
                 if saveAs:
-                    data = self.__class__.readf(self._reader, fileName)
+                    data = self.read_data(self._reader, fileName)
                     self._data[fileName] = data
                 else:
                     continue
-            self.__class__.writef(writer, fileName, data)
+            self.write_data(writer, fileName, data)
         self._scheduledForDeletion = set()
         if saveAs:
             # all data was read by now, ref to reader no longer needed
