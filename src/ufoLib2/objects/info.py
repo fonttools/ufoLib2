@@ -2,15 +2,16 @@ from enum import IntEnum
 from typing import Any, List, Optional, Sequence, Union
 
 import attr
+from fontTools.ufoLib import UFOReader
 
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.misc import AttrDictMixin
 from ufoLib2.typing import Number
 
-__all__ = ["Info", "GaspRangeRecord", "NameRecord", "WidthClass"]
+__all__ = ("Info", "GaspRangeRecord", "NameRecord", "WidthClass")
 
 
-def _positive(instance, attribute, value):
+def _positive(instance: Any, attribute: Any, value: int) -> None:
     if value < 0:
         raise ValueError(
             "'{name}' must be at least 0 (got {value!r})".format(
@@ -65,7 +66,10 @@ class WidthClass(IntEnum):
     ULTRA_EXPANDED = 9
 
 
-def _convert_optional_list(lst, klass):
+def _convert_optional_list(
+    lst: Optional[Sequence[Any]],
+    klass: Any,  # Should be "Type[T]", but mypy chokes on that.
+) -> Optional[List[Any]]:  # Should be "-> Optional[List[T]]"
     if lst is None:
         return None
     result = []
@@ -132,11 +136,11 @@ class Info:
     )
 
     @property
-    def guidelines(self):
+    def guidelines(self) -> Optional[List[Guideline]]:
         return self._guidelines
 
     @guidelines.setter
-    def guidelines(self, value):
+    def guidelines(self, value: Optional[List[Guideline]]) -> None:
         self._guidelines = _convert_guidelines(value)
 
     _openTypeGaspRangeRecords: Optional[List[GaspRangeRecord]] = attr.ib(
@@ -144,11 +148,11 @@ class Info:
     )
 
     @property
-    def openTypeGaspRangeRecords(self):
+    def openTypeGaspRangeRecords(self) -> Optional[List[GaspRangeRecord]]:
         return self._openTypeGaspRangeRecords
 
     @openTypeGaspRangeRecords.setter
-    def openTypeGaspRangeRecords(self, value):
+    def openTypeGaspRangeRecords(self, value: Optional[List[GaspRangeRecord]]) -> None:
         self._openTypeGaspRangeRecords = _convert_gasp_range_records(value)
 
     openTypeHeadCreated: Optional[str] = None
@@ -185,11 +189,11 @@ class Info:
     )
 
     @property
-    def openTypeNameRecords(self):
+    def openTypeNameRecords(self) -> Optional[List[NameRecord]]:
         return self._openTypeNameRecords
 
     @openTypeNameRecords.setter
-    def openTypeNameRecords(self, value):
+    def openTypeNameRecords(self, value: Optional[List[NameRecord]]) -> None:
         self._openTypeNameRecords = _convert_name_records(value)
 
     _openTypeOS2WidthClass: Optional[WidthClass] = attr.ib(
@@ -197,17 +201,17 @@ class Info:
     )
 
     @property
-    def openTypeOS2WidthClass(self):
+    def openTypeOS2WidthClass(self) -> Optional[WidthClass]:
         return self._openTypeOS2WidthClass
 
     @openTypeOS2WidthClass.setter
-    def openTypeOS2WidthClass(self, value):
+    def openTypeOS2WidthClass(self, value: Optional[WidthClass]) -> None:
         self._openTypeOS2WidthClass = value if value is None else WidthClass(value)
 
     openTypeOS2WeightClass: Optional[int] = attr.ib(default=None)
 
     @openTypeOS2WeightClass.validator
-    def _validate_weight_class(self, attribute, value):
+    def _validate_weight_class(self, attribute: Any, value: Optional[int]) -> None:
         if value is not None and (value < 1 or value > 1000):
             raise ValueError("'openTypeOS2WeightClass' must be between 1 and 1000")
 
@@ -274,7 +278,7 @@ class Info:
     year: Optional[int] = None
 
     @classmethod
-    def read(cls, reader):
+    def read(cls, reader: UFOReader) -> "Info":
         """Instantiates a Info object from a
         :class:`fontTools.ufoLib.UFOReader`."""
         self = cls()
