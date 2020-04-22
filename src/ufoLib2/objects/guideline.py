@@ -32,7 +32,7 @@ class Guideline(AttrDictMixin):
     identifier: Optional[str] = None
     """The globally unique identifier of the guideline."""
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         x, y, angle = self.x, self.y, self.angle
         if x is None and y is None:
             raise ValueError("x or y must be present")
