@@ -46,7 +46,7 @@ class ImageSet(DataStore):
         """Remove the image data at filename within the store."""
         writer.removeImage(filename)
 
-    def __setitem__(self, fileName, data):
+    def __setitem__(self, fileName: str, data: bytes) -> None:
         if "/" in fileName:
             raise ValueError(
                 "Images cannot be put into subdirectories of the images folder."
