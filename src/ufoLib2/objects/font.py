@@ -1,20 +1,24 @@
 import os
 import shutil
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, KeysView, List, Mapping, Optional, Tuple, Union
 
 import attr
+import fs
 import fs.tempfs
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
+from ufoLib2.errors import Error
 from ufoLib2.objects.dataSet import DataSet
 from ufoLib2.objects.features import Features
+from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
+from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
-from ufoLib2.typing import Number
+from ufoLib2.typing import Number, PathLike, T
 
 
 def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
@@ -96,9 +100,7 @@ class Font:
         default layer.
     """
 
-    _path: Optional[Union[str, bytes, os.PathLike]] = attr.ib(
-        default=None, metadata=dict(copyable=False)
-    )
+    _path: Optional[PathLike] = attr.ib(default=None, metadata=dict(copyable=False))
 
     layers: LayerSet = attr.ib(
         factory=LayerSet, validator=attr.validators.instance_of(LayerSet), kw_only=True,
@@ -136,8 +138,8 @@ class Font:
     _lazy: Optional[bool] = attr.ib(default=None, kw_only=True)
     _validate: bool = attr.ib(default=True, kw_only=True)
 
-    _reader: Optional[Any] = attr.ib(default=None, kw_only=True, init=False)
-    _fileStructure: Optional[Any] = attr.ib(default=None, init=False)
+    _reader: Optional[UFOReader] = attr.ib(default=None, kw_only=True, init=False)
+    _fileStructure: Optional[UFOFileStructure] = attr.ib(default=None, init=False)
 
     def __attrs_post_init__(self) -> None:
         if self._path is not None:
@@ -159,7 +161,7 @@ class Font:
                 self._reader = reader
 
     @classmethod
-    def open(cls, path, lazy=True, validate=True):
+    def open(cls, path: PathLike, lazy: bool = True, validate: bool = True,) -> "Font":
         """Instantiates a new Font object from a path to a UFO.
 
         Args:
@@ -177,7 +179,7 @@ class Font:
         return self
 
     @classmethod
-    def read(cls, reader, lazy=True):
+    def read(cls, reader: UFOReader, lazy: bool = True) -> "Font":
         """Instantiates a Font object from a :class:`fontTools.ufoLib.UFOReader`.
 
         Args:
@@ -202,56 +204,72 @@ class Font:
             self._reader = reader
         return self
 
-    def __contains__(self, name):
-        return name in self.layers.defaultLayer
+    def __contains__(self, name: str) -> bool:
+        if self.layers.defaultLayer is not None:
+            return name in self.layers.defaultLayer
+        return False
 
-    def __delitem__(self, name):
-        del self.layers.defaultLayer[name]
+    def __delitem__(self, name: str) -> None:
+        if self.layers.defaultLayer is not None:
+            del self.layers.defaultLayer[name]
+        raise Error(f"No default layer present, cannot delete '{name}'.")
 
-    def __getitem__(self, name):
-        return self.layers.defaultLayer[name]
+    def __getitem__(self, name: str) -> Glyph:
+        if self.layers.defaultLayer is not None:
+            return self.layers.defaultLayer[name]
+        raise Error(f"No default layer present, cannot retrieve '{name}'.")
 
-    def __setitem__(self, name, glyph):
-        self.layers.defaultLayer[name] = glyph
+    def __setitem__(self, name: str, glyph: Glyph) -> None:
+        if self.layers.defaultLayer is not None:
+            self.layers.defaultLayer[name] = glyph
+        raise Error(f"No default layer present, cannot insert '{name}'.")
 
-    def __iter__(self):
-        return iter(self.layers.defaultLayer)
+    def __iter__(self) -> Iterator[Glyph]:
+        if self.layers.defaultLayer is not None:
+            return iter(self.layers.defaultLayer)
+        raise Error("No default layer present, cannot iterate over it.")
 
-    def __len__(self):
-        return len(self.layers.defaultLayer)
+    def __len__(self) -> int:
+        if self.layers.defaultLayer is not None:
+            return len(self.layers.defaultLayer)
+        raise Error("No default layer present, cannot determine glyph count.")
 
-    def get(self, name, default=None):
+    def get(self, name: str, default: Optional[T] = None) -> Union[Optional[T], Glyph]:
         """Return the :class:`.Glyph` object for name if it is present in the
         default layer, otherwise return ``default``."""
-        return self.layers.defaultLayer.get(name, default)
+        if self.layers.defaultLayer is not None:
+            return self.layers.defaultLayer.get(name, default)
+        return default
 
-    def keys(self):
+    def keys(self) -> KeysView[str]:
         """Return a list of glyph names in the default layer."""
-        return self.layers.defaultLayer.keys()
+        if self.layers.defaultLayer is not None:
+            return self.layers.defaultLayer.keys()
+        raise Error("No default layer present, cannot retrieve list of glyph names.")
 
-    def close(self):
+    def close(self) -> None:
         """Closes the UFOReader if it still exists to finalize any outstanding
         file operations."""
         if self._reader is not None:
             self._reader.close()
 
-    def __enter__(self):
+    def __enter__(self) -> "Font":
         # TODO: Document an example for this.
         return self
 
-    def __exit__(self, exc_type, exc_value, exc_tb):
+    def __exit__(self, exc_type: Any, exc_value: Any, exc_tb: Any) -> None:
         self.close()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         names = list(filter(None, [self.info.familyName, self.info.styleName]))
         fontName = " '{}'".format(" ".join(names)) if names else ""
         return "<{}.{}{} at {}>".format(
             self.__class__.__module__, self.__class__.__name__, fontName, hex(id(self))
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         # same as attrs-defined __eq__ method, only that it un-lazifies fonts if needed
-        if other.__class__ is not self.__class__:
+        if not isinstance(other, Font):
             return NotImplemented
 
         for font in (self, other):
@@ -278,18 +296,18 @@ class Font:
             other.images,
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         result = self.__eq__(other)
         if result is NotImplemented:
             return NotImplemented
         return not result
 
     @property
-    def reader(self):
+    def reader(self) -> UFOReader:
         """Returns the underlying :class:`fontTools.ufoLib.UFOReader`."""
         return self._reader
 
-    def unlazify(self):
+    def unlazify(self) -> None:
         """Load all glyphs, data files and images if the Font object loaded
         them lazily previously."""
         if self._lazy:
@@ -302,7 +320,7 @@ class Font:
     __deepcopy__ = _deepcopy_unlazify_attrs
 
     @property
-    def glyphOrder(self):
+    def glyphOrder(self) -> List[str]:
         """The font's glyph order.
 
         See http://unifiedfontobject.org/versions/ufo3/lib.plist/#publicglyphorder for
@@ -322,7 +340,7 @@ class Font:
         return list(self.lib.get("public.glyphOrder", []))
 
     @glyphOrder.setter
-    def glyphOrder(self, value):
+    def glyphOrder(self, value: Optional[List[str]]) -> None:
         if value is None or len(value) == 0:
             if "public.glyphOrder" in self.lib:
                 del self.lib["public.glyphOrder"]
@@ -330,7 +348,7 @@ class Font:
             self.lib["public.glyphOrder"] = value
 
     @property
-    def guidelines(self):
+    def guidelines(self) -> List[Guideline]:
         """The font's global guidelines.
 
         Getter:
@@ -345,16 +363,16 @@ class Font:
         return self.info.guidelines
 
     @guidelines.setter
-    def guidelines(self, value):
+    def guidelines(self, value: List[Guideline]) -> None:
         for guideline in value:
             self.appendGuideline(guideline)
 
     @property
-    def path(self):
+    def path(self) -> Optional[PathLike]:
         """Return the path of the UFO, if it was set, or None."""
         return self._path
 
-    def addGlyph(self, glyph):
+    def addGlyph(self, glyph: Glyph) -> None:
         """Appends glyph object to the default layer unless its name is already
         taken.
 
@@ -362,14 +380,18 @@ class Font:
             Call the method on the layer directly if you want to overwrite entries
             with the same name or append copies of the glyph.
         """
-        self.layers.defaultLayer.addGlyph(glyph)
+        if self.layers.defaultLayer is not None:
+            self.layers.defaultLayer.addGlyph(glyph)
+        raise Error("No default layer present, cannot append Glyph object.")
 
-    def newGlyph(self, name):
+    def newGlyph(self, name: str) -> Glyph:
         """Creates and returns new :class:`.Glyph` object in default layer with
         name."""
-        return self.layers.defaultLayer.newGlyph(name)
+        if self.layers.defaultLayer is not None:
+            return self.layers.defaultLayer.newGlyph(name)
+        raise Error("No default layer present, cannot create new Glyph.")
 
-    def newLayer(self, name, **kwargs):
+    def newLayer(self, name: str, **kwargs: Any) -> Layer:
         """Creates and returns a new :class:`.Layer`.
 
         Args:
@@ -378,7 +400,7 @@ class Font:
         """
         return self.layers.newLayer(name, **kwargs)
 
-    def renameGlyph(self, name, newName, overwrite=False):
+    def renameGlyph(self, name: str, newName: str, overwrite: bool = False) -> None:
         """Renames a :class:`.Glyph` object in the default layer.
 
         Args:
@@ -387,9 +409,11 @@ class Font:
             overwrite: If False, raises exception if newName is already taken.
                 If True, overwrites (read: deletes) the old :class:`.Glyph` object.
         """
-        self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
+        if self.layers.defaultLayer is not None:
+            self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
+        raise Error("No default layer present, cannot rename glyph.")
 
-    def renameLayer(self, name, newName, overwrite=False):
+    def renameLayer(self, name: str, newName: str, overwrite: bool = False) -> None:
         """Renames a :class:`.Layer`.
 
         Args:
@@ -400,7 +424,7 @@ class Font:
         """
         self.layers.renameLayer(name, newName, overwrite)
 
-    def appendGuideline(self, guideline):
+    def appendGuideline(self, guideline: Union[Guideline, Mapping[str, Any]]) -> None:
         """Appends a guideline to the list of the font's global guidelines.
 
         Args:
@@ -410,12 +434,17 @@ class Font:
         Creates the global guideline list unless it already exists.
         """
         if not isinstance(guideline, Guideline):
+            if not isinstance(guideline, Mapping):
+                raise TypeError(
+                    "guideline must be a Guideline object or a Mapping for the ",
+                    "Guideline constructor.",
+                )
             guideline = Guideline(**guideline)
         if self.info.guidelines is None:
             self.info.guidelines = []
         self.info.guidelines.append(guideline)
 
-    def write(self, writer, saveAs=None):
+    def write(self, writer: UFOWriter, saveAs: Optional[bool] = None) -> None:
         """Writes this Font to a :class:`fontTools.ufoLib.UFOWriter`.
 
         Args:
@@ -427,7 +456,10 @@ class Font:
         if saveAs is None:
             saveAs = self._reader is not writer
         # TODO move this check to fontTools UFOWriter
-        if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:
+        if (
+            self.layers.defaultLayer is not None
+            and self.layers.defaultLayer.name != DEFAULT_LAYER_NAME
+        ):
             assert DEFAULT_LAYER_NAME not in self.layers.layerOrder
         # save font attrs
         writer.writeFeatures(self.features.text)
@@ -442,8 +474,13 @@ class Font:
         self.images.write(writer, saveAs=saveAs)
 
     def save(
-        self, path=None, formatVersion=3, structure=None, overwrite=False, validate=True
-    ):
+        self,
+        path: Optional[Union[PathLike, fs.base.FS]] = None,
+        formatVersion: int = 3,
+        structure: Optional[UFOFileStructure] = None,
+        overwrite: bool = False,
+        validate: bool = True,
+    ) -> None:
         """Saves the font to ``path``.
 
         Args:
@@ -463,7 +500,8 @@ class Font:
                 False, will write out whatever is serializable.
         """
         if formatVersion != 3:
-            raise NotImplementedError("unsupported format version: %s" % formatVersion)
+            raise NotImplementedError(f"unsupported format version: {formatVersion}")
+
         # validate 'structure' argument
         if structure is not None:
             structure = UFOFileStructure(structure)
@@ -471,11 +509,9 @@ class Font:
             # if structure is None, fall back to the same as when first loaded
             structure = self._fileStructure
 
-        if hasattr(path, "__fspath__"):
-            path = path.__fspath__()
-        if isinstance(path, str):
-            path = os.path.normpath(path)
-        # else we assume it's an fs.BaseFS and we pass it on to UFOWriter
+        # Normalize path unless we're given a fs.base.FS, which we pass to UFOWriter.
+        if path is not None and not isinstance(path, fs.base.FS):
+            path = os.path.normpath(os.fspath(path))
 
         overwritePath = tmp = None
 
@@ -503,6 +539,8 @@ class Font:
             raise
         else:
             if overwritePath is not None:
+                assert isinstance(path, str)
+
                 # remove existing then move file to destination
                 if os.path.isdir(overwritePath):
                     shutil.rmtree(overwritePath)
@@ -515,4 +553,6 @@ class Font:
             if tmp is not None:
                 tmp.close()
 
-        self._path = path
+        # Only remember path if it isn't a fs.base.FS.
+        if not isinstance(path, fs.base.FS):
+            self._path = path
