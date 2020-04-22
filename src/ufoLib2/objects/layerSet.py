@@ -1,11 +1,23 @@
 from collections import OrderedDict
-from typing import Any, Iterable, MutableMapping, Optional
+from typing import (
+    AbstractSet,
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    MutableMapping,
+    Optional,
+    Union,
+)
 
 import attr
+from fontTools.ufoLib import UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
+from ufoLib2.errors import Error
 from ufoLib2.objects.layer import Layer
-from ufoLib2.objects.misc import _NOT_LOADED, _deepcopy_unlazify_attrs
+from ufoLib2.objects.misc import _NOT_LOADED, Placeholder, _deepcopy_unlazify_attrs
+from ufoLib2.typing import T
 
 
 def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
@@ -58,15 +70,15 @@ class LayerSet:
             del font.layers["myLayerName"]
     """
 
-    _layers: MutableMapping[str, Layer] = attr.ib(
+    _layers: MutableMapping[str, Union[Layer, Placeholder]] = attr.ib(
         factory=OrderedDict, converter=_convert_layers
     )
     defaultLayer: Optional[Layer] = None
     """The default layer of the UFO, typically named ``public.default``."""
 
-    _reader: Optional[Any] = attr.ib(default=None, init=False, eq=False)
+    _reader: Optional[UFOReader] = attr.ib(default=None, init=False, eq=False)
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if not self._layers:
             # LayerSet is never empty; always contains at least the default
             if self.defaultLayer is not None:
@@ -86,15 +98,14 @@ class LayerSet:
                 )
         elif len(self._layers) == 1:
             # there's only one, we assume it's the default
-            self.defaultLayer = next(self._layers.values())
+            self.defaultLayer = self[next(iter(self._layers.keys()))]
         else:
             if DEFAULT_LAYER_NAME not in self._layers:
                 raise ValueError("default layer not specified")
-            self.defaultLayer = self._layers[DEFAULT_LAYER_NAME]
+            self.defaultLayer = self[DEFAULT_LAYER_NAME]
 
     @classmethod
-    def read(cls, reader, lazy=True):
-        layers = OrderedDict()
+    def read(cls, reader: UFOReader, lazy: bool = True) -> "LayerSet":
         """Instantiates a LayerSet object from a :class:`fontTools.ufoLib.UFOReader`.
 
         Args:
@@ -102,6 +113,7 @@ class LayerSet:
             lazy: If True, load glyphs, data files and images as they are accessed. If
                 False, load everything up front.
         """
+        layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
         defaultLayer = None
 
         defaultLayerName = reader.getDefaultLayerName()
@@ -109,7 +121,7 @@ class LayerSet:
         for layerName in reader.getLayerNames():
             isDefault = layerName == defaultLayerName
             if isDefault or not lazy:
-                layer = cls._loadLayer(reader, layerName, lazy, isDefault)
+                layer = cls._loadLayer(reader, layerName, lazy)
                 if isDefault:
                     defaultLayer = layer
                 layers[layerName] = layer
@@ -118,13 +130,16 @@ class LayerSet:
 
         assert defaultLayer is not None
 
-        self = cls(layers, defaultLayer=defaultLayer)
+        self = cls(
+            layers,  # type: ignore
+            defaultLayer=defaultLayer,
+        )
         if lazy:
             self._reader = reader
 
         return self
 
-    def unlazify(self):
+    def unlazify(self) -> None:
         """Load all layers into memory."""
         for layer in self:
             layer.unlazify()
@@ -132,61 +147,55 @@ class LayerSet:
     __deepcopy__ = _deepcopy_unlazify_attrs
 
     @staticmethod
-    def _loadLayer(reader, layerName, lazy=True, default=False):
-        # UFOReader.getGlyphSet method doesn't support 'defaultLayer'
-        # keyword argument, whereas the UFOWriter.getGlyphSet method
-        # requires it. In order to allow to use an instance of
-        # UFOWriter as the 'reader', here we try both ways...
-        try:
-            glyphSet = reader.getGlyphSet(layerName, defaultLayer=default)
-        except TypeError as e:
-            # TODO use inspect module?
-            if "keyword argument 'defaultLayer'" in str(e):
-                glyphSet = reader.getGlyphSet(layerName)
-
+    def _loadLayer(reader: UFOReader, layerName: str, lazy: bool = True) -> Layer:
+        glyphSet = reader.getGlyphSet(layerName)
         return Layer.read(layerName, glyphSet, lazy=lazy)
 
-    def loadLayer(self, layerName, lazy=True, default=False):
+    def loadLayer(self, layerName: str, lazy: bool = True) -> Layer:
+        # XXX: Remove this method and do business via _loadLayer or take this one
+        # private.
         assert self._reader is not None
         if layerName not in self._layers:
             raise KeyError(layerName)
-        layer = self._loadLayer(self._reader, layerName, lazy, default)
+        layer = self._loadLayer(self._reader, layerName, lazy)
         self._layers[layerName] = layer
         return layer
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -> bool:
         return name in self._layers
 
-    def __delitem__(self, name):
-        if name == self.defaultLayer.name:
-            raise KeyError("cannot delete default layer %r" % name)
+    def __delitem__(self, name: str) -> None:
+        if self.defaultLayer is not None:
+            if name == self.defaultLayer.name:
+                raise KeyError("cannot delete default layer %r" % name)
         del self._layers[name]
 
-    def __getitem__(self, name):
-        if self._layers[name] is _NOT_LOADED:
+    def __getitem__(self, name: str) -> Layer:
+        layer_object = self._layers[name]
+        if isinstance(layer_object, Placeholder):
             return self.loadLayer(name)
-        return self._layers[name]
+        return layer_object
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Layer]:
         for layer_name, layer_object in self._layers.items():
-            if layer_object is _NOT_LOADED:
+            if isinstance(layer_object, Placeholder):
                 yield self.loadLayer(layer_name)
             else:
                 yield layer_object
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._layers)
 
-    def get(self, name, default=None):
+    def get(self, name: str, default: Optional[T] = None) -> Union[Optional[T], Layer]:
         try:
             return self[name]
         except KeyError:
             return default
 
-    def keys(self):
+    def keys(self) -> AbstractSet[str]:
         return self._layers.keys()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         n = len(self._layers)
         return "<{}.{} ({} layer{}) at {}>".format(
             self.__class__.__module__,
@@ -197,7 +206,7 @@ class LayerSet:
         )
 
     @property
-    def layerOrder(self):
+    def layerOrder(self) -> List[str]:
         """The font's layer order.
 
         Getter:
@@ -214,14 +223,17 @@ class LayerSet:
         return list(self._layers)
 
     @layerOrder.setter
-    def layerOrder(self, order):
-        assert set(order) == set(self._layers)
+    def layerOrder(self, order: List[str]) -> None:
+        if set(order) != set(self._layers):
+            raise Error(
+                "`order` must contain the same layers that are currently present."
+            )
         layers = OrderedDict()
         for name in order:
             layers[name] = self._layers[name]
         self._layers = layers
 
-    def newLayer(self, name, **kwargs):
+    def newLayer(self, name: str, **kwargs: Any) -> Layer:
         """Creates and returns a named layer.
 
         Args:
@@ -233,7 +245,7 @@ class LayerSet:
         self._layers[name] = layer = Layer(name, **kwargs)
         return layer
 
-    def renameGlyph(self, name, newName, overwrite=False):
+    def renameGlyph(self, name: str, newName: str, overwrite: bool = False) -> None:
         """Renames a glyph across all layers.
 
         Args:
@@ -261,7 +273,7 @@ class LayerSet:
                 layer[newName] = glyph = layer.pop(name)
                 glyph._name = newName
 
-    def renameLayer(self, name, newName, overwrite=False):
+    def renameLayer(self, name: str, newName: str, overwrite: bool = False) -> None:
         """Renames a layer.
 
         Args:
@@ -279,7 +291,7 @@ class LayerSet:
         self._layers[newName] = layer
         layer._name = newName
 
-    def write(self, writer, saveAs=None):
+    def write(self, writer: UFOWriter, saveAs: Optional[bool] = None) -> None:
         """Writes this LayerSet to a :class:`fontTools.ufoLib.UFOWriter`.
 
         Args:
@@ -299,7 +311,7 @@ class LayerSet:
         defaultLayer = self.defaultLayer
         for name, layer in layers.items():
             default = layer is defaultLayer
-            if layer is _NOT_LOADED:
+            if isinstance(layer, Placeholder):
                 if saveAs:
                     layer = self.loadLayer(name, lazy=False)
                 else:
