@@ -1,35 +1,55 @@
 from abc import abstractmethod
-from collections import namedtuple
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Sequence, Set, Union
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    List,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Set,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import attr
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.ufoLib import UFOReader, UFOWriter
 
-from ufoLib2.typing import Number
+from ufoLib2.typing import Drawable, Number
 
 
+class BoundingBox(NamedTuple):
+    """Represents a bounding box."""
 
-BoundingBox = namedtuple("BoundingBox", "xMin yMin xMax yMax")
+    xMin: Number
+    yMin: Number
+    xMax: Number
+    yMax: Number
 
 
-def getBounds(drawable, layer):
+def getBounds(drawable: Drawable, layer: Any) -> Optional[BoundingBox]:
+    # XXX: layer should behave like a mapping of glyph names to Glyph objects, but
+    # cyclic imports...
     pen = BoundsPen(layer)
     # raise 'KeyError' when a referenced component is missing from glyph set
     pen.skipMissingComponents = False
     drawable.draw(pen)
-    return pen.bounds if pen.bounds is None else BoundingBox(*pen.bounds)
+    return None if pen.bounds is None else BoundingBox(*pen.bounds)
 
 
-def getControlBounds(drawable, layer):
+def getControlBounds(drawable: Drawable, layer: Any) -> Optional[BoundingBox]:
+    # XXX: layer should behave like a mapping of glyph names to Glyph objects, but
+    # cyclic imports...
     pen = ControlBoundsPen(layer)
     # raise 'KeyError' when a referenced component is missing from glyph set
     pen.skipMissingComponents = False
     drawable.draw(pen)
-    return pen.bounds if pen.bounds is None else BoundingBox(*pen.bounds)
+    return None if pen.bounds is None else BoundingBox(*pen.bounds)
 
 
 def _deepcopy_unlazify_attrs(self, memo):
