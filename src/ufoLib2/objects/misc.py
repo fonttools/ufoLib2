@@ -73,8 +73,8 @@ class Placeholder:
 _NOT_LOADED = Placeholder()
 
 
-# Create a generic variable that can be 'DataStore', or any subclass.
-T = TypeVar("T", bound="DataStore")
+# Create a generic variable for mypy that can be 'DataStore' or any subclass.
+Tds = TypeVar("Tds", bound="DataStore")
 
 
 @attr.s(auto_attribs=True, slots=True, repr=False)
@@ -93,7 +93,7 @@ class DataStore(MutableMapping):
     _scheduledForDeletion: Set[str] = attr.ib(factory=set, init=False, repr=False)
 
     @classmethod
-    def read(cls: Type[T], reader: UFOReader, lazy: bool = True) -> T:
+    def read(cls: Type[Tds], reader: UFOReader, lazy: bool = True) -> Tds:
         """Instantiate the data store from a :class:`fontTools.ufoLib.UFOReader`."""
         self = cls()
         for fileName in cls.list_contents(reader):

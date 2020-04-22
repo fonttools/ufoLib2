@@ -1,5 +1,5 @@
 import sys
-from typing import Union
+from typing import TypeVar, Union
 
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import AbstractPointPen
@@ -9,6 +9,9 @@ if sys.version_info >= (3, 8):
 else:
     from typing_extensions import Protocol
 
+
+T = TypeVar("T")
+"""Generic variable for mypy for trivial generic function signatures."""
 
 Number = Union[int, float]
 """Used when integers and floats are interchangable according to the specification."""
