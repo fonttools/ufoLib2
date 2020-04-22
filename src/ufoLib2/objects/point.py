@@ -38,7 +38,7 @@ class Point:
     # XXX: Add post_init to check spec-mandated invariants?
 
     @property
-    def segmentType(self):
+    def segmentType(self) -> Optional[str]:
         """Returns the type of the point.
 
         |defcon_compat|
