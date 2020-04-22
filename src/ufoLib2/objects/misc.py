@@ -52,7 +52,7 @@ def getControlBounds(drawable: Drawable, layer: Any) -> Optional[BoundingBox]:
     return None if pen.bounds is None else BoundingBox(*pen.bounds)
 
 
-def _deepcopy_unlazify_attrs(self, memo):
+def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
     if getattr(self, "_lazy", True) and hasattr(self, "unlazify"):
         self.unlazify()
     return self.__class__(
@@ -209,18 +209,20 @@ class AttrDictMixin(Mapping):
     expects them to behave as dict.
     """
 
-    def __getitem__(self, key):
+    # XXX: Use generics?
+
+    def __getitem__(self, key: str) -> Any:
         try:
             return getattr(self, key)
         except AttributeError:
             raise KeyError(key)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         for key in attr.fields_dict(self.__class__):
             if getattr(self, key) is not None:
                 yield key
 
-    def __len__(self):
+    def __len__(self) -> int:
         return sum(1 for _ in self)
 
 
