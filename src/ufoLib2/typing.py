@@ -1,3 +1,4 @@
+import os
 import sys
 from typing import TypeVar, Union
 
@@ -15,6 +16,9 @@ T = TypeVar("T")
 
 Number = Union[int, float]
 """Used when integers and floats are interchangable according to the specification."""
+
+PathLike = Union[str, bytes, os.PathLike]
+"""Represents a path in various possible forms."""
 
 
 class Drawable(Protocol):
