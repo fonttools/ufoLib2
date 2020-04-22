@@ -107,6 +107,13 @@ Image
    :members:
    :undoc-members:
 
+Miscellaneous objects
+^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: ufoLib2.objects.misc.BoundingBox
+   :members:
+   :undoc-members:
+
 Types
 -----
 

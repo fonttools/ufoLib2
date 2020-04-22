@@ -24,7 +24,7 @@ from ufoLib2.typing import Drawable, Number
 
 
 class BoundingBox(NamedTuple):
-    """Represents a bounding box."""
+    """Represents a bounding box as a tuple of (xMin, yMin, xMax, yMax)."""
 
     xMin: Number
     yMin: Number
