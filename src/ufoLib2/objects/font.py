@@ -205,47 +205,47 @@ class Font:
         return self
 
     def __contains__(self, name: str) -> bool:
-        if self.layers.defaultLayer is not None:
-            return name in self.layers.defaultLayer
-        return False
+        if self.layers.defaultLayer is None:
+            raise Error(f"No default layer present, cannot check for '{name}'.")
+        return name in self.layers.defaultLayer
 
     def __delitem__(self, name: str) -> None:
-        if self.layers.defaultLayer is not None:
-            del self.layers.defaultLayer[name]
-        raise Error(f"No default layer present, cannot delete '{name}'.")
+        if self.layers.defaultLayer is None:
+            raise Error(f"No default layer present, cannot delete '{name}'.")
+        del self.layers.defaultLayer[name]
 
     def __getitem__(self, name: str) -> Glyph:
-        if self.layers.defaultLayer is not None:
-            return self.layers.defaultLayer[name]
-        raise Error(f"No default layer present, cannot retrieve '{name}'.")
+        if self.layers.defaultLayer is None:
+            raise Error(f"No default layer present, cannot retrieve '{name}'.")
+        return self.layers.defaultLayer[name]
 
     def __setitem__(self, name: str, glyph: Glyph) -> None:
-        if self.layers.defaultLayer is not None:
-            self.layers.defaultLayer[name] = glyph
-        raise Error(f"No default layer present, cannot insert '{name}'.")
+        if self.layers.defaultLayer is None:
+            raise Error(f"No default layer present, cannot insert '{name}'.")
+        self.layers.defaultLayer[name] = glyph
 
     def __iter__(self) -> Iterator[Glyph]:
-        if self.layers.defaultLayer is not None:
-            return iter(self.layers.defaultLayer)
-        raise Error("No default layer present, cannot iterate over it.")
+        if self.layers.defaultLayer is None:
+            raise Error("No default layer present, cannot iterate over it.")
+        return iter(self.layers.defaultLayer)
 
     def __len__(self) -> int:
-        if self.layers.defaultLayer is not None:
-            return len(self.layers.defaultLayer)
-        raise Error("No default layer present, cannot determine glyph count.")
+        if self.layers.defaultLayer is None:
+            raise Error("No default layer present, cannot determine glyph count.")
+        return len(self.layers.defaultLayer)
 
     def get(self, name: str, default: Optional[T] = None) -> Union[Optional[T], Glyph]:
         """Return the :class:`.Glyph` object for name if it is present in the
         default layer, otherwise return ``default``."""
-        if self.layers.defaultLayer is not None:
-            return self.layers.defaultLayer.get(name, default)
-        return default
+        if self.layers.defaultLayer is None:
+            raise Error(f"No default layer present, cannot check for '{name}'.")
+        return self.layers.defaultLayer.get(name, default)
 
     def keys(self) -> KeysView[str]:
         """Return a list of glyph names in the default layer."""
-        if self.layers.defaultLayer is not None:
-            return self.layers.defaultLayer.keys()
-        raise Error("No default layer present, cannot retrieve list of glyph names.")
+        if self.layers.defaultLayer is None:
+            raise Error("No default layer present, cannot get list of glyph names.")
+        return self.layers.defaultLayer.keys()
 
     def close(self) -> None:
         """Closes the UFOReader if it still exists to finalize any outstanding
@@ -380,16 +380,16 @@ class Font:
             Call the method on the layer directly if you want to overwrite entries
             with the same name or append copies of the glyph.
         """
-        if self.layers.defaultLayer is not None:
-            self.layers.defaultLayer.addGlyph(glyph)
-        raise Error("No default layer present, cannot append Glyph object.")
+        if self.layers.defaultLayer is None:
+            raise Error("No default layer present, cannot append Glyph object.")
+        self.layers.defaultLayer.addGlyph(glyph)
 
     def newGlyph(self, name: str) -> Glyph:
         """Creates and returns new :class:`.Glyph` object in default layer with
         name."""
-        if self.layers.defaultLayer is not None:
-            return self.layers.defaultLayer.newGlyph(name)
-        raise Error("No default layer present, cannot create new Glyph.")
+        if self.layers.defaultLayer is None:
+            raise Error("No default layer present, cannot create new Glyph.")
+        return self.layers.defaultLayer.newGlyph(name)
 
     def newLayer(self, name: str, **kwargs: Any) -> Layer:
         """Creates and returns a new :class:`.Layer`.
@@ -409,9 +409,9 @@ class Font:
             overwrite: If False, raises exception if newName is already taken.
                 If True, overwrites (read: deletes) the old :class:`.Glyph` object.
         """
-        if self.layers.defaultLayer is not None:
-            self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
-        raise Error("No default layer present, cannot rename glyph.")
+        if self.layers.defaultLayer is None:
+            raise Error("No default layer present, cannot rename glyph.")
+        self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
 
     def renameLayer(self, name: str, newName: str, overwrite: bool = False) -> None:
         """Renames a :class:`.Layer`.
