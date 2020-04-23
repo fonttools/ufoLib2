@@ -247,23 +247,40 @@ class Glyph:
         self.components.remove(component)
 
     def appendAnchor(self, anchor: Union[Anchor, Mapping[str, Any]]) -> None:
-        """Appends :class:`.Anchor` object to glyph's list of anchors."""
+        """Appends an :class:`.Anchor` object to glyph's list of anchors.
+
+        Args:
+            anchor: An :class:`.Anchor` object or mapping for the Anchor constructor.
+        """
         if not isinstance(anchor, Anchor):
+            if not isinstance(anchor, Mapping):
+                raise TypeError(
+                    "Expected Anchor object or a Mapping for the ",
+                    f"Anchor constructor, found {type(anchor).__name__}",
+                )
             anchor = Anchor(**anchor)
         self.anchors.append(anchor)
 
     def appendGuideline(self, guideline: Union[Guideline, Mapping[str, Any]]) -> None:
-        """Appends :class:`.Guideline` object to glyph's list of guidelines."""
+        """Appends a :class:`.Guideline` object to glyph's list of guidelines.
+
+        Args:
+            guideline: A :class:`.Guideline` object or a mapping for the Guideline
+                constructor.
+        """
         if not isinstance(guideline, Guideline):
+            if not isinstance(guideline, Mapping):
+                raise TypeError(
+                    "Expected Guideline object or a Mapping for the ",
+                    f"Guideline constructor, found {type(guideline).__name__}",
+                )
             guideline = Guideline(**guideline)
         self._guidelines.append(guideline)
 
-    def appendContour(self, contour: Union[Contour, Mapping[str, Any]]) -> None:
-        """Appends :class:`.Contour` object to glyph's list of contours."""
+    def appendContour(self, contour: Contour) -> None:
+        """Appends a :class:`.Contour` object to glyph's list of contours."""
         if not isinstance(contour, Contour):
-            raise TypeError(
-                f"Expected {Contour.__name__}, found {type(contour).__name__}"
-            )
+            raise TypeError(f"Expected Contour, found {type(contour).__name__}",)
         self.contours.append(contour)
 
     def copy(self, name: Optional[str] = None) -> "Glyph":

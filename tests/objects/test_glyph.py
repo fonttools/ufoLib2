@@ -13,6 +13,22 @@ from ufoLib2.objects import (
 from ufoLib2.objects.misc import BoundingBox
 
 
+def test_glyph_defcon_behavior():
+    glyph = Glyph()
+    glyph.appendAnchor(Anchor(1, 2, "top"))
+    glyph.appendAnchor({"x": 3, "y": 4, "name": "bottom"})
+    assert glyph.anchors == [Anchor(1, 2, "top"), Anchor(3, 4, "bottom")]
+
+    glyph = Glyph()
+    glyph.appendContour(Contour([Point(1, 2)]))
+    assert glyph.contours == [Contour([Point(1, 2)])]
+
+    glyph = Glyph()
+    glyph.appendGuideline(Guideline(x=1))
+    glyph.appendGuideline({"x": 2})
+    assert glyph.guidelines == [Guideline(x=1), Guideline(x=2)]
+
+
 def test_copyDataFromGlyph(ufo_UbuTestData):
     font = ufo_UbuTestData
 

@@ -441,17 +441,17 @@ class Font:
     def appendGuideline(self, guideline: Union[Guideline, Mapping[str, Any]]) -> None:
         """Appends a guideline to the list of the font's global guidelines.
 
+        Creates the global guideline list unless it already exists.
+
         Args:
             guideline: A :class:`.Guideline` object or a mapping for the Guideline
                 constructor.
-
-        Creates the global guideline list unless it already exists.
         """
         if not isinstance(guideline, Guideline):
             if not isinstance(guideline, Mapping):
                 raise TypeError(
-                    "guideline must be a Guideline object or a Mapping for the ",
-                    "Guideline constructor.",
+                    "Expected Guideline object or a Mapping for the ",
+                    f"Guideline constructor, found {type(guideline).__name__}",
                 )
             guideline = Guideline(**guideline)
         if self.info.guidelines is None:

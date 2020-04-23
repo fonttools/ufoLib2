@@ -49,6 +49,9 @@ def test_font_defcon_behavior(ufo_UbuTestData):
     font.appendGuideline(guideline)
     assert font.info.guidelines[-1] is guideline
 
+    font.appendGuideline({"y": 1, "name": "asdf"})
+    assert font.info.guidelines[-1].name == "asdf"
+
     font.newLayer("abc")
     assert "abc" in font.layers
 
