@@ -1,4 +1,17 @@
-from ufoLib2.objects import Glyph, Guideline
+from ufoLib2.objects import Font, Glyph, Guideline
+
+
+def test_font_equality(datadir):
+    font1 = Font.open(datadir / "UbuTestData.ufo")
+    font2 = Font.open(datadir / "UbuTestData.ufo")
+
+    assert font1 == font2
+
+    class SubFont(Font):
+        pass
+
+    font3 = SubFont.open(datadir / "UbuTestData.ufo")
+    assert font1 != font3
 
 
 def test_font_mapping_behavior(ufo_UbuTestData):

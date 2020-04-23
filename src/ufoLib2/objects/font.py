@@ -1,6 +1,17 @@
 import os
 import shutil
-from typing import Any, Dict, Iterator, KeysView, List, Mapping, Optional, Tuple, Union
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    KeysView,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    Union,
+    cast,
+)
 
 import attr
 import fs
@@ -269,8 +280,11 @@ class Font:
 
     def __eq__(self, other: object) -> bool:
         # same as attrs-defined __eq__ method, only that it un-lazifies fonts if needed
-        if not isinstance(other, Font):
+        # NOTE: Avoid isinstance check that mypy recognizes because we don't want to
+        # test possible Font subclasses for equality.
+        if other.__class__ is not self.__class__:
             return NotImplemented
+        other = cast(Font, other)
 
         for font in (self, other):
             if font._lazy:
