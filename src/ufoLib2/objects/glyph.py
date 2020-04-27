@@ -340,12 +340,12 @@ class Glyph:
         for component in self.components:
             component.drawPoints(pointPen)
 
-    def getPen(self) -> SegmentToPointPen:
+    def getPen(self) -> AbstractPen:
         """Returns a pen for others to draw into self."""
         pen = SegmentToPointPen(self.getPointPen())
         return pen
 
-    def getPointPen(self) -> GlyphPointPen:
+    def getPointPen(self) -> AbstractPointPen:
         """Returns a point pen for others to draw points into self."""
         pointPen = GlyphPointPen(self)
         return pointPen
