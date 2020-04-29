@@ -5,10 +5,10 @@ from typing import (
     Iterable,
     Iterator,
     List,
-    MutableMapping,
     Optional,
     Sized,
     Union,
+    cast,
 )
 
 import attr
@@ -19,26 +19,6 @@ from ufoLib2.errors import Error
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.misc import _NOT_LOADED, Placeholder, _deepcopy_unlazify_attrs
 from ufoLib2.typing import T
-
-
-def _convert_layers(
-    value: Union[Iterable[Layer], "OrderedDict[str, Union[Layer, Placeholder]]"]
-) -> "OrderedDict[str, Union[Layer, Placeholder]]":
-    # XXX: Remove this converter or convert into private non-converter method? Or do
-    # everything in read()?
-
-    # takes an iterable of Layer objects and returns an OrderedDict keyed
-    # by layer name
-    if isinstance(value, OrderedDict):
-        return value
-    layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
-    for layer in value:
-        if not isinstance(layer, Layer):
-            raise TypeError("expected 'Layer', found '%s'" % type(layer).__name__)
-        if layer.name in layers:
-            raise KeyError("duplicate layer name: '%s'" % layer.name)
-        layers[layer.name] = layer
-    return layers
 
 
 def _must_have_at_least_one_item(self: Any, attribute: Any, value: Sized) -> None:
@@ -81,8 +61,8 @@ class LayerSet:
             del font.layers["myLayerName"]
     """
 
-    _layers: MutableMapping[str, Union[Layer, Placeholder]] = attr.ib(
-        converter=_convert_layers, validator=_must_have_at_least_one_item,
+    _layers: "OrderedDict[str, Union[Layer, Placeholder]]" = attr.ib(
+        validator=_must_have_at_least_one_item,
     )
 
     defaultLayer: Layer
@@ -102,6 +82,24 @@ class LayerSet:
         layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
         layers[DEFAULT_LAYER_NAME] = layer_default
         return cls(layers=layers, defaultLayer=layer_default)
+
+    @classmethod
+    def from_iterable(cls, value: Iterable[Layer]) -> "LayerSet":
+        layers: OrderedDict[str, Layer] = OrderedDict()
+        for layer in value:
+            if not isinstance(layer, Layer):
+                raise TypeError(f"expected 'Layer', found '{type(layer).__name__}'")
+            if layer.name in layers:
+                raise KeyError(f"duplicate layer name: '{layer.name}'")
+            layers[layer.name] = layer
+
+        if DEFAULT_LAYER_NAME not in layers:
+            raise ValueError(f"expected one layer named '{DEFAULT_LAYER_NAME}'.")
+
+        return cls(
+            layers=cast("OrderedDict[str, Union[Layer, Placeholder]]", layers),
+            defaultLayer=layers[DEFAULT_LAYER_NAME],
+        )
 
     @classmethod
     def read(cls, reader: UFOReader, lazy: bool = True) -> "LayerSet":

@@ -130,7 +130,11 @@ def test_empty_layerset():
 
 def test_custom_layerset():
     default = Layer()
-    LayerSet(layers=[default], defaultLayer=default)
+    ls1 = LayerSet.from_iterable([default])
+    assert next(iter(ls1)) is ls1.defaultLayer
+
+    with pytest.raises(ValueError):
+        ls1 = LayerSet.from_iterable([Layer(name="abc")])
 
     layers2 = OrderedDict()
     layers2["public.default"] = default
