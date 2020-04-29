@@ -58,3 +58,14 @@ def test_font_defcon_behavior(ufo_UbuTestData):
     font.renameLayer("abc", "def")
     assert "abc" not in font.layers
     assert "def" in font.layers
+
+
+def test_nondefault_layer_name(ufo_UbuTestData, tmp_path):
+    font = ufo_UbuTestData
+
+    font.layers.renameLayer("public.default", "abc")
+    font.save(tmp_path / "abc.ufo")
+    font2 = Font.open(tmp_path / "abc.ufo")
+
+    assert font2.layers.defaultLayer.name == "abc"
+    assert font2.layers.defaultLayer is font2.layers["abc"]

@@ -7,6 +7,7 @@ from typing import (
     List,
     MutableMapping,
     Optional,
+    Sized,
     Union,
 )
 
@@ -20,7 +21,12 @@ from ufoLib2.objects.misc import _NOT_LOADED, Placeholder, _deepcopy_unlazify_at
 from ufoLib2.typing import T
 
 
-def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
+def _convert_layers(
+    value: Union[Iterable[Layer], "OrderedDict[str, Layer]"]
+) -> "OrderedDict[str, Layer]":
+    # XXX: Remove this converter or convert into private non-converter method? Or do
+    # everything in read()?
+
     # takes an iterable of Layer objects and returns an OrderedDict keyed
     # by layer name
     if isinstance(value, OrderedDict):
@@ -33,6 +39,11 @@ def _convert_layers(value: Iterable[Layer]) -> "OrderedDict[str, Layer]":
             raise KeyError("duplicate layer name: '%s'" % layer.name)
         layers[layer.name] = layer
     return layers
+
+
+def _must_have_at_least_one_item(self: Any, attribute: Any, value: Sized) -> None:
+    if not len(value):
+        raise ValueError("value must have at least one item.")
 
 
 @attr.s(auto_attribs=True, slots=True, repr=False)
@@ -71,38 +82,26 @@ class LayerSet:
     """
 
     _layers: MutableMapping[str, Union[Layer, Placeholder]] = attr.ib(
-        factory=OrderedDict, converter=_convert_layers
+        converter=_convert_layers, validator=_must_have_at_least_one_item,
     )
-    defaultLayer: Optional[Layer] = None
-    """The default layer of the UFO, typically named ``public.default``."""
+
+    defaultLayer: Layer
+    """The default layer name of the UFO, typically ``public.default``."""
 
     _reader: Optional[UFOReader] = attr.ib(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
-        if not self._layers:
-            # LayerSet is never empty; always contains at least the default
-            if self.defaultLayer is not None:
-                raise TypeError(
-                    "'defaultLayer' argument is invalid with empty LayerSet"
-                )
-            self.defaultLayer = self.newLayer(DEFAULT_LAYER_NAME)
-        elif self.defaultLayer is not None:
-            # check that the specified default layer is in the layer set;
-            default = self.defaultLayer
-            for layer in self._layers.values():
-                if layer is default:
-                    break
-            else:
-                raise ValueError(
-                    "defaultLayer %r is not among the specified layers" % default
-                )
-        elif len(self._layers) == 1:
-            # there's only one, we assume it's the default
-            self.defaultLayer = self[next(iter(self._layers.keys()))]
-        else:
-            if DEFAULT_LAYER_NAME not in self._layers:
-                raise ValueError("default layer not specified")
-            self.defaultLayer = self[DEFAULT_LAYER_NAME]
+        if not any(layer is self.defaultLayer for layer in self._layers.values()):
+            raise ValueError(
+                f"Default layer {repr(self.defaultLayer)} must be in layer set."
+            )
+
+    @classmethod
+    def new(cls) -> "LayerSet":
+        layer_default = Layer()
+        layers = OrderedDict()
+        layers[DEFAULT_LAYER_NAME] = layer_default
+        return cls(layers=layers, defaultLayer=layer_default)
 
     @classmethod
     def read(cls, reader: UFOReader, lazy: bool = True) -> "LayerSet":
@@ -131,7 +130,7 @@ class LayerSet:
         assert defaultLayer is not None
 
         self = cls(
-            layers,  # type: ignore
+            layers=layers,  # type: ignore
             defaultLayer=defaultLayer,
         )
         if lazy:

@@ -19,7 +19,6 @@ import fs.tempfs
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
-from ufoLib2.errors import Error
 from ufoLib2.objects.dataSet import DataSet
 from ufoLib2.objects.features import Features
 from ufoLib2.objects.glyph import Glyph
@@ -114,7 +113,9 @@ class Font:
     _path: Optional[PathLike] = attr.ib(default=None, metadata=dict(copyable=False))
 
     layers: LayerSet = attr.ib(
-        factory=LayerSet, validator=attr.validators.instance_of(LayerSet), kw_only=True,
+        factory=LayerSet.new,
+        validator=attr.validators.instance_of(LayerSet),
+        kw_only=True,
     )
     """LayerSet: A mapping of layer names to Layer objects."""
 
@@ -216,46 +217,30 @@ class Font:
         return self
 
     def __contains__(self, name: str) -> bool:
-        if self.layers.defaultLayer is None:
-            raise Error(f"No default layer present, cannot check for '{name}'.")
         return name in self.layers.defaultLayer
 
     def __delitem__(self, name: str) -> None:
-        if self.layers.defaultLayer is None:
-            raise Error(f"No default layer present, cannot delete '{name}'.")
         del self.layers.defaultLayer[name]
 
     def __getitem__(self, name: str) -> Glyph:
-        if self.layers.defaultLayer is None:
-            raise Error(f"No default layer present, cannot retrieve '{name}'.")
         return self.layers.defaultLayer[name]
 
     def __setitem__(self, name: str, glyph: Glyph) -> None:
-        if self.layers.defaultLayer is None:
-            raise Error(f"No default layer present, cannot insert '{name}'.")
         self.layers.defaultLayer[name] = glyph
 
     def __iter__(self) -> Iterator[Glyph]:
-        if self.layers.defaultLayer is None:
-            raise Error("No default layer present, cannot iterate over it.")
         return iter(self.layers.defaultLayer)
 
     def __len__(self) -> int:
-        if self.layers.defaultLayer is None:
-            raise Error("No default layer present, cannot determine glyph count.")
         return len(self.layers.defaultLayer)
 
     def get(self, name: str, default: Optional[T] = None) -> Union[Optional[T], Glyph]:
         """Return the :class:`.Glyph` object for name if it is present in the
         default layer, otherwise return ``default``."""
-        if self.layers.defaultLayer is None:
-            raise Error(f"No default layer present, cannot check for '{name}'.")
         return self.layers.defaultLayer.get(name, default)
 
     def keys(self) -> KeysView[str]:
         """Return a list of glyph names in the default layer."""
-        if self.layers.defaultLayer is None:
-            raise Error("No default layer present, cannot get list of glyph names.")
         return self.layers.defaultLayer.keys()
 
     def close(self) -> None:
@@ -394,15 +379,11 @@ class Font:
             Call the method on the layer directly if you want to overwrite entries
             with the same name or append copies of the glyph.
         """
-        if self.layers.defaultLayer is None:
-            raise Error("No default layer present, cannot append Glyph object.")
         self.layers.defaultLayer.addGlyph(glyph)
 
     def newGlyph(self, name: str) -> Glyph:
         """Creates and returns new :class:`.Glyph` object in default layer with
         name."""
-        if self.layers.defaultLayer is None:
-            raise Error("No default layer present, cannot create new Glyph.")
         return self.layers.defaultLayer.newGlyph(name)
 
     def newLayer(self, name: str, **kwargs: Any) -> Layer:
@@ -423,8 +404,6 @@ class Font:
             overwrite: If False, raises exception if newName is already taken.
                 If True, overwrites (read: deletes) the old :class:`.Glyph` object.
         """
-        if self.layers.defaultLayer is None:
-            raise Error("No default layer present, cannot rename glyph.")
         self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
 
     def renameLayer(self, name: str, newName: str, overwrite: bool = False) -> None:
@@ -470,10 +449,7 @@ class Font:
         if saveAs is None:
             saveAs = self._reader is not writer
         # TODO move this check to fontTools UFOWriter
-        if (
-            self.layers.defaultLayer is not None
-            and self.layers.defaultLayer.name != DEFAULT_LAYER_NAME
-        ):
+        if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:
             assert DEFAULT_LAYER_NAME not in self.layers.layerOrder
         # save font attrs
         writer.writeFeatures(self.features.text)
