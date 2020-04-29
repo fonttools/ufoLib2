@@ -56,7 +56,7 @@ class LayerSet:
     )
 
     defaultLayer: Layer
-    """The default layer name of the UFO, typically ``public.default``."""
+    """The Layer that is marked as the default, typically named ``public.default``."""
 
     _reader: Optional[UFOReader] = attr.ib(default=None, init=False, eq=False)
 
@@ -67,11 +67,9 @@ class LayerSet:
             )
 
     @classmethod
-    def new(cls) -> "LayerSet":
-        layer_default = Layer()
-        layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
-        layers[DEFAULT_LAYER_NAME] = layer_default
-        return cls(layers=layers, defaultLayer=layer_default)
+    def default(cls) -> "LayerSet":
+        """Return a new LayerSet with an empty default Layer."""
+        return cls.from_iterable([Layer()])
 
     @classmethod
     def from_iterable(

@@ -113,7 +113,7 @@ class Font:
     _path: Optional[PathLike] = attr.ib(default=None, metadata=dict(copyable=False))
 
     layers: LayerSet = attr.ib(
-        factory=LayerSet.new,
+        factory=LayerSet.default,
         validator=attr.validators.instance_of(LayerSet),
         kw_only=True,
     )

@@ -128,6 +128,13 @@ def test_empty_layerset():
         LayerSet(layers={}, defaultLayer=None)
 
 
+def test_default_layerset():
+    layers = LayerSet.default()
+    assert len(layers) == 1
+    assert "public.default" in layers
+    assert len(layers["public.default"]) == 0
+
+
 def test_custom_layerset():
     default = Layer()
     ls1 = LayerSet.from_iterable([default])
