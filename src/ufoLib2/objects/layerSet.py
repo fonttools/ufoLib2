@@ -1,15 +1,5 @@
 from collections import OrderedDict
-from typing import (
-    AbstractSet,
-    Any,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Sized,
-    Union,
-    cast,
-)
+from typing import AbstractSet, Any, Iterable, Iterator, List, Optional, Sized, Union
 
 import attr
 from fontTools.ufoLib import UFOReader, UFOWriter
@@ -93,21 +83,22 @@ class LayerSet:
             value: an iterable of :class:`.Layer` objects.
             defaultLayerName: the name of the default layer of the ones in ``value``.
         """
-        layers: OrderedDict[str, Layer] = OrderedDict()
+        layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
+        defaultLayer = None
         for layer in value:
             if not isinstance(layer, Layer):
                 raise TypeError(f"expected 'Layer', found '{type(layer).__name__}'")
             if layer.name in layers:
                 raise KeyError(f"duplicate layer name: '{layer.name}'")
+            if layer.name == defaultLayerName:
+                defaultLayer = layer
             layers[layer.name] = layer
 
         if defaultLayerName not in layers:
             raise ValueError(f"expected one layer named '{defaultLayerName}'.")
+        assert defaultLayer is not None
 
-        return cls(
-            layers=cast("OrderedDict[str, Union[Layer, Placeholder]]", layers),
-            defaultLayer=layers[defaultLayerName],
-        )
+        return cls(layers=layers, defaultLayer=defaultLayer)
 
     @classmethod
     def read(cls, reader: UFOReader, lazy: bool = True) -> "LayerSet":
