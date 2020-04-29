@@ -1,16 +1,16 @@
 from enum import IntEnum
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Type, TypeVar, Union
 
 import attr
+from fontTools.ufoLib import UFOReader
 
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.misc import AttrDictMixin
-from ufoLib2.typing import Number
 
-__all__ = ["Info", "GaspRangeRecord", "NameRecord", "WidthClass"]
+__all__ = ("Info", "GaspRangeRecord", "NameRecord", "WidthClass")
 
 
-def _positive(instance, attribute, value):
+def _positive(instance: Any, attribute: Any, value: int) -> None:
     if value < 0:
         raise ValueError(
             "'{name}' must be at least 0 (got {value!r})".format(
@@ -65,7 +65,12 @@ class WidthClass(IntEnum):
     ULTRA_EXPANDED = 9
 
 
-def _convert_optional_list(lst, klass):
+Tc = TypeVar("Tc", Guideline, GaspRangeRecord, NameRecord)
+
+
+def _convert_optional_list(
+    lst: Optional[Sequence[Any]], klass: Type[Tc],
+) -> Optional[List[Tc]]:
     if lst is None:
         return None
     result = []
@@ -118,12 +123,12 @@ class Info:
     copyright: Optional[str] = None
     trademark: Optional[str] = None
 
-    unitsPerEm: Optional[Number] = attr.ib(default=None, validator=_optional_positive)
-    descender: Optional[Number] = None
-    xHeight: Optional[Number] = None
-    capHeight: Optional[Number] = None
-    ascender: Optional[Number] = None
-    italicAngle: Optional[Number] = None
+    unitsPerEm: Optional[float] = attr.ib(default=None, validator=_optional_positive)
+    descender: Optional[float] = None
+    xHeight: Optional[float] = None
+    capHeight: Optional[float] = None
+    ascender: Optional[float] = None
+    italicAngle: Optional[float] = None
 
     note: Optional[str] = None
 
@@ -132,11 +137,11 @@ class Info:
     )
 
     @property
-    def guidelines(self):
+    def guidelines(self) -> Optional[List[Guideline]]:
         return self._guidelines
 
     @guidelines.setter
-    def guidelines(self, value):
+    def guidelines(self, value: Optional[List[Guideline]]) -> None:
         self._guidelines = _convert_guidelines(value)
 
     _openTypeGaspRangeRecords: Optional[List[GaspRangeRecord]] = attr.ib(
@@ -144,11 +149,11 @@ class Info:
     )
 
     @property
-    def openTypeGaspRangeRecords(self):
+    def openTypeGaspRangeRecords(self) -> Optional[List[GaspRangeRecord]]:
         return self._openTypeGaspRangeRecords
 
     @openTypeGaspRangeRecords.setter
-    def openTypeGaspRangeRecords(self, value):
+    def openTypeGaspRangeRecords(self, value: Optional[List[GaspRangeRecord]]) -> None:
         self._openTypeGaspRangeRecords = _convert_gasp_range_records(value)
 
     openTypeHeadCreated: Optional[str] = None
@@ -185,11 +190,11 @@ class Info:
     )
 
     @property
-    def openTypeNameRecords(self):
+    def openTypeNameRecords(self) -> Optional[List[NameRecord]]:
         return self._openTypeNameRecords
 
     @openTypeNameRecords.setter
-    def openTypeNameRecords(self, value):
+    def openTypeNameRecords(self, value: Optional[List[NameRecord]]) -> None:
         self._openTypeNameRecords = _convert_name_records(value)
 
     _openTypeOS2WidthClass: Optional[WidthClass] = attr.ib(
@@ -197,17 +202,17 @@ class Info:
     )
 
     @property
-    def openTypeOS2WidthClass(self):
+    def openTypeOS2WidthClass(self) -> Optional[WidthClass]:
         return self._openTypeOS2WidthClass
 
     @openTypeOS2WidthClass.setter
-    def openTypeOS2WidthClass(self, value):
+    def openTypeOS2WidthClass(self, value: Optional[WidthClass]) -> None:
         self._openTypeOS2WidthClass = value if value is None else WidthClass(value)
 
     openTypeOS2WeightClass: Optional[int] = attr.ib(default=None)
 
     @openTypeOS2WeightClass.validator
-    def _validate_weight_class(self, attribute, value):
+    def _validate_weight_class(self, attribute: Any, value: Optional[int]) -> None:
         if value is not None and (value < 1 or value > 1000):
             raise ValueError("'openTypeOS2WeightClass' must be between 1 and 1000")
 
@@ -247,23 +252,23 @@ class Info:
 
     postscriptFontName: Optional[str] = None
     postscriptFullName: Optional[str] = None
-    postscriptSlantAngle: Optional[Number] = None
+    postscriptSlantAngle: Optional[float] = None
     postscriptUniqueID: Optional[int] = None
-    postscriptUnderlineThickness: Optional[Number] = None
-    postscriptUnderlinePosition: Optional[Number] = None
+    postscriptUnderlineThickness: Optional[float] = None
+    postscriptUnderlinePosition: Optional[float] = None
     postscriptIsFixedPitch: Optional[bool] = None
-    postscriptBlueValues: Optional[List[Number]] = None
-    postscriptOtherBlues: Optional[List[Number]] = None
-    postscriptFamilyBlues: Optional[List[Number]] = None
-    postscriptFamilyOtherBlues: Optional[List[Number]] = None
-    postscriptStemSnapH: Optional[List[Number]] = None
-    postscriptStemSnapV: Optional[List[Number]] = None
-    postscriptBlueFuzz: Optional[Number] = None
-    postscriptBlueShift: Optional[Number] = None
+    postscriptBlueValues: Optional[List[float]] = None
+    postscriptOtherBlues: Optional[List[float]] = None
+    postscriptFamilyBlues: Optional[List[float]] = None
+    postscriptFamilyOtherBlues: Optional[List[float]] = None
+    postscriptStemSnapH: Optional[List[float]] = None
+    postscriptStemSnapV: Optional[List[float]] = None
+    postscriptBlueFuzz: Optional[float] = None
+    postscriptBlueShift: Optional[float] = None
     postscriptBlueScale: Optional[float] = None
     postscriptForceBold: Optional[bool] = None
-    postscriptDefaultWidthX: Optional[Number] = None
-    postscriptNominalWidthX: Optional[Number] = None
+    postscriptDefaultWidthX: Optional[float] = None
+    postscriptNominalWidthX: Optional[float] = None
     postscriptWeightName: Optional[str] = None
     postscriptDefaultCharacter: Optional[str] = None
     postscriptWindowsCharacterSet: Optional[str] = None
@@ -274,7 +279,7 @@ class Info:
     year: Optional[int] = None
 
     @classmethod
-    def read(cls, reader):
+    def read(cls, reader: UFOReader) -> "Info":
         """Instantiates a Info object from a
         :class:`fontTools.ufoLib.UFOReader`."""
         self = cls()

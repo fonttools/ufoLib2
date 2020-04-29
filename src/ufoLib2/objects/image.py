@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Iterator, Optional, Tuple
+from typing import Any, Iterator, Optional, Tuple
 
 import attr
 from fontTools.misc.transform import Identity, Transform
@@ -50,7 +50,7 @@ class Image(Mapping):
         "fileName",
     ) + _transformation_keys_ + ("color",)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Any:
         try:
             i = self._transformation_keys_.index(key)
         except ValueError:

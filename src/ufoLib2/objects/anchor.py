@@ -3,7 +3,6 @@ from typing import Optional, Tuple
 import attr
 
 from ufoLib2.objects.misc import AttrDictMixin
-from ufoLib2.typing import Number
 
 
 @attr.s(auto_attribs=True, slots=True)
@@ -13,10 +12,10 @@ class Anchor(AttrDictMixin):
     See http://unifiedfontobject.org/versions/ufo3/glyphs/glif/#anchor.
     """
 
-    x: Number
+    x: float
     """The x coordinate of the anchor."""
 
-    y: Number
+    y: float
     """The y coordinate of the anchor."""
 
     name: Optional[str] = None
@@ -28,7 +27,7 @@ class Anchor(AttrDictMixin):
     identifier: Optional[str] = None
     """The globally unique identifier of the anchor."""
 
-    def move(self, delta: Tuple[Number, Number]) -> None:
+    def move(self, delta: Tuple[float, float]) -> None:
         """Moves anchor by (x, y) font units."""
         x, y = delta
         self.x += x

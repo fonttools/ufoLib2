@@ -2,8 +2,6 @@ from typing import Optional, Tuple
 
 import attr
 
-from ufoLib2.typing import Number
-
 
 @attr.s(auto_attribs=True, slots=True)
 class Point:
@@ -12,10 +10,10 @@ class Point:
     See http://unifiedfontobject.org/versions/ufo3/glyphs/glif/#point.
     """
 
-    x: Number
+    x: float
     """The x coordinate of the point."""
 
-    y: Number
+    y: float
     """The y coordinate of the point."""
 
     type: Optional[str] = None
@@ -38,14 +36,14 @@ class Point:
     # XXX: Add post_init to check spec-mandated invariants?
 
     @property
-    def segmentType(self):
+    def segmentType(self) -> Optional[str]:
         """Returns the type of the point.
 
         |defcon_compat|
         """
         return self.type
 
-    def move(self, delta: Tuple[Number, Number]) -> None:
+    def move(self, delta: Tuple[float, float]) -> None:
         """Moves point by (x, y) font units."""
         x, y = delta
         self.x += x

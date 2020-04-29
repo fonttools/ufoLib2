@@ -1,8 +1,11 @@
+from collections import OrderedDict
 from copy import deepcopy
 
+import pytest
 from fontTools import ufoLib
 
 import ufoLib2
+from ufoLib2.objects import Layer, LayerSet
 from ufoLib2.objects.misc import _NOT_LOADED
 
 
@@ -118,3 +121,17 @@ def test_font_eq_and_ne(ufo_UbuTestData):
     font1["a"].contours[0].points[0].x = 0
 
     assert font1 != font2
+
+
+def test_empty_layerset():
+    with pytest.raises(ValueError):
+        LayerSet(layers={}, defaultLayer=None)
+
+
+def test_custom_layerset():
+    default = Layer()
+    LayerSet(layers=[default], defaultLayer=default)
+
+    layers2 = OrderedDict()
+    layers2["public.default"] = default
+    LayerSet(layers=layers2, defaultLayer=default)
