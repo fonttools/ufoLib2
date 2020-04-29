@@ -84,7 +84,15 @@ class LayerSet:
         return cls(layers=layers, defaultLayer=layer_default)
 
     @classmethod
-    def from_iterable(cls, value: Iterable[Layer]) -> "LayerSet":
+    def from_iterable(
+        cls, value: Iterable[Layer], defaultLayerName: str = DEFAULT_LAYER_NAME
+    ) -> "LayerSet":
+        """Instantiates a LayerSet from an iterable of :class:`.Layer` objects.
+
+        Args:
+            value: an iterable of :class:`.Layer` objects.
+            defaultLayerName: the name of the default layer of the ones in ``value``.
+        """
         layers: OrderedDict[str, Layer] = OrderedDict()
         for layer in value:
             if not isinstance(layer, Layer):
@@ -93,12 +101,12 @@ class LayerSet:
                 raise KeyError(f"duplicate layer name: '{layer.name}'")
             layers[layer.name] = layer
 
-        if DEFAULT_LAYER_NAME not in layers:
-            raise ValueError(f"expected one layer named '{DEFAULT_LAYER_NAME}'.")
+        if defaultLayerName not in layers:
+            raise ValueError(f"expected one layer named '{defaultLayerName}'.")
 
         return cls(
             layers=cast("OrderedDict[str, Union[Layer, Placeholder]]", layers),
-            defaultLayer=layers[DEFAULT_LAYER_NAME],
+            defaultLayer=layers[defaultLayerName],
         )
 
     @classmethod
