@@ -1,3 +1,4 @@
 -r ../requirements.txt
+typing_extensions; python_version < '3.8'
 sphinx>3
 sphinx_rtd_theme
