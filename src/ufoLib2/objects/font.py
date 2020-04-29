@@ -543,6 +543,10 @@ class Font:
             if tmp is not None:
                 tmp.close()
 
-        # Only remember path if it isn't a fs.base.FS.
+        # Only remember path if it isn't a fs.base.FS because not all FS objects are
+        # OsFS with a corresponding filesystem path. E.g. think about MemoryFS.
+        # If you want, you can call getsyspath("") method of OsFS object and set that to
+        # self._path. But you then have to catch the fs.errors.NoSysPath and skip if
+        # the FS object does not implement a filesystem path.
         if not isinstance(path, fs.base.FS):
             self._path = path
