@@ -22,8 +22,8 @@ from ufoLib2.typing import T
 
 
 def _convert_layers(
-    value: Union[Iterable[Layer], "OrderedDict[str, Layer]"]
-) -> "OrderedDict[str, Layer]":
+    value: Union[Iterable[Layer], "OrderedDict[str, Union[Layer, Placeholder]]"]
+) -> "OrderedDict[str, Union[Layer, Placeholder]]":
     # XXX: Remove this converter or convert into private non-converter method? Or do
     # everything in read()?
 
@@ -31,7 +31,7 @@ def _convert_layers(
     # by layer name
     if isinstance(value, OrderedDict):
         return value
-    layers: OrderedDict[str, Layer] = OrderedDict()
+    layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
     for layer in value:
         if not isinstance(layer, Layer):
             raise TypeError("expected 'Layer', found '%s'" % type(layer).__name__)
@@ -99,7 +99,7 @@ class LayerSet:
     @classmethod
     def new(cls) -> "LayerSet":
         layer_default = Layer()
-        layers = OrderedDict()
+        layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
         layers[DEFAULT_LAYER_NAME] = layer_default
         return cls(layers=layers, defaultLayer=layer_default)
 
@@ -129,10 +129,7 @@ class LayerSet:
 
         assert defaultLayer is not None
 
-        self = cls(
-            layers=layers,  # type: ignore
-            defaultLayer=defaultLayer,
-        )
+        self = cls(layers=layers, defaultLayer=defaultLayer)
         if lazy:
             self._reader = reader
 
