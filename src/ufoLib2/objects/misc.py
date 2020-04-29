@@ -20,16 +20,16 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.ufoLib import UFOReader, UFOWriter
 
-from ufoLib2.typing import Drawable, Number
+from ufoLib2.typing import Drawable
 
 
 class BoundingBox(NamedTuple):
     """Represents a bounding box as a tuple of (xMin, yMin, xMax, yMax)."""
 
-    xMin: Number
-    yMin: Number
-    xMax: Number
-    yMax: Number
+    xMin: float
+    yMin: float
+    xMax: float
+    yMax: float
 
 
 def getBounds(drawable: Drawable, layer: Any) -> Optional[BoundingBox]:
@@ -226,7 +226,7 @@ class AttrDictMixin(Mapping):
         return sum(1 for _ in self)
 
 
-def _convert_transform(t: Union[Transform, Sequence[Number]]) -> Transform:
+def _convert_transform(t: Union[Transform, Sequence[float]]) -> Transform:
     """Return a passed-in Transform as is, otherwise convert a sequence of
     numbers to a Transform if need be."""
     return t if isinstance(t, Transform) else Transform(*t)

@@ -6,7 +6,6 @@ from fontTools.ufoLib import UFOReader
 
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.misc import AttrDictMixin
-from ufoLib2.typing import Number
 
 __all__ = ("Info", "GaspRangeRecord", "NameRecord", "WidthClass")
 
@@ -124,12 +123,12 @@ class Info:
     copyright: Optional[str] = None
     trademark: Optional[str] = None
 
-    unitsPerEm: Optional[Number] = attr.ib(default=None, validator=_optional_positive)
-    descender: Optional[Number] = None
-    xHeight: Optional[Number] = None
-    capHeight: Optional[Number] = None
-    ascender: Optional[Number] = None
-    italicAngle: Optional[Number] = None
+    unitsPerEm: Optional[float] = attr.ib(default=None, validator=_optional_positive)
+    descender: Optional[float] = None
+    xHeight: Optional[float] = None
+    capHeight: Optional[float] = None
+    ascender: Optional[float] = None
+    italicAngle: Optional[float] = None
 
     note: Optional[str] = None
 
@@ -253,23 +252,23 @@ class Info:
 
     postscriptFontName: Optional[str] = None
     postscriptFullName: Optional[str] = None
-    postscriptSlantAngle: Optional[Number] = None
+    postscriptSlantAngle: Optional[float] = None
     postscriptUniqueID: Optional[int] = None
-    postscriptUnderlineThickness: Optional[Number] = None
-    postscriptUnderlinePosition: Optional[Number] = None
+    postscriptUnderlineThickness: Optional[float] = None
+    postscriptUnderlinePosition: Optional[float] = None
     postscriptIsFixedPitch: Optional[bool] = None
-    postscriptBlueValues: Optional[List[Number]] = None
-    postscriptOtherBlues: Optional[List[Number]] = None
-    postscriptFamilyBlues: Optional[List[Number]] = None
-    postscriptFamilyOtherBlues: Optional[List[Number]] = None
-    postscriptStemSnapH: Optional[List[Number]] = None
-    postscriptStemSnapV: Optional[List[Number]] = None
-    postscriptBlueFuzz: Optional[Number] = None
-    postscriptBlueShift: Optional[Number] = None
+    postscriptBlueValues: Optional[List[float]] = None
+    postscriptOtherBlues: Optional[List[float]] = None
+    postscriptFamilyBlues: Optional[List[float]] = None
+    postscriptFamilyOtherBlues: Optional[List[float]] = None
+    postscriptStemSnapH: Optional[List[float]] = None
+    postscriptStemSnapV: Optional[List[float]] = None
+    postscriptBlueFuzz: Optional[float] = None
+    postscriptBlueShift: Optional[float] = None
     postscriptBlueScale: Optional[float] = None
     postscriptForceBold: Optional[bool] = None
-    postscriptDefaultWidthX: Optional[Number] = None
-    postscriptNominalWidthX: Optional[Number] = None
+    postscriptDefaultWidthX: Optional[float] = None
+    postscriptNominalWidthX: Optional[float] = None
     postscriptWeightName: Optional[str] = None
     postscriptDefaultCharacter: Optional[str] = None
     postscriptWindowsCharacterSet: Optional[str] = None

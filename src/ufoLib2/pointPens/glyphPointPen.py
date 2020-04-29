@@ -6,7 +6,6 @@ from fontTools.pens.pointPen import AbstractPointPen
 from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.point import Point
-from ufoLib2.typing import Number
 
 if TYPE_CHECKING:
     from ufoLib2.objects.glyph import Glyph
@@ -36,7 +35,7 @@ class GlyphPointPen(AbstractPointPen):
 
     def addPoint(
         self,
-        pt: Tuple[Number, Number],
+        pt: Tuple[float, float],
         segmentType: Optional[str] = None,
         smooth: bool = False,
         name: Optional[str] = None,

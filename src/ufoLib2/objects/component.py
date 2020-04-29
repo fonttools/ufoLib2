@@ -7,7 +7,6 @@ from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import AbstractPointPen, PointToSegmentPen
 
 from ufoLib2.objects.misc import BoundingBox
-from ufoLib2.typing import Number
 
 from .misc import _convert_transform, getBounds, getControlBounds
 
@@ -35,7 +34,7 @@ class Component:
     identifier: Optional[str] = None
     """The globally unique identifier of the component."""
 
-    def move(self, delta: Tuple[Number, Number]) -> None:
+    def move(self, delta: Tuple[float, float]) -> None:
         """Moves this component by (x, y) font units."""
         x, y = delta
         self.transformation = self.transformation.translate(x, y)

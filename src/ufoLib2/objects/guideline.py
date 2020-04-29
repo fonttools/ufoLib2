@@ -3,7 +3,6 @@ from typing import Optional
 import attr
 
 from ufoLib2.objects.misc import AttrDictMixin
-from ufoLib2.typing import Number
 
 
 @attr.s(auto_attribs=True, slots=True)
@@ -14,13 +13,13 @@ class Guideline(AttrDictMixin):
     data composition restrictions.
     """
 
-    x: Optional[Number] = None
+    x: Optional[float] = None
     """The origin x coordinate of the guideline."""
 
-    y: Optional[Number] = None
+    y: Optional[float] = None
     """The origin y coordinate of the guideline."""
 
-    angle: Optional[Number] = None
+    angle: Optional[float] = None
     """The angle of the guideline."""
 
     name: Optional[str] = None

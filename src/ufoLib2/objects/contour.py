@@ -17,7 +17,6 @@ from fontTools.pens.pointPen import AbstractPointPen, PointToSegmentPen
 
 from ufoLib2.objects.misc import BoundingBox, getBounds, getControlBounds
 from ufoLib2.objects.point import Point
-from ufoLib2.typing import Number
 
 if TYPE_CHECKING:
     from ufoLib2.objects.layer import Layer  # noqa: F401
@@ -112,7 +111,7 @@ class Contour(MutableSequence):
             return True
         return self.points[0].type == "move"
 
-    def move(self, delta: Tuple[Number, Number]) -> None:
+    def move(self, delta: Tuple[float, float]) -> None:
         """Moves contour by (x, y) font units."""
         for point in self.points:
             point.move(delta)

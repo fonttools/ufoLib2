@@ -29,7 +29,7 @@ from ufoLib2.objects.info import Info
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
 from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
-from ufoLib2.typing import Number, PathLike, T
+from ufoLib2.typing import PathLike, T
 
 
 def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
@@ -69,7 +69,7 @@ class Font:
         features (Features): The font Features object.
         groups (Dict[str, List[str]]): A mapping of group names to a list of glyph
             names.
-        kerning (Dict[Tuple[str, str], Number]): A mapping of a tuple of first and
+        kerning (Dict[Tuple[str, str], float]): A mapping of a tuple of first and
             second kerning pair to a kerning value.
         lib (Dict[str, Any]): A mapping of keys to arbitrary values.
         data (DataSet): A mapping of data file paths to arbitrary data.
@@ -129,8 +129,8 @@ class Font:
     groups: Dict[str, List[str]] = attr.ib(factory=dict, kw_only=True)
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
-    kerning: Dict[Tuple[str, str], Number] = attr.ib(factory=dict, kw_only=True)
-    """Dict[Tuple[str, str], Number]: A mapping of a tuple of first and second kerning
+    kerning: Dict[Tuple[str, str], float] = attr.ib(factory=dict, kw_only=True)
+    """Dict[Tuple[str, str], float]: A mapping of a tuple of first and second kerning
     pair to a kerning value."""
 
     lib: Dict[str, Any] = attr.ib(factory=dict, kw_only=True)
