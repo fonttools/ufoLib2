@@ -5,6 +5,7 @@ import pytest
 from fontTools import ufoLib
 
 import ufoLib2
+import ufoLib2.objects
 from ufoLib2.objects import Layer, LayerSet
 from ufoLib2.objects.misc import _NOT_LOADED
 
@@ -149,3 +150,26 @@ def test_custom_layerset():
     layers2 = OrderedDict()
     layers2["public.default"] = default
     LayerSet(layers=layers2, defaultLayer=default)
+
+
+def test_guidelines():
+    font = ufoLib2.Font()
+
+    # accept either a mapping or a Guideline object
+    font.appendGuideline({"x": 100, "y": 50, "angle": 315})
+    font.appendGuideline(ufoLib2.objects.Guideline(x=30))
+
+    assert len(font.guidelines) == 2
+    assert font.guidelines == [
+        ufoLib2.objects.Guideline(x=100, y=50, angle=315),
+        ufoLib2.objects.Guideline(x=30),
+    ]
+
+    # setter should clear existing guidelines
+    font.guidelines = [{"x": 100}, ufoLib2.objects.Guideline(y=20)]
+
+    assert len(font.guidelines) == 2
+    assert font.guidelines == [
+        ufoLib2.objects.Guideline(x=100),
+        ufoLib2.objects.Guideline(y=20),
+    ]

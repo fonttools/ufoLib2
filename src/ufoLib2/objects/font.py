@@ -3,6 +3,7 @@ import shutil
 from typing import (
     Any,
     Dict,
+    Iterable,
     Iterator,
     KeysView,
     List,
@@ -362,7 +363,8 @@ class Font:
         return self.info.guidelines
 
     @guidelines.setter
-    def guidelines(self, value: List[Guideline]) -> None:
+    def guidelines(self, value: Iterable[Union[Guideline, Mapping[str, Any]]]) -> None:
+        self.info.guidelines = []
         for guideline in value:
             self.appendGuideline(guideline)
 
