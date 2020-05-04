@@ -8,7 +8,7 @@ appdirs==1.4.3            # via fs
 attrs==19.3.0             # via ufoLib2 (setup.py)
 fonttools[ufo]==4.9.0     # via ufoLib2 (setup.py)
 fs==2.4.11                # via fonttools
-pytz==2019.3              # via fs
+pytz==2020.1              # via fs
 six==1.14.0               # via fs
 
 # The following packages are considered to be unsafe in a requirements file:
