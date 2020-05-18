@@ -26,7 +26,7 @@ pyparsing==2.4.7          # via packaging
 pytest==5.4.2             # via -r requirements-dev.in
 regex==2020.5.14          # via black
 six==1.14.0               # via packaging
-toml==0.10.0              # via black, isort
+toml==0.10.1              # via black, isort
 typed-ast==1.4.1          # via black, mypy
 typing-extensions==3.7.4.2  # via mypy
 wcwidth==0.1.9            # via pytest
