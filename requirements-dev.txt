@@ -10,7 +10,7 @@ black==19.10b0            # via -r requirements-dev.in
 click==7.1.2              # via black
 coverage==5.1           # via -r requirements-dev.in
 entrypoints==0.3          # via flake8
-flake8==3.8.1             # via -r requirements-dev.in
+flake8==3.8.2             # via -r requirements-dev.in
 isort[pyproject]==4.3.21  # via -r requirements-dev.in
 mccabe==0.6.1             # via flake8
 more-itertools==8.3.0     # via pytest
