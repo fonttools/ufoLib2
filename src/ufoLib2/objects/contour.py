@@ -147,7 +147,14 @@ class Contour(MutableSequence):
         """
         return getControlBounds(self, layer)
 
-    # XXX: Add property controlPointBounds (defcon compat API)?
+    @property
+    def controlPointBounds(self) -> Optional[BoundingBox]:
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
+        taking only the control points into account.
+
+        |defcon_compat|
+        """
+        return self.getControlBounds()
 
     # -----------
     # Pen methods

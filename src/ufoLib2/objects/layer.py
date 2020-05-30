@@ -5,7 +5,13 @@ from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
-from ufoLib2.objects.misc import _NOT_LOADED, Placeholder, _deepcopy_unlazify_attrs
+from ufoLib2.objects.misc import (
+    _NOT_LOADED,
+    BoundingBox,
+    Placeholder,
+    _deepcopy_unlazify_attrs,
+    unionBounds,
+)
 from ufoLib2.typing import T
 
 
@@ -202,6 +208,30 @@ class Layer:
     def name(self) -> str:
         """The name of the layer."""
         return self._name
+
+    @property
+    def bounds(self) -> Optional[BoundingBox]:
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the layer,
+        taking the actual contours into account.
+
+        |defcon_compat|
+        """
+        bounds = None
+        for glyph in self:
+            bounds = unionBounds(bounds, glyph.getBounds(self))
+        return bounds
+
+    @property
+    def controlPointBounds(self) -> Optional[BoundingBox]:
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the layer,
+        taking only the control points into account.
+
+        |defcon_compat|
+        """
+        bounds = None
+        for glyph in self:
+            bounds = unionBounds(bounds, glyph.getControlBounds(self))
+        return bounds
 
     def addGlyph(self, glyph: Glyph) -> None:
         """Appends glyph object to the this layer unless its name is already

@@ -16,6 +16,7 @@ from typing import (
 )
 
 import attr
+from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.ufoLib import UFOReader, UFOWriter
@@ -50,6 +51,16 @@ def getControlBounds(drawable: Drawable, layer: Any) -> Optional[BoundingBox]:
     pen.skipMissingComponents = False
     drawable.draw(pen)
     return None if pen.bounds is None else BoundingBox(*pen.bounds)
+
+
+def unionBounds(
+    bounds1: Optional[BoundingBox], bounds2: Optional[BoundingBox]
+) -> Optional[BoundingBox]:
+    if bounds1 is None:
+        return bounds2
+    if bounds2 is None:
+        return bounds1
+    return BoundingBox(*unionRect(bounds1, bounds2))
 
 
 def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:

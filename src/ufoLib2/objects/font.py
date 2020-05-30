@@ -28,7 +28,7 @@ from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
-from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
+from ufoLib2.objects.misc import BoundingBox, _deepcopy_unlazify_attrs
 from ufoLib2.typing import PathLike, T
 
 
@@ -372,6 +372,24 @@ class Font:
     def path(self) -> Optional[PathLike]:
         """Return the path of the UFO, if it was set, or None."""
         return self._path
+
+    @property
+    def bounds(self) -> Optional[BoundingBox]:
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the default
+        layer, taking the actual contours into account.
+
+        |defcon_compat|
+        """
+        return self.layers.defaultLayer.bounds
+
+    @property
+    def controlPointBounds(self) -> Optional[BoundingBox]:
+        """Returns the (xMin, yMin, xMax, yMax) bounding box of the layer,
+        taking only the control points into account.
+
+        |defcon_compat|
+        """
+        return self.layers.defaultLayer.controlPointBounds
 
     def addGlyph(self, glyph: Glyph) -> None:
         """Appends glyph object to the default layer unless its name is already
