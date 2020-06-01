@@ -140,8 +140,6 @@ class Contour(MutableSequence):
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking only the control points into account.
 
-        Gives inaccurate results with extruding curvatures.
-
         Args:
             layer: Not applicable to contours, here for API symmetry.
         """

@@ -416,8 +416,6 @@ class Glyph:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking only the control points into account.
 
-        Gives inaccurate results with extruding curvatures.
-
         Args:
             layer: The layer of the glyph to look up components, if any. Not needed for
                 pure-contour glyphs.
