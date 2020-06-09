@@ -15,7 +15,7 @@ isort[pyproject]==4.3.21  # via -r requirements-dev.in
 mccabe==0.6.1             # via flake8
 more-itertools==8.3.0     # via pytest
 mypy-extensions==0.4.3    # via mypy
-mypy==0.770               # via -r requirements-dev.in
+mypy==0.780               # via -r requirements-dev.in
 packaging==20.4           # via pytest
 pathspec==0.8.0           # via black
 pluggy==0.13.1            # via pytest
@@ -23,10 +23,10 @@ py==1.8.1                 # via pytest
 pycodestyle==2.6.0        # via flake8
 pyflakes==2.2.0           # via flake8
 pyparsing==2.4.7          # via packaging
-pytest==5.4.2             # via -r requirements-dev.in
-regex==2020.5.14          # via black
+pytest==5.4.3             # via -r requirements-dev.in
+regex==2020.6.8          # via black
 six==1.15.0               # via packaging
 toml==0.10.1              # via black, isort
 typed-ast==1.4.1          # via black, mypy
 typing-extensions==3.7.4.2  # via mypy
-wcwidth==0.1.9            # via pytest
+wcwidth==0.2.4            # via pytest
