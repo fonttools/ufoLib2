@@ -11,7 +11,7 @@ click==7.1.2              # via black
 coverage==5.2.1           # via -r requirements-dev.in
 entrypoints==0.3          # via flake8
 flake8==3.8.3             # via -r requirements-dev.in
-isort[pyproject]==5.2.0  # via -r requirements-dev.in
+isort[pyproject]==5.4.2  # via -r requirements-dev.in
 mccabe==0.6.1             # via flake8
 more-itertools==8.4.0     # via pytest
 mypy-extensions==0.4.3    # via mypy
