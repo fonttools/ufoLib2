@@ -69,7 +69,7 @@ Tc = TypeVar("Tc", Guideline, GaspRangeRecord, NameRecord)
 
 
 def _convert_optional_list(
-    lst: Optional[Sequence[Any]], klass: Type[Tc],
+    lst: Optional[Sequence[Any]], klass: Type[Tc]
 ) -> Optional[List[Tc]]:
     if lst is None:
         return None
@@ -145,7 +145,7 @@ class Info:
         self._guidelines = _convert_guidelines(value)
 
     _openTypeGaspRangeRecords: Optional[List[GaspRangeRecord]] = attr.ib(
-        default=None, converter=_convert_gasp_range_records,
+        default=None, converter=_convert_gasp_range_records
     )
 
     @property
@@ -158,7 +158,7 @@ class Info:
 
     openTypeHeadCreated: Optional[str] = None
     openTypeHeadLowestRecPPEM: Optional[int] = attr.ib(
-        default=None, validator=_optional_positive,
+        default=None, validator=_optional_positive
     )
     openTypeHeadFlags: Optional[List[int]] = None
 
