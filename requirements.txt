@@ -5,7 +5,7 @@
 #    pip-compile --output-file=requirements.txt setup.py
 #
 appdirs==1.4.4            # via fs
-attrs==19.3.0             # via ufoLib2 (setup.py)
+attrs==20.2.0             # via ufoLib2 (setup.py)
 fonttools[ufo]==4.13.0     # via ufoLib2 (setup.py)
 fs==2.4.11                # via fonttools
 pytz==2020.1              # via fs
