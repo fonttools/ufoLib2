@@ -124,7 +124,7 @@ class Font:
     """Info: The font Info object."""
 
     features: Features = attr.ib(
-        factory=Features, converter=_convert_Features, kw_only=True,
+        factory=Features, converter=_convert_Features, kw_only=True
     )
     """Features: The font Features object."""
 
@@ -138,13 +138,11 @@ class Font:
     lib: Dict[str, Any] = attr.ib(factory=dict, kw_only=True)
     """Dict[str, Any]: A mapping of keys to arbitrary values."""
 
-    data: DataSet = attr.ib(
-        factory=DataSet, converter=_convert_DataSet, kw_only=True,
-    )
+    data: DataSet = attr.ib(factory=DataSet, converter=_convert_DataSet, kw_only=True)
     """DataSet: A mapping of data file paths to arbitrary data."""
 
     images: ImageSet = attr.ib(
-        factory=ImageSet, converter=_convert_ImageSet, kw_only=True,
+        factory=ImageSet, converter=_convert_ImageSet, kw_only=True
     )
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
@@ -174,7 +172,7 @@ class Font:
                 self._reader = reader
 
     @classmethod
-    def open(cls, path: PathLike, lazy: bool = True, validate: bool = True,) -> "Font":
+    def open(cls, path: PathLike, lazy: bool = True, validate: bool = True) -> "Font":
         """Instantiates a new Font object from a path to a UFO.
 
         Args:

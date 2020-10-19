@@ -279,7 +279,7 @@ class Glyph:
     def appendContour(self, contour: Contour) -> None:
         """Appends a :class:`.Contour` object to glyph's list of contours."""
         if not isinstance(contour, Contour):
-            raise TypeError(f"Expected Contour, found {type(contour).__name__}",)
+            raise TypeError(f"Expected Contour, found {type(contour).__name__}")
         self.contours.append(contour)
 
     def copy(self, name: Optional[str] = None) -> "Glyph":
