@@ -24,7 +24,7 @@ pycodestyle==2.6.0        # via flake8
 pyflakes==2.2.0           # via flake8
 pyparsing==2.4.7          # via packaging
 pytest==6.1.2             # via -r requirements-dev.in
-regex==2020.10.28          # via black
+regex==2020.11.13          # via black
 six==1.15.0               # via packaging
 toml==0.10.2              # via black, isort
 typed-ast==1.4.1          # via black, mypy
