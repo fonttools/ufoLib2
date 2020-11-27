@@ -217,7 +217,7 @@ class Glyph:
                 color=image.get("color"),
             )
 
-    def object_lib(self, object: HasIdentifier) -> Dict[str, Any]:
+    def objectLib(self, object: HasIdentifier) -> Dict[str, Any]:
         """Return the lib for an object with an identifier, as stored in a glyph's lib.
 
         If the object does not yet have an identifier, a new one is assigned to it. If
@@ -230,7 +230,7 @@ class Glyph:
             >>> font = Font()
             >>> glyph = font.newGlyph("a")
             >>> glyph.guidelines = [Guideline(x=100)]
-            >>> guideline_lib = glyph.object_lib(glyph.guidelines[0])
+            >>> guideline_lib = glyph.objectLib(glyph.guidelines[0])
             >>> guideline_lib["com.test.foo"] = 1234
             >>> guideline_id = glyph.guidelines[0].identifier
             >>> assert guideline_id is not None

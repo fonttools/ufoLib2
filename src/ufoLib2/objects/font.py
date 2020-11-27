@@ -371,7 +371,7 @@ class Font:
         for guideline in value:
             self.appendGuideline(guideline)
 
-    def object_lib(self, object: HasIdentifier) -> Dict[str, Any]:
+    def objectLib(self, object: HasIdentifier) -> Dict[str, Any]:
         """Return the lib for an object with an identifier, as stored in a font's lib.
 
         If the object does not yet have an identifier, a new one is assigned to it. If
@@ -383,7 +383,7 @@ class Font:
             >>> from ufoLib2.objects import Font, Guideline
             >>> font = Font()
             >>> font.guidelines = [Guideline(x=100)]
-            >>> guideline_lib = font.object_lib(font.guidelines[0])
+            >>> guideline_lib = font.objectLib(font.guidelines[0])
             >>> guideline_lib["com.test.foo"] = 1234
             >>> guideline_id = font.guidelines[0].identifier
             >>> assert guideline_id is not None
