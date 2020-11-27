@@ -25,8 +25,9 @@ from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
-from ufoLib2.objects.misc import BoundingBox, getBounds, getControlBounds
+from ufoLib2.objects.misc import BoundingBox, _object_lib, getBounds, getControlBounds
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
+from ufoLib2.typing import HasIdentifier
 
 if TYPE_CHECKING:
     from ufoLib2.objects.layer import Layer  # noqa: F401
@@ -215,6 +216,28 @@ class Glyph:
                 ),
                 color=image.get("color"),
             )
+
+    def object_lib(self, object: HasIdentifier) -> Dict[str, Any]:
+        """Return the lib for an object with an identifier, as stored in a glyph's lib.
+
+        If the object does not yet have an identifier, a new one is assigned to it. If
+        the font lib does not yet contain the object's lib, a new one is inserted and
+        returned.
+
+        .. doctest::
+
+            >>> from ufoLib2.objects import Font, Guideline
+            >>> font = Font()
+            >>> glyph = font.newGlyph("a")
+            >>> glyph.guidelines = [Guideline(x=100)]
+            >>> guideline_lib = glyph.object_lib(glyph.guidelines[0])
+            >>> guideline_lib["com.test.foo"] = 1234
+            >>> guideline_id = glyph.guidelines[0].identifier
+            >>> assert guideline_id is not None
+            >>> assert glyph.lib["public.objectLibs"][guideline_id] is guideline_lib
+        """
+
+        return _object_lib(self.lib, object)
 
     def clear(self) -> None:
         """Clears out anchors, components, contours, guidelines and image
