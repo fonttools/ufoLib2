@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterator, KeysView, Optional, Sequence, Type, Union
+from typing import Any, Dict, Iterator, KeysView, Optional, Sequence, Set, Type, Union
 
 import attr
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -10,6 +10,7 @@ from ufoLib2.objects.misc import (
     BoundingBox,
     Placeholder,
     _deepcopy_unlazify_attrs,
+    _prune_object_libs,
     unionBounds,
 )
 from ufoLib2.typing import T
@@ -325,6 +326,7 @@ class Layer:
                     glyph = self.loadGlyph(name)
                 else:
                     continue
+            _prune_object_libs(glyph.lib, _fetch_glyph_identifiers(glyph))
             glyphSet.writeGlyph(
                 name, glyphObject=glyph, drawPointsFunc=glyph.drawPoints
             )
@@ -333,3 +335,25 @@ class Layer:
         if saveAs:
             # all glyphs are loaded by now, no need to keep ref to glyphSet
             self._glyphSet = None
+
+
+def _fetch_glyph_identifiers(glyph: Glyph) -> Set[str]:
+    """Returns all identifiers in use in a glyph."""
+
+    identifiers = set()
+    for anchor in glyph.anchors:
+        if anchor.identifier is not None:
+            identifiers.add(anchor.identifier)
+    for guideline in glyph.guidelines:
+        if guideline.identifier is not None:
+            identifiers.add(guideline.identifier)
+    for contour in glyph.contours:
+        if contour.identifier is not None:
+            identifiers.add(contour.identifier)
+        for point in contour:
+            if point.identifier is not None:
+                identifiers.add(point.identifier)
+    for component in glyph.components:
+        if component.identifier is not None:
+            identifiers.add(component.identifier)
+    return identifiers

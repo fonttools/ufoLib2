@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import TypeVar, Union
+from typing import Optional, TypeVar, Union
 
 from fontTools.pens.basePen import AbstractPen
 
@@ -25,3 +25,10 @@ class Drawable(Protocol):
 
     def draw(self, pen: AbstractPen) -> None:
         ...
+
+
+class HasIdentifier(Protocol):
+    """Any object that has a unique identifier in some context that can be
+    used as a key in a public.objectLibs dictionary."""
+
+    identifier: Optional[str]

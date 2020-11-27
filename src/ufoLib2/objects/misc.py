@@ -1,3 +1,5 @@
+import collections.abc
+import uuid
 from abc import abstractmethod
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
@@ -21,7 +23,8 @@ from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.ufoLib import UFOReader, UFOWriter
 
-from ufoLib2.typing import Drawable
+from ufoLib2.constants import OBJECT_LIBS_KEY
+from ufoLib2.typing import Drawable, HasIdentifier
 
 
 class BoundingBox(NamedTuple):
@@ -75,6 +78,41 @@ def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
             if a.init and a.metadata.get("copyable", True)
         },
     )
+
+
+def _object_lib(parent_lib: Dict[str, Any], object: HasIdentifier) -> Dict[str, Any]:
+    if object.identifier is None:
+        # Use UUID4 because it allows us to set a new identifier without
+        # checking if it's already used anywhere else and be right most
+        # of the time.
+        object.identifier = str(uuid.uuid4())
+
+    if "public.objectLibs" not in parent_lib:
+        object_libs = parent_lib["public.objectLibs"] = {}
+    else:
+        object_libs = parent_lib["public.objectLibs"]
+        assert isinstance(object_libs, collections.abc.MutableMapping)
+
+    if object.identifier in object_libs:
+        return object_libs[object.identifier]
+    lib = object_libs[object.identifier] = {}
+    return lib
+
+
+def _prune_object_libs(parent_lib: Dict[str, Any], identifiers: Set[str]) -> None:
+    """Prune non-existing objects and empty libs from a lib's
+    public.objectLibs.
+
+    Empty object libs are pruned, but object identifiers stay.
+    """
+
+    if OBJECT_LIBS_KEY not in parent_lib:
+        return
+
+    object_libs = parent_lib[OBJECT_LIBS_KEY]
+    parent_lib[OBJECT_LIBS_KEY] = {
+        k: v for k, v in object_libs.items() if k in identifiers and v
+    }
 
 
 class Placeholder:

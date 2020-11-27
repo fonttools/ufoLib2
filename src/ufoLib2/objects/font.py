@@ -28,8 +28,13 @@ from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
-from ufoLib2.objects.misc import BoundingBox, _deepcopy_unlazify_attrs
-from ufoLib2.typing import PathLike, T
+from ufoLib2.objects.misc import (
+    BoundingBox,
+    _deepcopy_unlazify_attrs,
+    _object_lib,
+    _prune_object_libs,
+)
+from ufoLib2.typing import HasIdentifier, PathLike, T
 
 
 def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
@@ -366,6 +371,27 @@ class Font:
         for guideline in value:
             self.appendGuideline(guideline)
 
+    def object_lib(self, object: HasIdentifier) -> Dict[str, Any]:
+        """Return the lib for an object with an identifier, as stored in a font's lib.
+
+        If the object does not yet have an identifier, a new one is assigned to it. If
+        the font lib does not yet contain the object's lib, a new one is inserted and
+        returned.
+
+        .. doctest::
+
+            >>> from ufoLib2.objects import Font, Guideline
+            >>> font = Font()
+            >>> font.guidelines = [Guideline(x=100)]
+            >>> guideline_lib = font.object_lib(font.guidelines[0])
+            >>> guideline_lib["com.test.foo"] = 1234
+            >>> guideline_id = font.guidelines[0].identifier
+            >>> assert guideline_id is not None
+            >>> assert font.lib["public.objectLibs"][guideline_id] is guideline_lib
+        """
+
+        return _object_lib(self.lib, object)
+
     @property
     def path(self) -> Optional[PathLike]:
         """Return the path of the UFO, if it was set, or None."""
@@ -474,6 +500,10 @@ class Font:
         writer.writeGroups(self.groups)
         writer.writeInfo(self.info)
         writer.writeKerning(self.kerning)
+        _prune_object_libs(
+            self.lib,
+            {g.identifier for g in self.guidelines if g.identifier is not None},
+        )
         writer.writeLib(self.lib)
         # save the layers
         self.layers.write(writer, saveAs=saveAs)
