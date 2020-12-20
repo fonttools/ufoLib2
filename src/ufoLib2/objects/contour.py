@@ -96,11 +96,11 @@ class Contour(MutableSequence):
     def __len__(self) -> int:
         return len(self.points)
 
-    def insert(self, index: int, point: Point) -> None:
-        """Insert Point object ``point`` into the contour at ``index``."""
-        if not isinstance(point, Point):
-            raise TypeError(f"Expected Point, found {type(point).__name__}.")
-        self.points.insert(index, point)
+    def insert(self, index: int, value: Point) -> None:
+        """Insert Point object ``value`` into the contour at ``index``."""
+        if not isinstance(value, Point):
+            raise TypeError(f"Expected Point, found {type(value).__name__}.")
+        self.points.insert(index, value)
 
     # TODO: rotate method?
 

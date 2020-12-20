@@ -87,6 +87,7 @@ def _object_lib(parent_lib: Dict[str, Any], object: HasIdentifier) -> Dict[str, 
         # of the time.
         object.identifier = str(uuid.uuid4())
 
+    object_libs: Dict[str, Any]
     if "public.objectLibs" not in parent_lib:
         object_libs = parent_lib["public.objectLibs"] = {}
     else:
