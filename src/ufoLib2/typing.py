@@ -13,7 +13,7 @@ else:
 T = TypeVar("T")
 """Generic variable for mypy for trivial generic function signatures."""
 
-PathLike = Union[str, bytes, os.PathLike]
+PathLike = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
 """Represents a path in various possible forms."""
 
 

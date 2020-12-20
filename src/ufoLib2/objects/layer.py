@@ -1,4 +1,14 @@
-from typing import Any, Dict, Iterator, KeysView, Optional, Sequence, Set, Type, Union
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    KeysView,
+    Optional,
+    Sequence,
+    Set,
+    Union,
+    overload,
+)
 
 import attr
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -185,24 +195,30 @@ class Layer:
         """Returns a list of glyph names."""
         return self._glyphs.keys()
 
-    def pop(
-        self, name: str, default: Union[Type[KeyError], T] = KeyError
-    ) -> Union[Glyph, T]:
+    @overload
+    def pop(self, key: str) -> Glyph:
+        ...
+
+    @overload
+    def pop(self, key: str, default: Union[Glyph, T] = ...) -> Union[Glyph, T]:
+        ...
+
+    def pop(self, key: str, default: Union[Glyph, T] = KeyError) -> Union[Glyph, T]:  # type: ignore
         """Remove and return glyph from layer.
 
         Args:
-            name: The name of the glyph.
+            key: The name of the glyph.
             default: What to return if there is no glyph with the given name.
         """
-        # XXX: make `default` a None instead of KeyError?
+        # NOTE: We can't defer to self._glyphs.pop because we must load glyphs
         try:
-            glyph = self[name]
+            glyph = self[key]
         except KeyError:
             if default is KeyError:
                 raise
             glyph = default  # type: ignore
         else:
-            del self[name]
+            del self[key]
         return glyph
 
     @property

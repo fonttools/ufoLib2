@@ -16,6 +16,7 @@ from typing import (
 
 import attr
 import fs
+import fs.base
 import fs.tempfs
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
@@ -306,7 +307,7 @@ class Font:
         return not result
 
     @property
-    def reader(self) -> UFOReader:
+    def reader(self) -> Optional[UFOReader]:
         """Returns the underlying :class:`fontTools.ufoLib.UFOReader`."""
         return self._reader
 

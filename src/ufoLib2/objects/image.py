@@ -47,7 +47,9 @@ class Image(Mapping):
         "yOffset",
     )
     _valid_keys_: Tuple[str, str, str, str, str, str, str, str] = (
-        ("fileName",) + _transformation_keys_ + ("color",)
+        "fileName",
+        *_transformation_keys_,
+        "color",
     )
 
     def __getitem__(self, key: str) -> Any:
