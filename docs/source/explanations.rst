@@ -54,3 +54,22 @@ not implement some of defcon's properties:
 
 2. ufoLib2 does not support notifications, as that concerns only font editing
    applications.
+
+Handling of the ``public.objectLibs`` lib key
+---------------------------------------------
+
+ufoLib2 implements handling of ``public.objectLibs`` (see
+https://github.com/unified-font-object/ufo-spec/issues/115), but instead of
+attaching libs directly to the objects where they belong, they stay in a font's
+and glyph's lib and have to be retrieved with :meth:`.Font.objectLib` and
+:meth:`.Glyph.objectLib`, respectively.
+
+Using a higher-up lib means objects can get libs on UFO v3 without format
+changes, but complicates adding libs to the objects directly. Since ufoLib2
+intentionally lacks defcon's parent-child object hierarchy, a guideline can't
+follow a link to the containing parent and access its lib. Magically loading
+and storing the ``public.objectLibs`` lib key on loading and saving a UFO adds
+an uncomfortable amount of magic and edge-casiness. What if a client itself
+adds a ``public.objectLibs`` entry for an object that differs from what is in
+that object's lib? Overwrite, ignore, error out? With the ``.objectLib``
+method, this edge case does not exist.
