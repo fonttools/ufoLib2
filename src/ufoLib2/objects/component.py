@@ -1,5 +1,5 @@
 import warnings
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import Optional, Tuple
 
 import attr
 from fontTools.misc.transform import Identity, Transform
@@ -7,11 +7,9 @@ from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import AbstractPointPen, PointToSegmentPen
 
 from ufoLib2.objects.misc import BoundingBox
+from ufoLib2.typing import GlyphSet
 
 from .misc import _convert_transform, getBounds, getControlBounds
-
-if TYPE_CHECKING:
-    from ufoLib2.objects.layer import Layer
 
 
 @attr.s(auto_attribs=True, slots=True)
@@ -39,7 +37,7 @@ class Component:
         x, y = delta
         self.transformation = self.transformation.translate(x, y)
 
-    def getBounds(self, layer: "Layer") -> Optional[BoundingBox]:
+    def getBounds(self, layer: GlyphSet) -> Optional[BoundingBox]:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the component,
         taking the actual contours into account.
 
@@ -48,7 +46,7 @@ class Component:
         """
         return getBounds(self, layer)
 
-    def getControlBounds(self, layer: "Layer") -> Optional[BoundingBox]:
+    def getControlBounds(self, layer: GlyphSet) -> Optional[BoundingBox]:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the component,
         taking only the control points into account.
 

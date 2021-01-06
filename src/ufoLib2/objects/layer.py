@@ -148,7 +148,7 @@ class Layer:
 
     __deepcopy__ = _deepcopy_unlazify_attrs
 
-    def __contains__(self, name: str) -> bool:
+    def __contains__(self, name: object) -> bool:
         return name in self._glyphs
 
     def __delitem__(self, name: str) -> None:

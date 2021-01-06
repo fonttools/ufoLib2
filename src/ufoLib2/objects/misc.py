@@ -24,7 +24,7 @@ from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.ufoLib import UFOReader, UFOWriter
 
 from ufoLib2.constants import OBJECT_LIBS_KEY
-from ufoLib2.typing import Drawable, HasIdentifier
+from ufoLib2.typing import Drawable, GlyphSet, HasIdentifier
 
 
 class BoundingBox(NamedTuple):
@@ -36,9 +36,7 @@ class BoundingBox(NamedTuple):
     yMax: float
 
 
-def getBounds(drawable: Drawable, layer: Any) -> Optional[BoundingBox]:
-    # XXX: layer should behave like a mapping of glyph names to Glyph objects, but
-    # cyclic imports...
+def getBounds(drawable: Drawable, layer: Optional[GlyphSet]) -> Optional[BoundingBox]:
     pen = BoundsPen(layer)
     # raise 'KeyError' when a referenced component is missing from glyph set
     pen.skipMissingComponents = False
@@ -46,9 +44,9 @@ def getBounds(drawable: Drawable, layer: Any) -> Optional[BoundingBox]:
     return None if pen.bounds is None else BoundingBox(*pen.bounds)
 
 
-def getControlBounds(drawable: Drawable, layer: Any) -> Optional[BoundingBox]:
-    # XXX: layer should behave like a mapping of glyph names to Glyph objects, but
-    # cyclic imports...
+def getControlBounds(
+    drawable: Drawable, layer: Optional[GlyphSet]
+) -> Optional[BoundingBox]:
     pen = ControlBoundsPen(layer)
     # raise 'KeyError' when a referenced component is missing from glyph set
     pen.skipMissingComponents = False
