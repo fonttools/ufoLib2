@@ -58,6 +58,7 @@ class GlyphSet(Protocol):
     (grep for ``.glyphSet``).
     """
 
+    # "object" instead of "str" because that's what typeshed says a Mapping should have.
     def __contains__(self, name: object) -> bool:
         ...
 
