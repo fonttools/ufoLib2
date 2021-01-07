@@ -1,15 +1,5 @@
 from copy import deepcopy
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterator,
-    List,
-    Mapping,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 
 import attr
 from fontTools.misc.transform import Transform
@@ -27,10 +17,7 @@ from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
 from ufoLib2.objects.misc import BoundingBox, _object_lib, getBounds, getControlBounds
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
-from ufoLib2.typing import HasIdentifier
-
-if TYPE_CHECKING:
-    from ufoLib2.objects.layer import Layer  # noqa: F401
+from ufoLib2.typing import GlyphSet, HasIdentifier
 
 
 @attr.s(auto_attribs=True, slots=True, repr=False)
@@ -420,7 +407,7 @@ class Glyph:
 
     # bounds and side-bearings
 
-    def getBounds(self, layer: Optional["Layer"] = None) -> Optional[BoundingBox]:
+    def getBounds(self, layer: Optional[GlyphSet] = None) -> Optional[BoundingBox]:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking the actual contours into account.
 
@@ -434,7 +421,7 @@ class Glyph:
         return getBounds(self, layer)
 
     def getControlBounds(
-        self, layer: Optional["Layer"] = None
+        self, layer: Optional[GlyphSet] = None
     ) -> Optional[BoundingBox]:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking only the control points into account.
@@ -448,7 +435,7 @@ class Glyph:
 
         return getControlBounds(self, layer)
 
-    def getLeftMargin(self, layer: Optional["Layer"] = None) -> Optional[float]:
+    def getLeftMargin(self, layer: Optional[GlyphSet] = None) -> Optional[float]:
         """Returns the the space in font units from the point of origin to the
         left side of the glyph.
 
@@ -461,7 +448,7 @@ class Glyph:
             return None
         return bounds.xMin
 
-    def setLeftMargin(self, value: float, layer: Optional["Layer"] = None) -> None:
+    def setLeftMargin(self, value: float, layer: Optional[GlyphSet] = None) -> None:
         """Sets the the space in font units from the point of origin to the
         left side of the glyph.
 
@@ -478,7 +465,7 @@ class Glyph:
             self.width += diff
             self.move((diff, 0))
 
-    def getRightMargin(self, layer: Optional["Layer"] = None) -> Optional[float]:
+    def getRightMargin(self, layer: Optional[GlyphSet] = None) -> Optional[float]:
         """Returns the the space in font units from the glyph's advance width
         to the right side of the glyph.
 
@@ -491,7 +478,7 @@ class Glyph:
             return None
         return self.width - bounds.xMax
 
-    def setRightMargin(self, value: float, layer: Optional["Layer"] = None) -> None:
+    def setRightMargin(self, value: float, layer: Optional[GlyphSet] = None) -> None:
         """Sets the the space in font units from the glyph's advance width to
         the right side of the glyph.
 
@@ -505,7 +492,7 @@ class Glyph:
             return None
         self.width = bounds.xMax + value
 
-    def getBottomMargin(self, layer: Optional["Layer"] = None) -> Optional[float]:
+    def getBottomMargin(self, layer: Optional[GlyphSet] = None) -> Optional[float]:
         """Returns the the space in font units from the bottom of the canvas to
         the bottom of the glyph.
 
@@ -521,7 +508,7 @@ class Glyph:
         else:
             return bounds.yMin - (self.verticalOrigin - self.height)
 
-    def setBottomMargin(self, value: float, layer: Optional["Layer"] = None) -> None:
+    def setBottomMargin(self, value: float, layer: Optional[GlyphSet] = None) -> None:
         """Sets the the space in font units from the bottom of the canvas to
         the bottom of the glyph.
 
@@ -543,7 +530,7 @@ class Glyph:
         if diff:
             self.height += diff
 
-    def getTopMargin(self, layer: Optional["Layer"] = None) -> Optional[float]:
+    def getTopMargin(self, layer: Optional[GlyphSet] = None) -> Optional[float]:
         """Returns the the space in font units from the top of the canvas to
         the top of the glyph.
 
@@ -559,7 +546,7 @@ class Glyph:
         else:
             return self.verticalOrigin - bounds.yMax
 
-    def setTopMargin(self, value: float, layer: Optional["Layer"] = None) -> None:
+    def setTopMargin(self, value: float, layer: Optional[GlyphSet] = None) -> None:
         """Sets the the space in font units from the top of the canvas to the
         top of the glyph.
 

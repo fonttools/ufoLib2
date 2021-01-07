@@ -221,7 +221,7 @@ class Font:
             self._reader = reader
         return self
 
-    def __contains__(self, name: str) -> bool:
+    def __contains__(self, name: object) -> bool:
         return name in self.layers.defaultLayer
 
     def __delitem__(self, name: str) -> None:

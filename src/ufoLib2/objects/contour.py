@@ -1,15 +1,6 @@
 import warnings
 from collections.abc import MutableSequence
-from typing import (
-    TYPE_CHECKING,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
-    Union,
-    overload,
-)
+from typing import Iterable, Iterator, List, Optional, Tuple, Union, overload
 
 import attr
 from fontTools.pens.basePen import AbstractPen
@@ -17,9 +8,7 @@ from fontTools.pens.pointPen import AbstractPointPen, PointToSegmentPen
 
 from ufoLib2.objects.misc import BoundingBox, getBounds, getControlBounds
 from ufoLib2.objects.point import Point
-
-if TYPE_CHECKING:
-    from ufoLib2.objects.layer import Layer  # noqa: F401
+from ufoLib2.typing import GlyphSet
 
 
 @attr.s(auto_attribs=True, slots=True)
@@ -116,7 +105,7 @@ class Contour(MutableSequence):
         for point in self.points:
             point.move(delta)
 
-    def getBounds(self, layer: Optional["Layer"] = None) -> Optional[BoundingBox]:
+    def getBounds(self, layer: Optional[GlyphSet] = None) -> Optional[BoundingBox]:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking the actual contours into account.
 
@@ -135,7 +124,7 @@ class Contour(MutableSequence):
         return self.getBounds()
 
     def getControlBounds(
-        self, layer: Optional["Layer"] = None
+        self, layer: Optional[GlyphSet] = None
     ) -> Optional[BoundingBox]:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking only the control points into account.
