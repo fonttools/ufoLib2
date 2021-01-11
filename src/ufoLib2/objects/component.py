@@ -33,9 +33,19 @@ class Component:
     """The globally unique identifier of the component."""
 
     def move(self, delta: Tuple[float, float]) -> None:
-        """Moves this component by (x, y) font units."""
+        """Moves this component by (x, y) font units.
+
+        NOTE: This interprets the delta to be the visual delta, as in, it
+        replaces the x and y offsets of the component's transformation
+        directly, rather than going through
+        :meth:`fontTools.misc.transform.Transform.translate`. Otherwise,
+        composites that use flipped components (imagine a ``quotedblleft``
+        composite using two x- and y-inverted ``comma`` components)
+        would move in the opposite direction of the delta.
+        """
         x, y = delta
-        self.transformation = self.transformation.translate(x, y)
+        xx, xy, yx, yy, dx, dy = self.transformation
+        self.transformation = Transform(xx, xy, yx, yy, dx + x, dy + y)
 
     def getBounds(self, layer: GlyphSet) -> Optional[BoundingBox]:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the component,

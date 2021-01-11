@@ -1,9 +1,12 @@
+from pathlib import Path
+
 import pytest
 
 from ufoLib2.objects import (
     Anchor,
     Component,
     Contour,
+    Font,
     Glyph,
     Guideline,
     Image,
@@ -356,3 +359,45 @@ def test_composite_glyph_set_top_margins(layer):
     b.setTopMargin(10, layer)  # -5
     assert b.getTopMargin(layer) == 10
     assert b.height == 25
+
+
+def test_composite_margin_roundtrip(datadir: Path) -> None:
+    msans = Font.open(datadir / "MutatorSansBoldCondensed.ufo")
+
+    comma = msans["comma"]
+
+    assert comma.getLeftMargin(msans) == 30
+    assert comma.getRightMargin(msans) == 30
+    assert comma.width == 250
+
+    # Quotedblleft consists of two inverted commas:
+    quotedblleft = msans["quotedblleft"]
+
+    assert quotedblleft.getLeftMargin(msans) == 30
+    assert quotedblleft.getRightMargin(msans) == 30
+    assert quotedblleft.width == 480
+
+    # Now change comma and verify indirect change in quotedblleft.
+    comma.setLeftMargin(27, msans)
+    comma.setRightMargin(27, msans)
+
+    assert comma.getLeftMargin(msans) == 27
+    assert comma.getRightMargin(msans) == 27
+    assert comma.width == 244
+
+    assert quotedblleft.getLeftMargin(msans) == 33
+    assert quotedblleft.getRightMargin(msans) == 27
+    assert quotedblleft.width == 480
+
+    # Changing margins of quotedblleft should not affect comma.
+    quotedblleft.setLeftMargin(23, msans)
+    quotedblleft.setRightMargin(22, msans)
+
+    assert comma.getLeftMargin(msans) == 27
+    assert comma.getRightMargin(msans) == 27
+    assert comma.width == 244
+
+    # Quotedblleft should however have the exact margins we gave above.
+    assert quotedblleft.getLeftMargin(msans) == 23
+    assert quotedblleft.getRightMargin(msans) == 22
+    assert quotedblleft.width == 465
