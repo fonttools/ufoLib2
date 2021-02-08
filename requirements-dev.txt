@@ -16,7 +16,7 @@ mccabe==0.6.1             # via flake8
 more-itertools==8.7.0     # via pytest
 mypy-extensions==0.4.3    # via mypy
 mypy==0.800               # via -r requirements-dev.in
-packaging==20.8           # via pytest
+packaging==20.9           # via pytest
 pathspec==0.8.1           # via black
 pluggy==0.13.1            # via pytest
 py==1.10.0                 # via pytest
