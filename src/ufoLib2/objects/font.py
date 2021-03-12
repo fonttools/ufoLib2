@@ -178,7 +178,9 @@ class Font:
                 self._reader = reader
 
     @classmethod
-    def open(cls, path: PathLike, lazy: bool = True, validate: bool = True) -> "Font":
+    def open(
+        cls, path: PathLike, lazy: bool = True, validate: bool = True, loader=None
+    ) -> "Font":
         """Instantiates a new Font object from a path to a UFO.
 
         Args:
@@ -187,7 +189,12 @@ class Font:
                 False, load everything up front.
             validate: If True, enable UFO data model validation during loading. If
                 False, load whatever is deserializable.
+            loader: A function to call to load the font. The function is passed the
+                `ufoLib2.objects` module and the font path.
+
         """
+        if loader:
+            return loader(ufoLib2.objects, path)
         reader = UFOReader(path, validate=validate)
         self = cls.read(reader, lazy=lazy)
         self._path = path
