@@ -11,7 +11,7 @@ click==7.1.2              # via black
 coverage==5.5           # via -r requirements-dev.in
 entrypoints==0.3          # via flake8
 flake8==3.9.0             # via -r requirements-dev.in
-isort[pyproject]==5.7.0  # via -r requirements-dev.in
+isort[pyproject]==5.8.0  # via -r requirements-dev.in
 mccabe==0.6.1             # via flake8
 more-itertools==8.7.0     # via pytest
 mypy-extensions==0.4.3    # via mypy
@@ -24,7 +24,7 @@ pycodestyle==2.7.0        # via flake8
 pyflakes==2.3.0           # via flake8
 pyparsing==2.4.7          # via packaging
 pytest==6.2.2             # via -r requirements-dev.in
-regex==2020.11.13          # via black
+regex==2021.3.17          # via black
 six==1.15.0               # via packaging
 toml==0.10.2              # via black, isort
 typed-ast==1.4.2          # via black, mypy
