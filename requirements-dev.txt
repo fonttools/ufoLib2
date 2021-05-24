@@ -7,7 +7,7 @@
 appdirs==1.4.4            # via black
 attrs==21.2.0             # via black, pytest
 black==21.5b1            # via -r requirements-dev.in
-click==8.0.0              # via black
+click==8.0.1              # via black
 coverage==5.5           # via -r requirements-dev.in
 entrypoints==0.3          # via flake8
 flake8==3.9.2             # via -r requirements-dev.in
