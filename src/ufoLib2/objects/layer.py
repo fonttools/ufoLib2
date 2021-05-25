@@ -12,9 +12,13 @@ from typing import (
 
 import attr
 from fontTools.ufoLib.glifLib import GlyphSet
+import readwrite_ufo_glif
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
+from ufoLib2.objects.contour import Contour
+from ufoLib2.objects.point import Point
+from ufoLib2.objects.component import Component
 from ufoLib2.objects.misc import (
     _NOT_LOADED,
     BoundingBox,
@@ -125,16 +129,12 @@ class Layer:
             lazy: If True, load glyphs as they are accessed. If False, load everything
                 up front.
         """
-        glyphNames = glyphSet.keys()
         glyphs: Dict[str, Union[Glyph, Placeholder]]
         if lazy:
-            glyphs = {gn: _NOT_LOADED for gn in glyphNames}
+            glyphs = {gn: _NOT_LOADED for gn in glyphSet.keys()}
         else:
-            glyphs = {}
-            for glyphName in glyphNames:
-                glyph = Glyph(glyphName)
-                glyphSet.readGlyph(glyphName, glyph, glyph.getPointPen())
-                glyphs[glyphName] = glyph
+            layer_path = glyphSet.fs.getsyspath(".")
+            glyphs = _read_layer(layer_path)
         self = cls(name, glyphs)
         if lazy:
             self._glyphSet = glyphSet
@@ -285,9 +285,8 @@ class Layer:
     def loadGlyph(self, name: str) -> Glyph:
         """Load and return Glyph object."""
         # XXX: Remove and let __getitem__ do it?
-        glyph = Glyph(name)
-        self._glyphSet.readGlyph(name, glyph, glyph.getPointPen())
-        self._glyphs[name] = glyph
+        glif_path = self._glyphSet.fs.getsyspath(self._glyphSet.contents[name])
+        self._glyphs[name] = glyph = _read_glyph(glif_path, name)
         return glyph
 
     def newGlyph(self, name: str) -> Glyph:
@@ -373,3 +372,52 @@ def _fetch_glyph_identifiers(glyph: Glyph) -> Set[str]:
         if component.identifier is not None:
             identifiers.add(component.identifier)
     return identifiers
+
+
+def _read_glyph(glif_path: str, name: str) -> Glyph:
+    data = readwrite_ufo_glif.read_glyph(glif_path)
+    return Glyph(
+        name,
+        height=data.get("height", 0),
+        width=data.get("width", 0),
+        unicodes=data.get("unicodes", []),
+        image=data.get("image"),
+        anchors=data.get("anchors", []),
+        guidelines=data.get("guidelines", []),
+        lib=data.get("lib", {}),
+        note=data.get("note", {}),
+        contours=[
+            Contour(
+                points=[Point(**kwargs) for kwargs in contour["points"]],
+                identifier=contour.get("identifier"),
+            )
+            for contour in data["contours"]
+        ],
+        components=[Component(**kwargs) for kwargs in data["components"]],
+    )
+
+
+def _read_layer(layer_path: str) -> Dict[str, Glyph]:
+    all_data: Dict[str, Dict[str, Any]] = readwrite_ufo_glif.read_layer(layer_path)
+    return {
+        name: Glyph(
+            name,
+            height=data.get("height", 0),
+            width=data.get("width", 0),
+            unicodes=data.get("unicodes", []),
+            image=data.get("image"),
+            anchors=data.get("anchors", []),
+            guidelines=data.get("guidelines", []),
+            lib=data.get("lib", {}),
+            note=data.get("note", {}),
+            contours=[
+                Contour(
+                    points=[Point(**kwargs) for kwargs in contour["points"]],
+                    identifier=contour.get("identifier"),
+                )
+                for contour in data["contours"]
+            ],
+            components=[Component(**kwargs) for kwargs in data["components"]],
+        )
+        for name, data in all_data.items()
+    }
