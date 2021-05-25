@@ -11,14 +11,16 @@ from typing import (
 )
 
 import attr
-from fontTools.ufoLib.glifLib import GlyphSet
 import readwrite_ufo_glif
+from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
-from ufoLib2.objects.glyph import Glyph
-from ufoLib2.objects.contour import Contour
-from ufoLib2.objects.point import Point
+from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.component import Component
+from ufoLib2.objects.contour import Contour
+from ufoLib2.objects.glyph import Glyph
+from ufoLib2.objects.guideline import Guideline
+from ufoLib2.objects.image import Image
 from ufoLib2.objects.misc import (
     _NOT_LOADED,
     BoundingBox,
@@ -27,6 +29,7 @@ from ufoLib2.objects.misc import (
     _prune_object_libs,
     unionBounds,
 )
+from ufoLib2.objects.point import Point
 from ufoLib2.typing import T
 
 
@@ -381,9 +384,9 @@ def _read_glyph(glif_path: str, name: str) -> Glyph:
         height=data.get("height", 0),
         width=data.get("width", 0),
         unicodes=data.get("unicodes", []),
-        image=data.get("image"),
-        anchors=data.get("anchors", []),
-        guidelines=data.get("guidelines", []),
+        image=Image(**data["image"]) if "image" in data else Image(),
+        anchors=[Anchor(**kwargs) for kwargs in data.get("anchors", [])],
+        guidelines=[Guideline(**kwargs) for kwargs in data.get("guidelines", [])],
         lib=data.get("lib", {}),
         note=data.get("note", {}),
         contours=[
@@ -405,9 +408,9 @@ def _read_layer(layer_path: str) -> Dict[str, Glyph]:
             height=data.get("height", 0),
             width=data.get("width", 0),
             unicodes=data.get("unicodes", []),
-            image=data.get("image"),
-            anchors=data.get("anchors", []),
-            guidelines=data.get("guidelines", []),
+            image=Image(**data["image"]) if "image" in data else Image(),
+            anchors=[Anchor(**kwargs) for kwargs in data.get("anchors", [])],
+            guidelines=[Guideline(**kwargs) for kwargs in data.get("guidelines", [])],
             lib=data.get("lib", {}),
             note=data.get("note", {}),
             contours=[
