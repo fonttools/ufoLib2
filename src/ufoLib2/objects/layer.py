@@ -394,9 +394,9 @@ def _read_glyph(glif_path: str, name: str) -> Glyph:
                 points=[Point(**kwargs) for kwargs in contour["points"]],
                 identifier=contour.get("identifier"),
             )
-            for contour in data["contours"]
+            for contour in data.get("contours", [])
         ],
-        components=[Component(**kwargs) for kwargs in data["components"]],
+        components=[Component(**kwargs) for kwargs in data.get("components", [])],
     )
 
 
@@ -418,9 +418,9 @@ def _read_layer(layer_path: str) -> Dict[str, Glyph]:
                     points=[Point(**kwargs) for kwargs in contour["points"]],
                     identifier=contour.get("identifier"),
                 )
-                for contour in data["contours"]
+                for contour in data.get("contours", [])
             ],
-            components=[Component(**kwargs) for kwargs in data["components"]],
+            components=[Component(**kwargs) for kwargs in data.get("components", [])],
         )
         for name, data in all_data.items()
     }
