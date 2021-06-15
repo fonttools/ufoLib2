@@ -153,8 +153,10 @@ class Layer:
             self = cls(name, glyphs, color=color, lib=lib)
             self._glyphSet = glyphset
         else:
-            glyphs, (color, lib) = _read_layer(path)
-            self = cls(name, glyphs, color=color, lib=lib)
+            glyphs, layerinfo = _read_layer(path)
+            self = cls(
+                name, glyphs, color=layerinfo.get("color"), lib=layerinfo.get("lib")
+            )
 
         return self
 
