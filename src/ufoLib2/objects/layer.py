@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import (
     Any,
     Dict,
@@ -6,6 +7,7 @@ from typing import (
     Optional,
     Sequence,
     Set,
+    Tuple,
     Union,
     overload,
 )
@@ -72,6 +74,16 @@ def _convert_glyphs(
 
 
 @attr.s(auto_attribs=True, slots=True, repr=False)
+class MinimalGlyphSet:
+    path: Path
+    contents: Dict[str, str]
+
+    @classmethod
+    def from_path(cls, path: Path) -> "MinimalGlyphSet":
+        return cls(path, readwrite_ufo_glif.read_layer_contents(str(path)))
+
+
+@attr.s(auto_attribs=True, slots=True, repr=False)
 class Layer:
     """Represents a Layer that holds Glyph objects.
 
@@ -122,7 +134,7 @@ class Layer:
     _glyphSet: Any = attr.ib(default=None, init=False, eq=False)
 
     @classmethod
-    def read(cls, name: str, glyphSet: GlyphSet, lazy: bool = True) -> "Layer":
+    def read(cls, name: str, path: Path, lazy: bool = True) -> "Layer":
         """Instantiates a Layer object from a
         :class:`fontTools.ufoLib.glifLib.GlyphSet`.
 
@@ -132,16 +144,18 @@ class Layer:
             lazy: If True, load glyphs as they are accessed. If False, load everything
                 up front.
         """
+
         glyphs: Dict[str, Union[Glyph, Placeholder]]
         if lazy:
-            glyphs = {gn: _NOT_LOADED for gn in glyphSet.keys()}
+            glyphset = MinimalGlyphSet.from_path(path)
+            glyphs = {gn: _NOT_LOADED for gn in glyphset.contents.keys()}
+            color, lib = readwrite_ufo_glif.read_layerinfo_maybe(str(path))
+            self = cls(name, glyphs, color=color, lib=lib)
+            self._glyphSet = glyphset
         else:
-            layer_path = glyphSet.fs.getsyspath(".")
-            glyphs = _read_layer(layer_path)
-        self = cls(name, glyphs)
-        if lazy:
-            self._glyphSet = glyphSet
-        glyphSet.readLayerInfo(self)
+            glyphs, (color, lib) = _read_layer(path)
+            self = cls(name, glyphs, color=color, lib=lib)
+
         return self
 
     def unlazify(self) -> None:
@@ -288,7 +302,8 @@ class Layer:
     def loadGlyph(self, name: str) -> Glyph:
         """Load and return Glyph object."""
         # XXX: Remove and let __getitem__ do it?
-        glif_path = self._glyphSet.fs.getsyspath(self._glyphSet.contents[name])
+        layer_path: Path = self._glyphSet.path
+        glif_path = layer_path / self._glyphSet.contents[name]
         self._glyphs[name] = glyph = _read_glyph(glif_path, name)
         return glyph
 
@@ -325,6 +340,7 @@ class Layer:
         """
         return Glyph()
 
+    # where does writer glyphset come from? same as layer._glyphSet?
     def write(self, glyphSet: GlyphSet, saveAs: bool = True) -> None:
         """Write Layer to a :class:`fontTools.ufoLib.glifLib.GlyphSet`.
 
@@ -378,7 +394,8 @@ def _fetch_glyph_identifiers(glyph: Glyph) -> Set[str]:
 
 
 def _read_glyph(glif_path: str, name: str) -> Glyph:
-    data = readwrite_ufo_glif.read_glyph(glif_path)
+    # data = pickle.loads(readwrite_ufo_glif.read_glyph(glif_path))
+    data = readwrite_ufo_glif.read_glyph(str(glif_path))
     return Glyph(
         name,
         height=data.get("height", 0),
@@ -400,9 +417,13 @@ def _read_glyph(glif_path: str, name: str) -> Glyph:
     )
 
 
-def _read_layer(layer_path: str) -> Dict[str, Glyph]:
-    all_data: Dict[str, Dict[str, Any]] = readwrite_ufo_glif.read_layer(layer_path)
-    return {
+def _read_layer(layer_path: str) -> Tuple[Dict[str, Glyph], Dict[str, Any]]:
+    # all_data: Dict[str, Dict[str, Any]] = pickle.loads(readwrite_ufo_glif.read_layer(layer_path))
+    all_data: Dict[str, Dict[str, Any]]
+    layerinfo: Dict[str, Any]
+    all_data, layerinfo = readwrite_ufo_glif.read_layer(str(layer_path))
+
+    glyphs = {
         name: Glyph(
             name,
             height=data.get("height", 0),
@@ -424,3 +445,5 @@ def _read_layer(layer_path: str) -> Dict[str, Glyph]:
         )
         for name, data in all_data.items()
     }
+
+    return glyphs, layerinfo
