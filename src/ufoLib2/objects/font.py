@@ -1,7 +1,9 @@
 import os
 import shutil
+from types import ModuleType
 from typing import (
     Any,
+    Callable,
     Dict,
     Iterable,
     Iterator,
@@ -20,6 +22,7 @@ import fs.base
 import fs.tempfs
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
+from ufoLib2 import objects
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.dataSet import DataSet
 from ufoLib2.objects.features import Features
@@ -179,7 +182,11 @@ class Font:
 
     @classmethod
     def open(
-        cls, path: PathLike, lazy: bool = True, validate: bool = True, loader=None
+        cls,
+        path: PathLike,
+        lazy: bool = True,
+        validate: bool = True,
+        loader: Optional[Callable[[ModuleType, PathLike], "Font"]] = None,
     ) -> "Font":
         """Instantiates a new Font object from a path to a UFO.
 
@@ -194,7 +201,7 @@ class Font:
 
         """
         if loader:
-            return loader(ufoLib2.objects, path)
+            return loader(objects, path)
         reader = UFOReader(path, validate=validate)
         self = cls.read(reader, lazy=lazy)
         self._path = path
