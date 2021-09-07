@@ -117,7 +117,9 @@ class Font:
         default layer.
     """
 
-    _path: Optional[PathLike] = attr.ib(default=None, metadata=dict(copyable=False))
+    _path: Optional[PathLike] = attr.ib(
+        default=None, metadata=dict(copyable=False), cmp=False
+    )
 
     layers: LayerSet = attr.ib(
         factory=LayerSet.default,
@@ -152,11 +154,15 @@ class Font:
     )
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
-    _lazy: Optional[bool] = attr.ib(default=None, kw_only=True)
-    _validate: bool = attr.ib(default=True, kw_only=True)
+    _lazy: Optional[bool] = attr.ib(default=None, kw_only=True, cmp=False)
+    _validate: bool = attr.ib(default=True, kw_only=True, cmp=False)
 
-    _reader: Optional[UFOReader] = attr.ib(default=None, kw_only=True, init=False)
-    _fileStructure: Optional[UFOFileStructure] = attr.ib(default=None, init=False)
+    _reader: Optional[UFOReader] = attr.ib(
+        default=None, kw_only=True, init=False, cmp=False
+    )
+    _fileStructure: Optional[UFOFileStructure] = attr.ib(
+        default=None, init=False, cmp=False
+    )
 
     def __attrs_post_init__(self) -> None:
         if self._path is not None:
