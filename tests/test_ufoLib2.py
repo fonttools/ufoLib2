@@ -113,6 +113,27 @@ def test_unlazify(datadir):
     assert font._lazy is False
 
 
+def test_auto_unlazify_font(datadir):
+    font1 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=True)
+    font2 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=False)
+
+    assert font1 == font2
+
+
+def test_auto_unlazify_data(datadir):
+    font1 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=True)
+    font2 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=False)
+
+    assert font1.data == font2.data
+
+
+def test_auto_unlazify_images(datadir):
+    font1 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=True)
+    font2 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=False)
+
+    assert font1.images == font2.images
+
+
 def test_font_eq_and_ne(ufo_UbuTestData):
     font1 = ufo_UbuTestData
     font2 = deepcopy(font1)
