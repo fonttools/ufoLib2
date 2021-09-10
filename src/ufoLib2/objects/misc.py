@@ -15,6 +15,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    cast,
 )
 
 import attr
@@ -125,7 +126,7 @@ _NOT_LOADED = Placeholder()
 Tds = TypeVar("Tds", bound="DataStore")
 
 
-@attr.s(auto_attribs=True, slots=True, repr=False)
+@attr.s(auto_attribs=True, slots=True, repr=False, eq=False)
 class DataStore(MutableMapping):
     """Represents the base class for ImageSet and DataSet.
 
@@ -135,10 +136,34 @@ class DataStore(MutableMapping):
 
     _data: Dict[str, Union[bytes, Placeholder]] = attr.ib(factory=dict)
 
+    _lazy: Optional[bool] = attr.ib(default=None, kw_only=True, cmp=False)
     _reader: Optional[UFOReader] = attr.ib(
-        default=None, init=False, repr=False, eq=False
+        default=None, init=False, repr=False, cmp=False
     )
-    _scheduledForDeletion: Set[str] = attr.ib(factory=set, init=False, repr=False)
+    _scheduledForDeletion: Set[str] = attr.ib(
+        factory=set, init=False, repr=False, cmp=False
+    )
+
+    def __eq__(self, other: object) -> bool:
+        # same as attrs-defined __eq__ method, only that it un-lazifies DataStores
+        # if needed.
+        # NOTE: Avoid isinstance check that mypy recognizes because we don't want to
+        # test possible Font subclasses for equality.
+        if other.__class__ is not self.__class__:
+            return NotImplemented
+        other = cast(DataStore, other)
+
+        for data_store in (self, other):
+            if data_store._lazy:
+                data_store.unlazify()
+
+        return self._data == other._data
+
+    def __ne__(self, other: object) -> bool:
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return NotImplemented
+        return not result
 
     @classmethod
     def read(cls: Type[Tds], reader: UFOReader, lazy: bool = True) -> Tds:
@@ -149,6 +174,7 @@ class DataStore(MutableMapping):
                 self._data[fileName] = _NOT_LOADED
             else:
                 self._data[fileName] = cls.read_data(reader, fileName)
+        self._lazy = lazy
         if lazy:
             self._reader = reader
         return self
@@ -179,8 +205,11 @@ class DataStore(MutableMapping):
 
     def unlazify(self) -> None:
         """Load all data into memory."""
-        for _ in self.items():
-            pass
+        if self._lazy:
+            assert self._reader is not None
+            for _ in self.items():
+                pass
+        self._lazy = False
 
     __deepcopy__ = _deepcopy_unlazify_attrs
 
