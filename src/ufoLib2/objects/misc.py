@@ -136,7 +136,7 @@ class DataStore(MutableMapping):
 
     _data: Dict[str, Union[bytes, Placeholder]] = attr.ib(factory=dict)
 
-    _lazy: Optional[bool] = attr.ib(default=None, kw_only=True, cmp=False)
+    _lazy: Optional[bool] = attr.ib(default=False, kw_only=True, cmp=False, init=False)
     _reader: Optional[UFOReader] = attr.ib(
         default=None, init=False, repr=False, cmp=False
     )
