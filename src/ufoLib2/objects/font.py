@@ -8,6 +8,7 @@ from typing import (
     KeysView,
     List,
     Mapping,
+    MutableMapping,
     Optional,
     Tuple,
     Union,
@@ -42,12 +43,12 @@ def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
     return value if isinstance(value, Info) else Info(**value)
 
 
-def _convert_DataSet(value: Union[DataSet, Mapping[str, Any]]) -> DataSet:
-    return value if isinstance(value, DataSet) else DataSet(**value)
+def _convert_DataSet(value: Union[DataSet, MutableMapping[str, bytes]]) -> DataSet:
+    return value if isinstance(value, DataSet) else DataSet(value)  # type: ignore
 
 
-def _convert_ImageSet(value: Union[ImageSet, Mapping[str, Any]]) -> ImageSet:
-    return value if isinstance(value, ImageSet) else ImageSet(**value)
+def _convert_ImageSet(value: Union[ImageSet, MutableMapping[str, bytes]]) -> ImageSet:
+    return value if isinstance(value, ImageSet) else ImageSet(value)  # type: ignore
 
 
 def _convert_Features(value: Union[Features, str]) -> Features:
