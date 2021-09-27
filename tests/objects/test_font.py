@@ -71,8 +71,20 @@ def test_nondefault_layer_name(ufo_UbuTestData, tmp_path):
     assert font2.layers.defaultLayer is font2.layers["abc"]
 
 
-def test_bounds(ufo_UbuTestData, tmp_path):
+def test_bounds(ufo_UbuTestData):
     font = ufo_UbuTestData
 
     assert font.bounds == (8, -11, 655, 693)
     assert font.controlPointBounds == (8, -11, 655, 693)
+
+
+def test_data_images_init():
+    font = Font(
+        data={"aaa": b"123", "bbb/c": b"456"},
+        images={"a.png": b"\x89PNG\r\n\x1a\n", "b.png": b"\x89PNG\r\n\x1a\n"},
+    )
+
+    assert font.data["aaa"] == b"123"
+    assert font.data["bbb/c"] == b"456"
+    assert font.images["a.png"] == b"\x89PNG\r\n\x1a\n"
+    assert font.images["b.png"] == b"\x89PNG\r\n\x1a\n"
