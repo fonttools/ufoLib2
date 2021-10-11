@@ -21,7 +21,7 @@ pathspec==0.9.0           # via black
 pluggy==1.0.0            # via pytest
 py==1.10.0                 # via pytest
 pycodestyle==2.8.0        # via flake8
-pyflakes==2.3.1           # via flake8
+pyflakes==2.4.0           # via flake8
 pyparsing==2.4.7          # via packaging
 pytest==6.2.5             # via -r requirements-dev.in
 regex==2021.9.30          # via black
