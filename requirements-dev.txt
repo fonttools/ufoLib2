@@ -8,7 +8,7 @@ appdirs==1.4.4            # via black
 attrs==21.2.0             # via black, pytest
 black==21.9b0            # via -r requirements-dev.in
 click==8.0.3              # via black
-coverage==6.0.1           # via -r requirements-dev.in
+coverage==6.0.2           # via -r requirements-dev.in
 entrypoints==0.3          # via flake8
 flake8==4.0.1             # via -r requirements-dev.in
 isort[pyproject]==5.9.3  # via -r requirements-dev.in
