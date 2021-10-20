@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=30.3.0", "wheel", "setuptools_scm"]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
 
 [tool.black]
 target-version = ["py36"]
@@ -9,3 +9,6 @@ multi_line_output = 3
 profile = "black"
 float_to_top = true
 known_first_party = "ufoLib2"
+
+[tool.setuptools_scm]
+write_to = "src/ufoLib2/_version.py"
