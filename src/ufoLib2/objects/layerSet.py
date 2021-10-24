@@ -1,5 +1,16 @@
 from collections import OrderedDict
-from typing import AbstractSet, Any, Iterable, Iterator, List, Optional, Sized, Union
+from pathlib import Path
+from typing import (
+    AbstractSet,
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sized,
+    Tuple,
+    Union,
+)
 
 import attr
 from fontTools.ufoLib import UFOReader, UFOWriter
@@ -112,10 +123,13 @@ class LayerSet:
 
         defaultLayerName = reader.getDefaultLayerName()
 
+        base_path = Path(reader.fs.getsyspath("."))
+        layer_contents = reader._readLayerContents(validate=True)
         for layerName in reader.getLayerNames():
             isDefault = layerName == defaultLayerName
             if isDefault or not lazy:
-                layer = cls._loadLayer(reader, layerName, lazy)
+                layer_path = base_path / cls._layer_dir(layerName, layer_contents)
+                layer = cls._loadLayer(layer_path, layerName, lazy)
                 if isDefault:
                     defaultLayer = layer
                 layers[layerName] = layer
@@ -138,9 +152,9 @@ class LayerSet:
     __deepcopy__ = _deepcopy_unlazify_attrs
 
     @staticmethod
-    def _loadLayer(reader: UFOReader, layerName: str, lazy: bool = True) -> Layer:
-        glyphSet = reader.getGlyphSet(layerName)
-        return Layer.read(layerName, glyphSet, lazy=lazy)
+    def _loadLayer(layer_path: Path, layerName: str, lazy: bool = True) -> Layer:
+        # glyphSet = reader.getGlyphSet(layerName)
+        return Layer.read(layerName, layer_path, lazy=lazy)
 
     def loadLayer(self, layerName: str, lazy: bool = True) -> Layer:
         # XXX: Remove this method and do business via _loadLayer or take this one
@@ -148,9 +162,23 @@ class LayerSet:
         assert self._reader is not None
         if layerName not in self._layers:
             raise KeyError(layerName)
-        layer = self._loadLayer(self._reader, layerName, lazy)
+        base_path = Path(self._reader.fs.getsyspath("."))
+        layer_contents = self._reader._readLayerContents(validate=True)
+        layer_path = base_path / self._layer_dir(layerName, layer_contents)
+        layer = self._loadLayer(layer_path, layerName, lazy)
         self._layers[layerName] = layer
         return layer
+
+    @staticmethod
+    def _layer_dir(layer_name: str, layer_contents: List[Tuple[str, str]]) -> str:
+        directory = None
+        for stored_layer_name, stored_layer_directory in layer_contents:
+            if layer_name == stored_layer_name:
+                directory = stored_layer_directory
+                break
+        if directory is None:
+            raise Error(f'No glyphs directory is mapped to "{layer_name}".')
+        return directory
 
     def __contains__(self, name: str) -> bool:
         return name in self._layers

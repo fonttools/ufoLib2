@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import (
     Any,
     Dict,
@@ -6,15 +7,22 @@ from typing import (
     Optional,
     Sequence,
     Set,
+    Tuple,
     Union,
     overload,
 )
 
 import attr
+import readwrite_ufo_glif
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
+from ufoLib2.objects.anchor import Anchor
+from ufoLib2.objects.component import Component
+from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.glyph import Glyph
+from ufoLib2.objects.guideline import Guideline
+from ufoLib2.objects.image import Image
 from ufoLib2.objects.misc import (
     _NOT_LOADED,
     BoundingBox,
@@ -23,6 +31,7 @@ from ufoLib2.objects.misc import (
     _prune_object_libs,
     unionBounds,
 )
+from ufoLib2.objects.point import Point
 from ufoLib2.typing import T
 
 
@@ -62,6 +71,16 @@ def _convert_glyphs(
                 raise KeyError(f"glyph named '{glyph.name}' already exists")
             result[glyph.name] = glyph
     return result
+
+
+@attr.s(auto_attribs=True, slots=True, repr=False)
+class MinimalGlyphSet:
+    path: Path
+    contents: Dict[str, str]
+
+    @classmethod
+    def from_path(cls, path: Path) -> "MinimalGlyphSet":
+        return cls(path, readwrite_ufo_glif.read_layer_contents(str(path)))
 
 
 @attr.s(auto_attribs=True, slots=True, repr=False)
@@ -115,7 +134,7 @@ class Layer:
     _glyphSet: Any = attr.ib(default=None, init=False, eq=False)
 
     @classmethod
-    def read(cls, name: str, glyphSet: GlyphSet, lazy: bool = True) -> "Layer":
+    def read(cls, name: str, path: Path, lazy: bool = True) -> "Layer":
         """Instantiates a Layer object from a
         :class:`fontTools.ufoLib.glifLib.GlyphSet`.
 
@@ -125,20 +144,20 @@ class Layer:
             lazy: If True, load glyphs as they are accessed. If False, load everything
                 up front.
         """
-        glyphNames = glyphSet.keys()
+
         glyphs: Dict[str, Union[Glyph, Placeholder]]
         if lazy:
-            glyphs = {gn: _NOT_LOADED for gn in glyphNames}
+            glyphset = MinimalGlyphSet.from_path(path)
+            glyphs = {gn: _NOT_LOADED for gn in glyphset.contents.keys()}
+            color, lib = readwrite_ufo_glif.read_layerinfo_maybe(str(path))
+            self = cls(name, glyphs, color=color, lib=lib)
+            self._glyphSet = glyphset
         else:
-            glyphs = {}
-            for glyphName in glyphNames:
-                glyph = Glyph(glyphName)
-                glyphSet.readGlyph(glyphName, glyph, glyph.getPointPen())
-                glyphs[glyphName] = glyph
-        self = cls(name, glyphs)
-        if lazy:
-            self._glyphSet = glyphSet
-        glyphSet.readLayerInfo(self)
+            glyphs, layerinfo = _read_layer(path)
+            self = cls(
+                name, glyphs, color=layerinfo.get("color"), lib=layerinfo.get("lib")
+            )
+
         return self
 
     def unlazify(self) -> None:
@@ -285,9 +304,9 @@ class Layer:
     def loadGlyph(self, name: str) -> Glyph:
         """Load and return Glyph object."""
         # XXX: Remove and let __getitem__ do it?
-        glyph = Glyph(name)
-        self._glyphSet.readGlyph(name, glyph, glyph.getPointPen())
-        self._glyphs[name] = glyph
+        layer_path: Path = self._glyphSet.path
+        glif_path = layer_path / self._glyphSet.contents[name]
+        self._glyphs[name] = glyph = _read_glyph(glif_path, name)
         return glyph
 
     def newGlyph(self, name: str) -> Glyph:
@@ -323,6 +342,7 @@ class Layer:
         """
         return Glyph()
 
+    # where does writer glyphset come from? same as layer._glyphSet?
     def write(self, glyphSet: GlyphSet, saveAs: bool = True) -> None:
         """Write Layer to a :class:`fontTools.ufoLib.glifLib.GlyphSet`.
 
@@ -373,3 +393,59 @@ def _fetch_glyph_identifiers(glyph: Glyph) -> Set[str]:
         if component.identifier is not None:
             identifiers.add(component.identifier)
     return identifiers
+
+
+def _read_glyph(glif_path: str, name: str) -> Glyph:
+    # data = pickle.loads(readwrite_ufo_glif.read_glyph(glif_path))
+    data = readwrite_ufo_glif.read_glyph(str(glif_path))
+    return Glyph(
+        name,
+        height=data.get("height", 0),
+        width=data.get("width", 0),
+        unicodes=data.get("unicodes", []),
+        image=Image(**data["image"]) if "image" in data else Image(),
+        anchors=[Anchor(**kwargs) for kwargs in data.get("anchors", [])],
+        guidelines=[Guideline(**kwargs) for kwargs in data.get("guidelines", [])],
+        lib=data.get("lib", {}),
+        note=data.get("note", {}),
+        contours=[
+            Contour(
+                points=[Point(**kwargs) for kwargs in contour["points"]],
+                identifier=contour.get("identifier"),
+            )
+            for contour in data.get("contours", [])
+        ],
+        components=[Component(**kwargs) for kwargs in data.get("components", [])],
+    )
+
+
+def _read_layer(layer_path: str) -> Tuple[Dict[str, Glyph], Dict[str, Any]]:
+    # all_data: Dict[str, Dict[str, Any]] = pickle.loads(readwrite_ufo_glif.read_layer(layer_path))
+    all_data: Dict[str, Dict[str, Any]]
+    layerinfo: Dict[str, Any]
+    all_data, layerinfo = readwrite_ufo_glif.read_layer(str(layer_path))
+
+    glyphs = {
+        name: Glyph(
+            name,
+            height=data.get("height", 0),
+            width=data.get("width", 0),
+            unicodes=data.get("unicodes", []),
+            image=Image(**data["image"]) if "image" in data else Image(),
+            anchors=[Anchor(**kwargs) for kwargs in data.get("anchors", [])],
+            guidelines=[Guideline(**kwargs) for kwargs in data.get("guidelines", [])],
+            lib=data.get("lib", {}),
+            note=data.get("note", {}),
+            contours=[
+                Contour(
+                    points=[Point(**kwargs) for kwargs in contour["points"]],
+                    identifier=contour.get("identifier"),
+                )
+                for contour in data.get("contours", [])
+            ],
+            components=[Component(**kwargs) for kwargs in data.get("components", [])],
+        )
+        for name, data in all_data.items()
+    }
+
+    return glyphs, layerinfo
