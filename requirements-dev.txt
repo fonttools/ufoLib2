@@ -22,7 +22,7 @@ pluggy==1.0.0            # via pytest
 py==1.10.0                 # via pytest
 pycodestyle==2.8.0        # via flake8
 pyflakes==2.4.0           # via flake8
-pyparsing==2.4.7          # via packaging
+pyparsing==3.0.1          # via packaging
 pytest==6.2.5             # via -r requirements-dev.in
 regex==2021.10.8          # via black
 six==1.16.0               # via packaging
