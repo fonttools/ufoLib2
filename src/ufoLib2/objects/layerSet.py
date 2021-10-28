@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from typing import AbstractSet, Any, Iterable, Iterator, List, Optional, Sized, Union
 
-import attr
+from attr import define, field
 from fontTools.ufoLib import UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
@@ -16,7 +16,7 @@ def _must_have_at_least_one_item(self: Any, attribute: Any, value: Sized) -> Non
         raise ValueError("value must have at least one item.")
 
 
-@attr.s(auto_attribs=True, slots=True, repr=False)
+@define
 class LayerSet:
     """Represents a mapping of layer names to Layer objects.
 
@@ -51,14 +51,14 @@ class LayerSet:
             del font.layers["myLayerName"]
     """
 
-    _layers: "OrderedDict[str, Union[Layer, Placeholder]]" = attr.ib(
+    _layers: "OrderedDict[str, Union[Layer, Placeholder]]" = field(
         validator=_must_have_at_least_one_item,
     )
 
     defaultLayer: Layer
     """The Layer that is marked as the default, typically named ``public.default``."""
 
-    _reader: Optional[UFOReader] = attr.ib(default=None, init=False, eq=False)
+    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
         if not any(layer is self.defaultLayer for layer in self._layers.values()):

@@ -10,7 +10,7 @@ from typing import (
     overload,
 )
 
-import attr
+from attr import define, field
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
@@ -64,7 +64,7 @@ def _convert_glyphs(
     return result
 
 
-@attr.s(auto_attribs=True, slots=True, repr=False)
+@define
 class Layer:
     """Represents a Layer that holds Glyph objects.
 
@@ -103,16 +103,16 @@ class Layer:
     """
 
     _name: str = DEFAULT_LAYER_NAME
-    _glyphs: Dict[str, Union[Glyph, Placeholder]] = attr.ib(
+    _glyphs: Dict[str, Union[Glyph, Placeholder]] = field(
         factory=dict, converter=_convert_glyphs
     )
     color: Optional[str] = None
     """The color assigned to the layer."""
 
-    lib: Dict[str, Any] = attr.ib(factory=dict)
+    lib: Dict[str, Any] = field(factory=dict)
     """The layer's lib for mapping string keys to arbitrary data."""
 
-    _glyphSet: Any = attr.ib(default=None, init=False, eq=False)
+    _glyphSet: Any = field(default=None, init=False, eq=False)
 
     @classmethod
     def read(cls, name: str, glyphSet: GlyphSet, lazy: bool = True) -> "Layer":

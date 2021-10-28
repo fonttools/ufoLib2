@@ -16,9 +16,9 @@ from typing import (
 )
 
 import attr
-import fs
 import fs.base
 import fs.tempfs
+from attr import define, field
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
@@ -55,7 +55,7 @@ def _convert_Features(value: Union[Features, str]) -> Features:
     return value if isinstance(value, Features) else Features(value)
 
 
-@attr.s(auto_attribs=True, slots=True, repr=False, eq=False)
+@define
 class Font:
     """A data class representing a single Unified Font Object (UFO).
 
@@ -118,51 +118,51 @@ class Font:
         default layer.
     """
 
-    _path: Optional[PathLike] = attr.ib(
-        default=None, metadata=dict(copyable=False), cmp=False
+    _path: Optional[PathLike] = field(
+        default=None, metadata=dict(copyable=False), eq=False
     )
 
-    layers: LayerSet = attr.ib(
+    layers: LayerSet = field(
         factory=LayerSet.default,
         validator=attr.validators.instance_of(LayerSet),
         kw_only=True,
     )
     """LayerSet: A mapping of layer names to Layer objects."""
 
-    info: Info = attr.ib(factory=Info, converter=_convert_Info, kw_only=True)
+    info: Info = field(factory=Info, converter=_convert_Info, kw_only=True)
     """Info: The font Info object."""
 
-    features: Features = attr.ib(
+    features: Features = field(
         factory=Features, converter=_convert_Features, kw_only=True
     )
     """Features: The font Features object."""
 
-    groups: Dict[str, List[str]] = attr.ib(factory=dict, kw_only=True)
+    groups: Dict[str, List[str]] = field(factory=dict, kw_only=True)
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
-    kerning: Dict[Tuple[str, str], float] = attr.ib(factory=dict, kw_only=True)
+    kerning: Dict[Tuple[str, str], float] = field(factory=dict, kw_only=True)
     """Dict[Tuple[str, str], float]: A mapping of a tuple of first and second kerning
     pair to a kerning value."""
 
-    lib: Dict[str, Any] = attr.ib(factory=dict, kw_only=True)
+    lib: Dict[str, Any] = field(factory=dict, kw_only=True)
     """Dict[str, Any]: A mapping of keys to arbitrary values."""
 
-    data: DataSet = attr.ib(factory=DataSet, converter=_convert_DataSet, kw_only=True)
+    data: DataSet = field(factory=DataSet, converter=_convert_DataSet, kw_only=True)
     """DataSet: A mapping of data file paths to arbitrary data."""
 
-    images: ImageSet = attr.ib(
+    images: ImageSet = field(
         factory=ImageSet, converter=_convert_ImageSet, kw_only=True
     )
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
-    _lazy: Optional[bool] = attr.ib(default=None, kw_only=True, cmp=False)
-    _validate: bool = attr.ib(default=True, kw_only=True, cmp=False)
+    _lazy: Optional[bool] = field(default=None, kw_only=True, eq=False)
+    _validate: bool = field(default=True, kw_only=True, eq=False)
 
-    _reader: Optional[UFOReader] = attr.ib(
-        default=None, kw_only=True, init=False, cmp=False
+    _reader: Optional[UFOReader] = field(
+        default=None, kw_only=True, init=False, eq=False
     )
-    _fileStructure: Optional[UFOFileStructure] = attr.ib(
-        default=None, init=False, cmp=False
+    _fileStructure: Optional[UFOFileStructure] = field(
+        default=None, init=False, eq=False
     )
 
     def __attrs_post_init__(self) -> None:

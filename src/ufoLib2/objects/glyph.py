@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 
-import attr
+from attr import define, field
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
@@ -20,7 +20,7 @@ from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 from ufoLib2.typing import GlyphSet, HasIdentifier
 
 
-@attr.s(auto_attribs=True, slots=True, repr=False)
+@define
 class Glyph:
     """Represents a glyph, containing contours, components, anchors and various
     other bits of data concerning it.
@@ -58,26 +58,26 @@ class Glyph:
     height: float = 0
     """The height of the glyph."""
 
-    unicodes: List[int] = attr.ib(factory=list)
+    unicodes: List[int] = field(factory=list)
     """The Unicode code points assigned to the glyph. Note that a glyph can have
     multiple."""
 
-    _image: Image = attr.ib(factory=Image)
+    _image: Image = field(factory=Image)
 
-    lib: Dict[str, Any] = attr.ib(factory=dict)
+    lib: Dict[str, Any] = field(factory=dict)
     """The glyph's mapping of string keys to arbitrary data."""
 
     note: Optional[str] = None
     """A free form text note about the glyph."""
 
-    _anchors: List[Anchor] = attr.ib(factory=list)
-    components: List[Component] = attr.ib(factory=list)
+    _anchors: List[Anchor] = field(factory=list)
+    components: List[Component] = field(factory=list)
     """The list of components the glyph contains."""
 
-    contours: List[Contour] = attr.ib(factory=list)
+    contours: List[Contour] = field(factory=list)
     """The list of contours the glyph contains."""
 
-    _guidelines: List[Guideline] = attr.ib(factory=list)
+    _guidelines: List[Guideline] = field(factory=list)
 
     def __len__(self) -> int:
         return len(self.contours)

@@ -19,6 +19,7 @@ from typing import (
 )
 
 import attr
+from attr import define, field
 from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
@@ -126,7 +127,7 @@ _NOT_LOADED = Placeholder()
 Tds = TypeVar("Tds", bound="DataStore")
 
 
-@attr.s(auto_attribs=True, slots=True, repr=False, eq=False)
+@define
 class DataStore(MutableMapping):
     """Represents the base class for ImageSet and DataSet.
 
@@ -134,14 +135,12 @@ class DataStore(MutableMapping):
     differ in which reader and writer methods they call.
     """
 
-    _data: Dict[str, Union[bytes, Placeholder]] = attr.ib(factory=dict)
+    _data: Dict[str, Union[bytes, Placeholder]] = field(factory=dict)
 
-    _lazy: Optional[bool] = attr.ib(default=False, kw_only=True, cmp=False, init=False)
-    _reader: Optional[UFOReader] = attr.ib(
-        default=None, init=False, repr=False, cmp=False
-    )
-    _scheduledForDeletion: Set[str] = attr.ib(
-        factory=set, init=False, repr=False, cmp=False
+    _lazy: Optional[bool] = field(default=False, kw_only=True, eq=False, init=False)
+    _reader: Optional[UFOReader] = field(default=None, init=False, repr=False, eq=False)
+    _scheduledForDeletion: Set[str] = field(
+        factory=set, init=False, repr=False, eq=False
     )
 
     def __eq__(self, other: object) -> bool:

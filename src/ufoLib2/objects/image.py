@@ -1,13 +1,13 @@
 from collections.abc import Mapping
 from typing import Any, Iterator, Optional, Tuple
 
-import attr
+from attr import define, field
 from fontTools.misc.transform import Identity, Transform
 
 from .misc import _convert_transform
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class Image(Mapping):
     """Represents a background image reference.
 
@@ -18,7 +18,7 @@ class Image(Mapping):
     fileName: Optional[str] = None
     """The filename of the image."""
 
-    transformation: Transform = attr.ib(default=Identity, converter=_convert_transform)
+    transformation: Transform = field(default=Identity, converter=_convert_transform)
     """The affine transformation applied to the image."""
 
     color: Optional[str] = None

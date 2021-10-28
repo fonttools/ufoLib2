@@ -2,6 +2,7 @@ from enum import IntEnum
 from typing import Any, List, Optional, Sequence, Type, TypeVar, Union
 
 import attr
+from attr import define, field
 from fontTools.ufoLib import UFOReader
 
 from ufoLib2.objects.guideline import Guideline
@@ -36,19 +37,19 @@ def _convert_GaspBehavior(
     return [v if isinstance(v, GaspBehavior) else GaspBehavior(v) for v in seq]
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class GaspRangeRecord(AttrDictMixin):
-    rangeMaxPPEM: int = attr.ib(validator=_positive)
+    rangeMaxPPEM: int = field(validator=_positive)
     # Use Set[GaspBehavior] instead of List?
-    rangeGaspBehavior: List[GaspBehavior] = attr.ib(converter=_convert_GaspBehavior)
+    rangeGaspBehavior: List[GaspBehavior] = field(converter=_convert_GaspBehavior)
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class NameRecord(AttrDictMixin):
-    nameID: int = attr.ib(validator=_positive)
-    platformID: int = attr.ib(validator=_positive)
-    encodingID: int = attr.ib(validator=_positive)
-    languageID: int = attr.ib(validator=_positive)
+    nameID: int = field(validator=_positive)
+    platformID: int = field(validator=_positive)
+    encodingID: int = field(validator=_positive)
+    languageID: int = field(validator=_positive)
     string: str = ""
 
 
@@ -104,7 +105,7 @@ def _convert_WidthClass(value: Optional[int]) -> Optional[WidthClass]:
     return None if value is None else WidthClass(value)
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class Info:
     """A data class representing the contents of fontinfo.plist.
 
@@ -117,13 +118,13 @@ class Info:
     styleName: Optional[str] = None
     styleMapFamilyName: Optional[str] = None
     styleMapStyleName: Optional[str] = None
-    versionMajor: Optional[int] = attr.ib(default=None, validator=_optional_positive)
-    versionMinor: Optional[int] = attr.ib(default=None, validator=_optional_positive)
+    versionMajor: Optional[int] = field(default=None, validator=_optional_positive)
+    versionMinor: Optional[int] = field(default=None, validator=_optional_positive)
 
     copyright: Optional[str] = None
     trademark: Optional[str] = None
 
-    unitsPerEm: Optional[float] = attr.ib(default=None, validator=_optional_positive)
+    unitsPerEm: Optional[float] = field(default=None, validator=_optional_positive)
     descender: Optional[float] = None
     xHeight: Optional[float] = None
     capHeight: Optional[float] = None
@@ -132,7 +133,7 @@ class Info:
 
     note: Optional[str] = None
 
-    _guidelines: Optional[List[Guideline]] = attr.ib(
+    _guidelines: Optional[List[Guideline]] = field(
         default=None, converter=_convert_guidelines
     )
 
@@ -144,7 +145,7 @@ class Info:
     def guidelines(self, value: Optional[List[Guideline]]) -> None:
         self._guidelines = _convert_guidelines(value)
 
-    _openTypeGaspRangeRecords: Optional[List[GaspRangeRecord]] = attr.ib(
+    _openTypeGaspRangeRecords: Optional[List[GaspRangeRecord]] = field(
         default=None, converter=_convert_gasp_range_records
     )
 
@@ -157,7 +158,7 @@ class Info:
         self._openTypeGaspRangeRecords = _convert_gasp_range_records(value)
 
     openTypeHeadCreated: Optional[str] = None
-    openTypeHeadLowestRecPPEM: Optional[int] = attr.ib(
+    openTypeHeadLowestRecPPEM: Optional[int] = field(
         default=None, validator=_optional_positive
     )
     openTypeHeadFlags: Optional[List[int]] = None
@@ -185,7 +186,7 @@ class Info:
     openTypeNameWWSFamilyName: Optional[str] = None
     openTypeNameWWSSubfamilyName: Optional[str] = None
 
-    _openTypeNameRecords: Optional[List[NameRecord]] = attr.ib(
+    _openTypeNameRecords: Optional[List[NameRecord]] = field(
         default=None, converter=_convert_name_records
     )
 
@@ -197,7 +198,7 @@ class Info:
     def openTypeNameRecords(self, value: Optional[List[NameRecord]]) -> None:
         self._openTypeNameRecords = _convert_name_records(value)
 
-    _openTypeOS2WidthClass: Optional[WidthClass] = attr.ib(
+    _openTypeOS2WidthClass: Optional[WidthClass] = field(
         default=None, converter=_convert_WidthClass
     )
 
@@ -209,7 +210,7 @@ class Info:
     def openTypeOS2WidthClass(self, value: Optional[WidthClass]) -> None:
         self._openTypeOS2WidthClass = value if value is None else WidthClass(value)
 
-    openTypeOS2WeightClass: Optional[int] = attr.ib(default=None)
+    openTypeOS2WeightClass: Optional[int] = field(default=None)
 
     @openTypeOS2WeightClass.validator
     def _validate_weight_class(self, attribute: Any, value: Optional[int]) -> None:
@@ -225,10 +226,10 @@ class Info:
     openTypeOS2TypoAscender: Optional[int] = None
     openTypeOS2TypoDescender: Optional[int] = None
     openTypeOS2TypoLineGap: Optional[int] = None
-    openTypeOS2WinAscent: Optional[int] = attr.ib(
+    openTypeOS2WinAscent: Optional[int] = field(
         default=None, validator=_optional_positive
     )
-    openTypeOS2WinDescent: Optional[int] = attr.ib(
+    openTypeOS2WinDescent: Optional[int] = field(
         default=None, validator=_optional_positive
     )
     openTypeOS2Type: Optional[List[int]] = None

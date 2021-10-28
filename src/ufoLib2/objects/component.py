@@ -1,7 +1,7 @@
 import warnings
 from typing import Optional, Tuple
 
-import attr
+from attr import define, field
 from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import AbstractPointPen, PointToSegmentPen
@@ -12,7 +12,7 @@ from ufoLib2.typing import GlyphSet
 from .misc import _convert_transform, getBounds, getControlBounds
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class Component:
     """Represents a reference to another glyph in the same layer.
 
@@ -26,7 +26,7 @@ class Component:
     baseGlyph: str
     """The name of the glyph in the same layer to insert."""
 
-    transformation: Transform = attr.ib(default=Identity, converter=_convert_transform)
+    transformation: Transform = field(default=Identity, converter=_convert_transform)
     """The affine transformation to apply to the :attr:`.Component.baseGlyph`."""
 
     identifier: Optional[str] = None

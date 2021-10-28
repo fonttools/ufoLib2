@@ -1,9 +1,9 @@
 from typing import Optional, Tuple
 
-import attr
+from attr import define
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class Point:
     """Represents a single point.
 

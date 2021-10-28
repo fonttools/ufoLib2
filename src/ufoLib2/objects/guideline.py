@@ -1,11 +1,11 @@
 from typing import Optional
 
-import attr
+from attr import define
 
 from ufoLib2.objects.misc import AttrDictMixin
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class Guideline(AttrDictMixin):
     """Represents a single guideline.
 
