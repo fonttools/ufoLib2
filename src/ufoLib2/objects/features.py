@@ -1,7 +1,7 @@
-import attr
+from attr import define
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class Features:
     """A data class representing UFO features.
 

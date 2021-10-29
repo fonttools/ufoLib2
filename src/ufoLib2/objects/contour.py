@@ -2,7 +2,7 @@ import warnings
 from collections.abc import MutableSequence
 from typing import Iterable, Iterator, List, Optional, Tuple, Union, overload
 
-import attr
+from attr import define, field
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import AbstractPointPen, PointToSegmentPen
 
@@ -11,7 +11,7 @@ from ufoLib2.objects.point import Point
 from ufoLib2.typing import GlyphSet
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class Contour(MutableSequence):
     """Represents a contour as a list of points.
 
@@ -39,10 +39,10 @@ class Contour(MutableSequence):
             contour[0] = anotherPoint
     """
 
-    points: List[Point] = attr.ib(factory=list)
+    points: List[Point] = field(factory=list)
     """The list of points in the contour."""
 
-    identifier: Optional[str] = attr.ib(default=None, repr=False)
+    identifier: Optional[str] = field(default=None, repr=False)
     """The globally unique identifier of the contour."""
 
     # collections.abc.MutableSequence interface

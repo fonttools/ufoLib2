@@ -1,11 +1,11 @@
 from typing import Optional, Tuple
 
-import attr
+from attr import define
 
 from ufoLib2.objects.misc import AttrDictMixin
 
 
-@attr.s(auto_attribs=True, slots=True)
+@define
 class Anchor(AttrDictMixin):
     """Represents a single anchor.
 
