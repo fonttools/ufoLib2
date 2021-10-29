@@ -55,7 +55,7 @@ def _convert_Features(value: Union[Features, str]) -> Features:
     return value if isinstance(value, Features) else Features(value)
 
 
-@define
+@define(kw_only=True)
 class Font:
     """A data class representing a single Unified Font Object (UFO).
 
@@ -118,71 +118,43 @@ class Font:
         default layer.
     """
 
-    _path: Optional[PathLike] = field(
-        default=None, metadata=dict(copyable=False), eq=False
-    )
-
     layers: LayerSet = field(
         factory=LayerSet.default,
         validator=attr.validators.instance_of(LayerSet),
-        kw_only=True,
     )
     """LayerSet: A mapping of layer names to Layer objects."""
 
-    info: Info = field(factory=Info, converter=_convert_Info, kw_only=True)
+    info: Info = field(factory=Info, converter=_convert_Info)
     """Info: The font Info object."""
 
-    features: Features = field(
-        factory=Features, converter=_convert_Features, kw_only=True
-    )
+    features: Features = field(factory=Features, converter=_convert_Features)
     """Features: The font Features object."""
 
-    groups: Dict[str, List[str]] = field(factory=dict, kw_only=True)
+    groups: Dict[str, List[str]] = field(factory=dict)
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
-    kerning: Dict[Tuple[str, str], float] = field(factory=dict, kw_only=True)
+    kerning: Dict[Tuple[str, str], float] = field(factory=dict)
     """Dict[Tuple[str, str], float]: A mapping of a tuple of first and second kerning
     pair to a kerning value."""
 
-    lib: Dict[str, Any] = field(factory=dict, kw_only=True)
+    lib: Dict[str, Any] = field(factory=dict)
     """Dict[str, Any]: A mapping of keys to arbitrary values."""
 
-    data: DataSet = field(factory=DataSet, converter=_convert_DataSet, kw_only=True)
+    data: DataSet = field(factory=DataSet, converter=_convert_DataSet)
     """DataSet: A mapping of data file paths to arbitrary data."""
 
-    images: ImageSet = field(
-        factory=ImageSet, converter=_convert_ImageSet, kw_only=True
-    )
+    images: ImageSet = field(factory=ImageSet, converter=_convert_ImageSet)
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
-    _lazy: Optional[bool] = field(default=None, kw_only=True, eq=False)
-    _validate: bool = field(default=True, kw_only=True, eq=False)
-
-    _reader: Optional[UFOReader] = field(
-        default=None, kw_only=True, init=False, eq=False
+    # init=False args, set by alternate open/read classmethod constructors
+    _path: Optional[PathLike] = field(
+        default=None, metadata=dict(copyable=False), eq=False, init=False
     )
+    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
+    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
     _fileStructure: Optional[UFOFileStructure] = field(
         default=None, init=False, eq=False
     )
-
-    def __attrs_post_init__(self) -> None:
-        if self._path is not None:
-            # if lazy argument is not set, default to lazy=True if path is provided
-            if self._lazy is None:
-                self._lazy = True
-            reader = UFOReader(self._path, validate=self._validate)
-            self.layers = LayerSet.read(reader, lazy=self._lazy)
-            self.data = DataSet.read(reader, lazy=self._lazy)
-            self.images = ImageSet.read(reader, lazy=self._lazy)
-            self.info = Info.read(reader)
-            self.features = Features(reader.readFeatures())
-            self.groups = reader.readGroups()
-            self.kerning = reader.readKerning()
-            self.lib = reader.readLib()
-            self._fileStructure = reader.fileStructure
-            if self._lazy:
-                # keep the reader around so we can close it when done
-                self._reader = reader
 
     @classmethod
     def open(cls, path: PathLike, lazy: bool = True, validate: bool = True) -> "Font":
@@ -220,8 +192,8 @@ class Font:
             groups=reader.readGroups(),
             kerning=reader.readKerning(),
             lib=reader.readLib(),
-            lazy=lazy,
         )
+        self._lazy = lazy
         self._fileStructure = reader.fileStructure
         if lazy:
             # keep the reader around so we can close it when done
