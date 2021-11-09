@@ -1,4 +1,4 @@
-from typing import List
+from __future__ import annotations
 
 from fontTools.ufoLib import UFOReader, UFOWriter
 
@@ -25,7 +25,7 @@ class DataSet(DataStore):
     """
 
     @staticmethod
-    def list_contents(reader: UFOReader) -> List[str]:
+    def list_contents(reader: UFOReader) -> list[str]:
         """Returns a list of POSIX filename strings in the data store."""
         return reader.getDataDirectoryListing()
 

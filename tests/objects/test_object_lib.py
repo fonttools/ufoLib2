@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ufoLib2.objects import Anchor, Font, Guideline
 
 

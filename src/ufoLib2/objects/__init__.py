@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour

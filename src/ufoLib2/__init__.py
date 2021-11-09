@@ -1,5 +1,7 @@
 """ufoLib2 -- a package for dealing with UFO fonts."""
 
+from __future__ import annotations
+
 from ufoLib2.objects import Font
 
 try:

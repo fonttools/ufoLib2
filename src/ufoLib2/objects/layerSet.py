@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from collections import OrderedDict
-from typing import AbstractSet, Any, Iterable, Iterator, List, Optional, Sized, Union
+from typing import AbstractSet, Any, Iterable, Iterator, Sized
 
 from attr import define, field
 from fontTools.ufoLib import UFOReader, UFOWriter
@@ -51,14 +53,14 @@ class LayerSet:
             del font.layers["myLayerName"]
     """
 
-    _layers: "OrderedDict[str, Union[Layer, Placeholder]]" = field(
+    _layers: OrderedDict[str, Layer | Placeholder] = field(
         validator=_must_have_at_least_one_item,
     )
 
     defaultLayer: Layer
     """The Layer that is marked as the default, typically named ``public.default``."""
 
-    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
+    _reader: UFOReader | None = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
         if not any(layer is self.defaultLayer for layer in self._layers.values()):
@@ -67,21 +69,21 @@ class LayerSet:
             )
 
     @classmethod
-    def default(cls) -> "LayerSet":
+    def default(cls) -> LayerSet:
         """Return a new LayerSet with an empty default Layer."""
         return cls.from_iterable([Layer()])
 
     @classmethod
     def from_iterable(
         cls, value: Iterable[Layer], defaultLayerName: str = DEFAULT_LAYER_NAME
-    ) -> "LayerSet":
+    ) -> LayerSet:
         """Instantiates a LayerSet from an iterable of :class:`.Layer` objects.
 
         Args:
             value: an iterable of :class:`.Layer` objects.
             defaultLayerName: the name of the default layer of the ones in ``value``.
         """
-        layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
+        layers: OrderedDict[str, Layer | Placeholder] = OrderedDict()
         defaultLayer = None
         for layer in value:
             if not isinstance(layer, Layer):
@@ -99,7 +101,7 @@ class LayerSet:
         return cls(layers=layers, defaultLayer=defaultLayer)
 
     @classmethod
-    def read(cls, reader: UFOReader, lazy: bool = True) -> "LayerSet":
+    def read(cls, reader: UFOReader, lazy: bool = True) -> LayerSet:
         """Instantiates a LayerSet object from a :class:`fontTools.ufoLib.UFOReader`.
 
         Args:
@@ -107,7 +109,7 @@ class LayerSet:
             lazy: If True, load glyphs, data files and images as they are accessed. If
                 False, load everything up front.
         """
-        layers: OrderedDict[str, Union[Layer, Placeholder]] = OrderedDict()
+        layers: OrderedDict[str, Layer | Placeholder] = OrderedDict()
         defaultLayer = None
 
         defaultLayerName = reader.getDefaultLayerName()
@@ -177,7 +179,7 @@ class LayerSet:
     def __len__(self) -> int:
         return len(self._layers)
 
-    def get(self, name: str, default: Optional[T] = None) -> Union[Optional[T], Layer]:
+    def get(self, name: str, default: T | None = None) -> T | Layer | None:
         try:
             return self[name]
         except KeyError:
@@ -197,7 +199,7 @@ class LayerSet:
         )
 
     @property
-    def layerOrder(self) -> List[str]:
+    def layerOrder(self) -> list[str]:
         """The font's layer order.
 
         Getter:
@@ -214,7 +216,7 @@ class LayerSet:
         return list(self._layers)
 
     @layerOrder.setter
-    def layerOrder(self, order: List[str]) -> None:
+    def layerOrder(self, order: list[str]) -> None:
         if set(order) != set(self._layers):
             raise Error(
                 "`order` must contain the same layers that are currently present."
@@ -282,7 +284,7 @@ class LayerSet:
         self._layers[newName] = layer
         layer._name = newName
 
-    def write(self, writer: UFOWriter, saveAs: Optional[bool] = None) -> None:
+    def write(self, writer: UFOWriter, saveAs: bool | None = None) -> None:
         """Writes this LayerSet to a :class:`fontTools.ufoLib.UFOWriter`.
 
         Args:
