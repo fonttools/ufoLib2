@@ -1,6 +1,9 @@
+# https://github.com/jazzband/pip-tools/#workflow-for-layered-requirements
+-c requirements.txt
+
 black
 coverage
 flake8
-isort[pyproject]
+isort
 mypy
 pytest
