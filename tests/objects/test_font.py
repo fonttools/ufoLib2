@@ -1,7 +1,11 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 from ufoLib2.objects import Font, Glyph, Guideline
 
 
-def test_font_equality(datadir):
+def test_font_equality(datadir: Path) -> None:
     font1 = Font.open(datadir / "UbuTestData.ufo")
     font2 = Font.open(datadir / "UbuTestData.ufo")
 
@@ -14,7 +18,7 @@ def test_font_equality(datadir):
     assert font1 != font3
 
 
-def test_font_mapping_behavior(ufo_UbuTestData):
+def test_font_mapping_behavior(ufo_UbuTestData: Font) -> None:
     font = ufo_UbuTestData
 
     assert font["a"] is font.layers.defaultLayer["a"]
@@ -31,7 +35,7 @@ def test_font_mapping_behavior(ufo_UbuTestData):
     assert "a" not in font.layers.defaultLayer
 
 
-def test_font_defcon_behavior(ufo_UbuTestData):
+def test_font_defcon_behavior(ufo_UbuTestData: Font) -> None:
     font = ufo_UbuTestData
 
     font.newGlyph("b")
@@ -47,6 +51,7 @@ def test_font_defcon_behavior(ufo_UbuTestData):
 
     guideline = Guideline(x=1)
     font.appendGuideline(guideline)
+    assert font.info.guidelines is not None
     assert font.info.guidelines[-1] is guideline
 
     font.appendGuideline({"y": 1, "name": "asdf"})
@@ -60,7 +65,7 @@ def test_font_defcon_behavior(ufo_UbuTestData):
     assert "def" in font.layers
 
 
-def test_nondefault_layer_name(ufo_UbuTestData, tmp_path):
+def test_nondefault_layer_name(ufo_UbuTestData: Font, tmp_path: Path) -> None:
     font = ufo_UbuTestData
 
     font.layers.renameLayer("public.default", "abc")
@@ -71,14 +76,22 @@ def test_nondefault_layer_name(ufo_UbuTestData, tmp_path):
     assert font2.layers.defaultLayer is font2.layers["abc"]
 
 
-def test_bounds(ufo_UbuTestData):
+def test_layer_order(ufo_UbuTestData: Font) -> None:
+    font = ufo_UbuTestData
+
+    assert font.layers.layerOrder == ["public.default", "public.background"]
+    font.layers.layerOrder = ["public.background", "public.default"]
+    assert font.layers.layerOrder == ["public.background", "public.default"]
+
+
+def test_bounds(ufo_UbuTestData: Font) -> None:
     font = ufo_UbuTestData
 
     assert font.bounds == (8, -11, 655, 693)
     assert font.controlPointBounds == (8, -11, 655, 693)
 
 
-def test_data_images_init():
+def test_data_images_init() -> None:
     font = Font(
         data={"aaa": b"123", "bbb/c": b"456"},
         images={"a.png": b"\x89PNG\r\n\x1a\n", "b.png": b"\x89PNG\r\n\x1a\n"},

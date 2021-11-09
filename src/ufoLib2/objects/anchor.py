@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from __future__ import annotations
 
 from attr import define
 
@@ -18,16 +18,16 @@ class Anchor(AttrDictMixin):
     y: float
     """The y coordinate of the anchor."""
 
-    name: Optional[str] = None
+    name: str | None = None
     """The name of the anchor."""
 
-    color: Optional[str] = None
+    color: str | None = None
     """The color of the anchor."""
 
-    identifier: Optional[str] = None
+    identifier: str | None = None
     """The globally unique identifier of the anchor."""
 
-    def move(self, delta: Tuple[float, float]) -> None:
+    def move(self, delta: tuple[float, float]) -> None:
         """Moves anchor by (x, y) font units."""
         x, y = delta
         self.x += x

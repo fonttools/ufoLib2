@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING, Any, Optional, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.pointPen import AbstractPointPen
@@ -11,7 +13,7 @@ if TYPE_CHECKING:
     from ufoLib2.objects.glyph import Glyph
 
 
-class GlyphPointPen(AbstractPointPen):
+class GlyphPointPen(AbstractPointPen):  # type: ignore
     """A point pen.
 
     See :mod:`fontTools.pens.basePen` and :mod:`fontTools.pens.pointPen` for an
@@ -20,11 +22,11 @@ class GlyphPointPen(AbstractPointPen):
 
     __slots__ = "_glyph", "_contour"
 
-    def __init__(self, glyph: "Glyph") -> None:
-        self._glyph: "Glyph" = glyph
-        self._contour: Optional[Contour] = None
+    def __init__(self, glyph: Glyph) -> None:
+        self._glyph: Glyph = glyph
+        self._contour: Contour | None = None
 
-    def beginPath(self, identifier: Optional[str] = None, **kwargs: Any) -> None:
+    def beginPath(self, identifier: str | None = None, **kwargs: Any) -> None:
         self._contour = Contour(identifier=identifier)
 
     def endPath(self) -> None:
@@ -35,11 +37,11 @@ class GlyphPointPen(AbstractPointPen):
 
     def addPoint(
         self,
-        pt: Tuple[float, float],
-        segmentType: Optional[str] = None,
+        pt: tuple[float, float],
+        segmentType: str | None = None,
         smooth: bool = False,
-        name: Optional[str] = None,
-        identifier: Optional[str] = None,
+        name: str | None = None,
+        identifier: str | None = None,
         **kwargs: Any,
     ) -> None:
         if self._contour is None:
@@ -55,7 +57,7 @@ class GlyphPointPen(AbstractPointPen):
         self,
         baseGlyph: str,
         transformation: Transform,
-        identifier: Optional[str] = None,
+        identifier: str | None = None,
         **kwargs: Any,
     ) -> None:
         component = Component(baseGlyph, transformation, identifier=identifier)

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import warnings
 from collections.abc import MutableSequence
-from typing import Iterable, Iterator, List, Optional, Tuple, Union, overload
+from typing import TYPE_CHECKING, Iterable, Iterator, overload
 
 from attr import define, field
 from fontTools.pens.basePen import AbstractPen
@@ -10,9 +12,15 @@ from ufoLib2.objects.misc import BoundingBox, getBounds, getControlBounds
 from ufoLib2.objects.point import Point
 from ufoLib2.typing import GlyphSet
 
+# For Python 3.7 compatibility.
+if TYPE_CHECKING:
+    ContourMapping = MutableSequence[Point]
+else:
+    ContourMapping = MutableSequence
+
 
 @define
-class Contour(MutableSequence):
+class Contour(ContourMapping):
     """Represents a contour as a list of points.
 
     Behavior:
@@ -39,15 +47,15 @@ class Contour(MutableSequence):
             contour[0] = anotherPoint
     """
 
-    points: List[Point] = field(factory=list)
+    points: list[Point] = field(factory=list)
     """The list of points in the contour."""
 
-    identifier: Optional[str] = field(default=None, repr=False)
+    identifier: str | None = field(default=None, repr=False)
     """The globally unique identifier of the contour."""
 
     # collections.abc.MutableSequence interface
 
-    def __delitem__(self, index: Union[int, slice]) -> None:
+    def __delitem__(self, index: int | slice) -> None:
         del self.points[index]
 
     @overload
@@ -55,16 +63,14 @@ class Contour(MutableSequence):
         ...
 
     @overload
-    def __getitem__(self, index: slice) -> List[Point]:  # noqa: F811
+    def __getitem__(self, index: slice) -> list[Point]:  # noqa: F811
         ...
 
-    def __getitem__(  # noqa: F811
-        self, index: Union[int, slice]
-    ) -> Union[Point, List[Point]]:
+    def __getitem__(self, index: int | slice) -> Point | list[Point]:  # noqa: F811
         return self.points[index]
 
     def __setitem__(  # noqa: F811
-        self, index: Union[int, slice], point: Union[Point, Iterable[Point]]
+        self, index: int | slice, point: Point | Iterable[Point]
     ) -> None:
         if isinstance(index, int) and isinstance(point, Point):
             self.points[index] = point
@@ -100,12 +106,12 @@ class Contour(MutableSequence):
             return True
         return self.points[0].type == "move"
 
-    def move(self, delta: Tuple[float, float]) -> None:
+    def move(self, delta: tuple[float, float]) -> None:
         """Moves contour by (x, y) font units."""
         for point in self.points:
             point.move(delta)
 
-    def getBounds(self, layer: Optional[GlyphSet] = None) -> Optional[BoundingBox]:
+    def getBounds(self, layer: GlyphSet | None = None) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking the actual contours into account.
 
@@ -115,7 +121,7 @@ class Contour(MutableSequence):
         return getBounds(self, layer)
 
     @property
-    def bounds(self) -> Optional[BoundingBox]:
+    def bounds(self) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking the actual contours into account.
 
@@ -123,9 +129,7 @@ class Contour(MutableSequence):
         """
         return self.getBounds()
 
-    def getControlBounds(
-        self, layer: Optional[GlyphSet] = None
-    ) -> Optional[BoundingBox]:
+    def getControlBounds(self, layer: GlyphSet | None = None) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking only the control points into account.
 
@@ -135,7 +139,7 @@ class Contour(MutableSequence):
         return getControlBounds(self, layer)
 
     @property
-    def controlPointBounds(self) -> Optional[BoundingBox]:
+    def controlPointBounds(self) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the glyph,
         taking only the control points into account.
 

@@ -1,14 +1,6 @@
-from typing import (
-    Any,
-    Dict,
-    Iterator,
-    KeysView,
-    Optional,
-    Sequence,
-    Set,
-    Union,
-    overload,
-)
+from __future__ import annotations
+
+from typing import Any, Iterator, KeysView, Sequence, overload
 
 from attr import define, field
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -27,9 +19,9 @@ from ufoLib2.typing import T
 
 
 def _convert_glyphs(
-    value: Union[Dict[str, Union[Glyph, Placeholder]], Sequence[Glyph]]
-) -> Dict[str, Union[Glyph, Placeholder]]:
-    result: Dict[str, Union[Glyph, Placeholder]] = {}
+    value: dict[str, Glyph | Placeholder] | Sequence[Glyph]
+) -> dict[str, Glyph | Placeholder]:
+    result: dict[str, Glyph | Placeholder] = {}
     glyph_ids = set()
     if isinstance(value, dict):
         for name, glyph in value.items():
@@ -103,19 +95,19 @@ class Layer:
     """
 
     _name: str = DEFAULT_LAYER_NAME
-    _glyphs: Dict[str, Union[Glyph, Placeholder]] = field(
+    _glyphs: dict[str, Glyph | Placeholder] = field(
         factory=dict, converter=_convert_glyphs
     )
-    color: Optional[str] = None
+    color: str | None = None
     """The color assigned to the layer."""
 
-    lib: Dict[str, Any] = field(factory=dict)
+    lib: dict[str, Any] = field(factory=dict)
     """The layer's lib for mapping string keys to arbitrary data."""
 
     _glyphSet: Any = field(default=None, init=False, eq=False)
 
     @classmethod
-    def read(cls, name: str, glyphSet: GlyphSet, lazy: bool = True) -> "Layer":
+    def read(cls, name: str, glyphSet: GlyphSet, lazy: bool = True) -> Layer:
         """Instantiates a Layer object from a
         :class:`fontTools.ufoLib.glifLib.GlyphSet`.
 
@@ -126,7 +118,7 @@ class Layer:
                 up front.
         """
         glyphNames = glyphSet.keys()
-        glyphs: Dict[str, Union[Glyph, Placeholder]]
+        glyphs: dict[str, Glyph | Placeholder]
         if lazy:
             glyphs = {gn: _NOT_LOADED for gn in glyphNames}
         else:
@@ -183,7 +175,7 @@ class Layer:
             hex(id(self)),
         )
 
-    def get(self, name: str, default: Optional[T] = None) -> Union[Optional[T], Glyph]:
+    def get(self, name: str, default: T | None = None) -> T | Glyph | None:
         """Return the Glyph object for name if it is present in this layer,
         otherwise return ``default``."""
         try:
@@ -200,10 +192,10 @@ class Layer:
         ...
 
     @overload
-    def pop(self, key: str, default: Union[Glyph, T] = ...) -> Union[Glyph, T]:
+    def pop(self, key: str, default: Glyph | T = ...) -> Glyph | T:
         ...
 
-    def pop(self, key: str, default: Union[Glyph, T] = KeyError) -> Union[Glyph, T]:  # type: ignore
+    def pop(self, key: str, default: Glyph | T = KeyError) -> Glyph | T:  # type: ignore
         """Remove and return glyph from layer.
 
         Args:
@@ -227,7 +219,7 @@ class Layer:
         return self._name
 
     @property
-    def bounds(self) -> Optional[BoundingBox]:
+    def bounds(self) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the layer,
         taking the actual contours into account.
 
@@ -239,7 +231,7 @@ class Layer:
         return bounds
 
     @property
-    def controlPointBounds(self) -> Optional[BoundingBox]:
+    def controlPointBounds(self) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the layer,
         taking only the control points into account.
 
@@ -258,7 +250,7 @@ class Layer:
     def insertGlyph(
         self,
         glyph: Glyph,
-        name: Optional[str] = None,
+        name: str | None = None,
         overwrite: bool = True,
         copy: bool = True,
     ) -> None:
@@ -353,7 +345,7 @@ class Layer:
             self._glyphSet = None
 
 
-def _fetch_glyph_identifiers(glyph: Glyph) -> Set[str]:
+def _fetch_glyph_identifiers(glyph: Glyph) -> set[str]:
     """Returns all identifiers in use in a glyph."""
 
     identifiers = set()

@@ -1,22 +1,11 @@
+from __future__ import annotations
+
 import collections.abc
 import uuid
 from abc import abstractmethod
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
-from typing import (
-    Any,
-    Dict,
-    Iterator,
-    List,
-    NamedTuple,
-    Optional,
-    Sequence,
-    Set,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Iterator, NamedTuple, Sequence, TypeVar, cast
 
 import attr
 from attr import define, field
@@ -38,7 +27,7 @@ class BoundingBox(NamedTuple):
     yMax: float
 
 
-def getBounds(drawable: Drawable, layer: Optional[GlyphSet]) -> Optional[BoundingBox]:
+def getBounds(drawable: Drawable, layer: GlyphSet | None) -> BoundingBox | None:
     pen = BoundsPen(layer)
     # raise 'KeyError' when a referenced component is missing from glyph set
     pen.skipMissingComponents = False
@@ -46,9 +35,7 @@ def getBounds(drawable: Drawable, layer: Optional[GlyphSet]) -> Optional[Boundin
     return None if pen.bounds is None else BoundingBox(*pen.bounds)
 
 
-def getControlBounds(
-    drawable: Drawable, layer: Optional[GlyphSet]
-) -> Optional[BoundingBox]:
+def getControlBounds(drawable: Drawable, layer: GlyphSet | None) -> BoundingBox | None:
     pen = ControlBoundsPen(layer)
     # raise 'KeyError' when a referenced component is missing from glyph set
     pen.skipMissingComponents = False
@@ -57,8 +44,8 @@ def getControlBounds(
 
 
 def unionBounds(
-    bounds1: Optional[BoundingBox], bounds2: Optional[BoundingBox]
-) -> Optional[BoundingBox]:
+    bounds1: BoundingBox | None, bounds2: BoundingBox | None
+) -> BoundingBox | None:
     if bounds1 is None:
         return bounds2
     if bounds2 is None:
@@ -80,27 +67,29 @@ def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
     )
 
 
-def _object_lib(parent_lib: Dict[str, Any], object: HasIdentifier) -> Dict[str, Any]:
-    if object.identifier is None:
+def _object_lib(parent_lib: dict[str, Any], obj: HasIdentifier) -> dict[str, Any]:
+    if obj.identifier is None:
         # Use UUID4 because it allows us to set a new identifier without
         # checking if it's already used anywhere else and be right most
         # of the time.
-        object.identifier = str(uuid.uuid4())
+        obj.identifier = str(uuid.uuid4())
 
-    object_libs: Dict[str, Any]
+    object_libs: dict[str, Any]
     if "public.objectLibs" not in parent_lib:
         object_libs = parent_lib["public.objectLibs"] = {}
     else:
         object_libs = parent_lib["public.objectLibs"]
         assert isinstance(object_libs, collections.abc.MutableMapping)
 
-    if object.identifier in object_libs:
-        return object_libs[object.identifier]
-    lib = object_libs[object.identifier] = {}
+    if obj.identifier in object_libs:
+        object_lib: dict[str, Any] = object_libs[obj.identifier]
+        return object_lib
+    lib: dict[str, Any] = {}
+    object_libs[obj.identifier] = lib
     return lib
 
 
-def _prune_object_libs(parent_lib: Dict[str, Any], identifiers: Set[str]) -> None:
+def _prune_object_libs(parent_lib: dict[str, Any], identifiers: set[str]) -> None:
     """Prune non-existing objects and empty libs from a lib's
     public.objectLibs.
 
@@ -126,20 +115,26 @@ _NOT_LOADED = Placeholder()
 # Create a generic variable for mypy that can be 'DataStore' or any subclass.
 Tds = TypeVar("Tds", bound="DataStore")
 
+# For Python 3.7 compatibility.
+if TYPE_CHECKING:
+    DataStoreMapping = MutableMapping[str, bytes]
+else:
+    DataStoreMapping = MutableMapping
+
 
 @define
-class DataStore(MutableMapping):
+class DataStore(DataStoreMapping):
     """Represents the base class for ImageSet and DataSet.
 
     Both behave like a dictionary that loads its "values" lazily by default and only
     differ in which reader and writer methods they call.
     """
 
-    _data: Dict[str, Union[bytes, Placeholder]] = field(factory=dict)
+    _data: dict[str, bytes | Placeholder] = field(factory=dict)
 
-    _lazy: Optional[bool] = field(default=False, kw_only=True, eq=False, init=False)
-    _reader: Optional[UFOReader] = field(default=None, init=False, repr=False, eq=False)
-    _scheduledForDeletion: Set[str] = field(
+    _lazy: bool | None = field(default=False, kw_only=True, eq=False, init=False)
+    _reader: UFOReader | None = field(default=None, init=False, repr=False, eq=False)
+    _scheduledForDeletion: set[str] = field(
         factory=set, init=False, repr=False, eq=False
     )
 
@@ -165,7 +160,7 @@ class DataStore(MutableMapping):
         return not result
 
     @classmethod
-    def read(cls: Type[Tds], reader: UFOReader, lazy: bool = True) -> Tds:
+    def read(cls: type[Tds], reader: UFOReader, lazy: bool = True) -> Tds:
         """Instantiate the data store from a :class:`fontTools.ufoLib.UFOReader`."""
         self = cls()
         for fileName in cls.list_contents(reader):
@@ -180,7 +175,7 @@ class DataStore(MutableMapping):
 
     @staticmethod
     @abstractmethod
-    def list_contents(reader: UFOReader) -> List[str]:
+    def list_contents(reader: UFOReader) -> list[str]:
         """Returns a list of POSIX filename strings in the data store."""
         ...
 
@@ -245,7 +240,7 @@ class DataStore(MutableMapping):
             hex(id(self)),
         )
 
-    def write(self, writer: UFOWriter, saveAs: Optional[bool] = None) -> None:
+    def write(self, writer: UFOWriter, saveAs: bool | None = None) -> None:
         """Write the data store to a :class:`fontTools.ufoLib.UFOWriter`."""
         if saveAs is None:
             saveAs = self._reader is not writer
@@ -273,12 +268,19 @@ class DataStore(MutableMapping):
             self._reader = None
 
     @property
-    def fileNames(self) -> List[str]:
+    def fileNames(self) -> list[str]:
         """Returns a list of filenames in the data store."""
         return list(self._data.keys())
 
 
-class AttrDictMixin(Mapping):
+# For Python 3.7 compatibility.
+if TYPE_CHECKING:
+    AttrDictMixinMapping = Mapping[str, Any]
+else:
+    AttrDictMixinMapping = Mapping
+
+
+class AttrDictMixin(AttrDictMixinMapping):
     """Read attribute values using mapping interface.
 
     For use with Anchors and Guidelines classes, where client code
@@ -302,7 +304,7 @@ class AttrDictMixin(Mapping):
         return sum(1 for _ in self)
 
 
-def _convert_transform(t: Union[Transform, Sequence[float]]) -> Transform:
+def _convert_transform(t: Transform | Sequence[float]) -> Transform:
     """Return a passed-in Transform as is, otherwise convert a sequence of
     numbers to a Transform if need be."""
     return t if isinstance(t, Transform) else Transform(*t)

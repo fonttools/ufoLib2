@@ -1,19 +1,8 @@
+from __future__ import annotations
+
 import os
 import shutil
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    Iterator,
-    KeysView,
-    List,
-    Mapping,
-    MutableMapping,
-    Optional,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import Any, Iterable, Iterator, KeysView, Mapping, MutableMapping, cast
 
 import attr
 import fs.base
@@ -39,19 +28,19 @@ from ufoLib2.objects.misc import (
 from ufoLib2.typing import HasIdentifier, PathLike, T
 
 
-def _convert_Info(value: Union[Info, Mapping[str, Any]]) -> Info:
+def _convert_Info(value: Info | Mapping[str, Any]) -> Info:
     return value if isinstance(value, Info) else Info(**value)
 
 
-def _convert_DataSet(value: Union[DataSet, MutableMapping[str, bytes]]) -> DataSet:
+def _convert_DataSet(value: DataSet | MutableMapping[str, bytes]) -> DataSet:
     return value if isinstance(value, DataSet) else DataSet(value)  # type: ignore
 
 
-def _convert_ImageSet(value: Union[ImageSet, MutableMapping[str, bytes]]) -> ImageSet:
+def _convert_ImageSet(value: ImageSet | MutableMapping[str, bytes]) -> ImageSet:
     return value if isinstance(value, ImageSet) else ImageSet(value)  # type: ignore
 
 
-def _convert_Features(value: Union[Features, str]) -> Features:
+def _convert_Features(value: Features | str) -> Features:
     return value if isinstance(value, Features) else Features(value)
 
 
@@ -130,14 +119,14 @@ class Font:
     features: Features = field(factory=Features, converter=_convert_Features)
     """Features: The font Features object."""
 
-    groups: Dict[str, List[str]] = field(factory=dict)
+    groups: dict[str, list[str]] = field(factory=dict)
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
-    kerning: Dict[Tuple[str, str], float] = field(factory=dict)
+    kerning: dict[tuple[str, str], float] = field(factory=dict)
     """Dict[Tuple[str, str], float]: A mapping of a tuple of first and second kerning
     pair to a kerning value."""
 
-    lib: Dict[str, Any] = field(factory=dict)
+    lib: dict[str, Any] = field(factory=dict)
     """Dict[str, Any]: A mapping of keys to arbitrary values."""
 
     data: DataSet = field(factory=DataSet, converter=_convert_DataSet)
@@ -147,17 +136,15 @@ class Font:
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
     # init=False args, set by alternate open/read classmethod constructors
-    _path: Optional[PathLike] = field(
+    _path: PathLike | None = field(
         default=None, metadata=dict(copyable=False), eq=False, init=False
     )
-    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
-    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
-    _fileStructure: Optional[UFOFileStructure] = field(
-        default=None, init=False, eq=False
-    )
+    _lazy: bool | None = field(default=None, init=False, eq=False)
+    _reader: UFOReader | None = field(default=None, init=False, eq=False)
+    _fileStructure: UFOFileStructure | None = field(default=None, init=False, eq=False)
 
     @classmethod
-    def open(cls, path: PathLike, lazy: bool = True, validate: bool = True) -> "Font":
+    def open(cls, path: PathLike, lazy: bool = True, validate: bool = True) -> Font:
         """Instantiates a new Font object from a path to a UFO.
 
         Args:
@@ -175,7 +162,7 @@ class Font:
         return self
 
     @classmethod
-    def read(cls, reader: UFOReader, lazy: bool = True) -> "Font":
+    def read(cls, reader: UFOReader, lazy: bool = True) -> Font:
         """Instantiates a Font object from a :class:`fontTools.ufoLib.UFOReader`.
 
         Args:
@@ -218,7 +205,7 @@ class Font:
     def __len__(self) -> int:
         return len(self.layers.defaultLayer)
 
-    def get(self, name: str, default: Optional[T] = None) -> Union[Optional[T], Glyph]:
+    def get(self, name: str, default: T | None = None) -> T | Glyph | None:
         """Return the :class:`.Glyph` object for name if it is present in the
         default layer, otherwise return ``default``."""
         return self.layers.defaultLayer.get(name, default)
@@ -233,7 +220,7 @@ class Font:
         if self._reader is not None:
             self._reader.close()
 
-    def __enter__(self) -> "Font":
+    def __enter__(self) -> Font:
         # TODO: Document an example for this.
         return self
 
@@ -286,7 +273,7 @@ class Font:
         return not result
 
     @property
-    def reader(self) -> Optional[UFOReader]:
+    def reader(self) -> UFOReader | None:
         """Returns the underlying :class:`fontTools.ufoLib.UFOReader`."""
         return self._reader
 
@@ -303,7 +290,7 @@ class Font:
     __deepcopy__ = _deepcopy_unlazify_attrs
 
     @property
-    def glyphOrder(self) -> List[str]:
+    def glyphOrder(self) -> list[str]:
         """The font's glyph order.
 
         See http://unifiedfontobject.org/versions/ufo3/lib.plist/#publicglyphorder for
@@ -323,7 +310,7 @@ class Font:
         return list(self.lib.get("public.glyphOrder", []))
 
     @glyphOrder.setter
-    def glyphOrder(self, value: Optional[List[str]]) -> None:
+    def glyphOrder(self, value: list[str] | None) -> None:
         if value is None or len(value) == 0:
             if "public.glyphOrder" in self.lib:
                 del self.lib["public.glyphOrder"]
@@ -331,7 +318,7 @@ class Font:
             self.lib["public.glyphOrder"] = value
 
     @property
-    def guidelines(self) -> List[Guideline]:
+    def guidelines(self) -> list[Guideline]:
         """The font's global guidelines.
 
         Getter:
@@ -346,12 +333,12 @@ class Font:
         return self.info.guidelines
 
     @guidelines.setter
-    def guidelines(self, value: Iterable[Union[Guideline, Mapping[str, Any]]]) -> None:
+    def guidelines(self, value: Iterable[Guideline | Mapping[str, Any]]) -> None:
         self.info.guidelines = []
         for guideline in value:
             self.appendGuideline(guideline)
 
-    def objectLib(self, object: HasIdentifier) -> Dict[str, Any]:
+    def objectLib(self, object: HasIdentifier) -> dict[str, Any]:
         """Return the lib for an object with an identifier, as stored in a font's lib.
 
         If the object does not yet have an identifier, a new one is assigned to it. If
@@ -373,12 +360,12 @@ class Font:
         return _object_lib(self.lib, object)
 
     @property
-    def path(self) -> Optional[PathLike]:
+    def path(self) -> PathLike | None:
         """Return the path of the UFO, if it was set, or None."""
         return self._path
 
     @property
-    def bounds(self) -> Optional[BoundingBox]:
+    def bounds(self) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the default
         layer, taking the actual contours into account.
 
@@ -387,7 +374,7 @@ class Font:
         return self.layers.defaultLayer.bounds
 
     @property
-    def controlPointBounds(self) -> Optional[BoundingBox]:
+    def controlPointBounds(self) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the layer,
         taking only the control points into account.
 
@@ -441,7 +428,7 @@ class Font:
         """
         self.layers.renameLayer(name, newName, overwrite)
 
-    def appendGuideline(self, guideline: Union[Guideline, Mapping[str, Any]]) -> None:
+    def appendGuideline(self, guideline: Guideline | Mapping[str, Any]) -> None:
         """Appends a guideline to the list of the font's global guidelines.
 
         Creates the global guideline list unless it already exists.
@@ -461,7 +448,7 @@ class Font:
             self.info.guidelines = []
         self.info.guidelines.append(guideline)
 
-    def write(self, writer: UFOWriter, saveAs: Optional[bool] = None) -> None:
+    def write(self, writer: UFOWriter, saveAs: bool | None = None) -> None:
         """Writes this Font to a :class:`fontTools.ufoLib.UFOWriter`.
 
         Args:
@@ -493,9 +480,9 @@ class Font:
 
     def save(
         self,
-        path: Optional[Union[PathLike, fs.base.FS]] = None,
+        path: PathLike | fs.base.FS | None = None,
         formatVersion: int = 3,
-        structure: Optional[UFOFileStructure] = None,
+        structure: UFOFileStructure | None = None,
         overwrite: bool = False,
         validate: bool = True,
     ) -> None:

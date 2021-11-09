@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import warnings
-from typing import Optional, Tuple
 
 from attr import define, field
 from fontTools.misc.transform import Identity, Transform
@@ -29,10 +30,10 @@ class Component:
     transformation: Transform = field(default=Identity, converter=_convert_transform)
     """The affine transformation to apply to the :attr:`.Component.baseGlyph`."""
 
-    identifier: Optional[str] = None
+    identifier: str | None = None
     """The globally unique identifier of the component."""
 
-    def move(self, delta: Tuple[float, float]) -> None:
+    def move(self, delta: tuple[float, float]) -> None:
         """Moves this component by (x, y) font units.
 
         NOTE: This interprets the delta to be the visual delta, as in, it
@@ -47,7 +48,7 @@ class Component:
         xx, xy, yx, yy, dx, dy = self.transformation
         self.transformation = Transform(xx, xy, yx, yy, dx + x, dy + y)
 
-    def getBounds(self, layer: GlyphSet) -> Optional[BoundingBox]:
+    def getBounds(self, layer: GlyphSet) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the component,
         taking the actual contours into account.
 
@@ -56,7 +57,7 @@ class Component:
         """
         return getBounds(self, layer)
 
-    def getControlBounds(self, layer: GlyphSet) -> Optional[BoundingBox]:
+    def getControlBounds(self, layer: GlyphSet) -> BoundingBox | None:
         """Returns the (xMin, yMin, xMax, yMax) bounding box of the component,
         taking only the control points into account.
 
