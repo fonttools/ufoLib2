@@ -5,7 +5,7 @@ import uuid
 from abc import abstractmethod
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
-from typing import Any, Iterator, NamedTuple, Sequence, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Iterator, NamedTuple, Sequence, TypeVar, cast
 
 import attr
 from attr import define, field
@@ -115,9 +115,15 @@ _NOT_LOADED = Placeholder()
 # Create a generic variable for mypy that can be 'DataStore' or any subclass.
 Tds = TypeVar("Tds", bound="DataStore")
 
+# For Python 3.7 compatibility.
+if TYPE_CHECKING:
+    DataStoreMapping = MutableMapping[str, bytes]
+else:
+    DataStoreMapping = MutableMapping
+
 
 @define
-class DataStore(MutableMapping[str, bytes]):
+class DataStore(DataStoreMapping):
     """Represents the base class for ImageSet and DataSet.
 
     Both behave like a dictionary that loads its "values" lazily by default and only
@@ -267,7 +273,14 @@ class DataStore(MutableMapping[str, bytes]):
         return list(self._data.keys())
 
 
-class AttrDictMixin(Mapping[str, Any]):
+# For Python 3.7 compatibility.
+if TYPE_CHECKING:
+    AttrDictMixinMapping = Mapping[str, Any]
+else:
+    AttrDictMixinMapping = Mapping
+
+
+class AttrDictMixin(AttrDictMixinMapping):
     """Read attribute values using mapping interface.
 
     For use with Anchors and Guidelines classes, where client code

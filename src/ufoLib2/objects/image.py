@@ -1,16 +1,22 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, Iterator
+from typing import TYPE_CHECKING, Any, Iterator
 
 from attr import define, field
 from fontTools.misc.transform import Identity, Transform
 
 from .misc import _convert_transform
 
+# For Python 3.7 compatibility.
+if TYPE_CHECKING:
+    ImageMapping = Mapping[str, Any]
+else:
+    ImageMapping = Mapping
+
 
 @define
-class Image(Mapping[str, Any]):
+class Image(ImageMapping):
     """Represents a background image reference.
 
     See http://unifiedfontobject.org/versions/ufo3/images/ and

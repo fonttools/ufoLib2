@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import MutableSequence
-from typing import Iterable, Iterator, overload
+from typing import TYPE_CHECKING, Iterable, Iterator, overload
 
 from attr import define, field
 from fontTools.pens.basePen import AbstractPen
@@ -12,9 +12,15 @@ from ufoLib2.objects.misc import BoundingBox, getBounds, getControlBounds
 from ufoLib2.objects.point import Point
 from ufoLib2.typing import GlyphSet
 
+# For Python 3.7 compatibility.
+if TYPE_CHECKING:
+    ContourMapping = MutableSequence[Point]
+else:
+    ContourMapping = MutableSequence
+
 
 @define
-class Contour(MutableSequence[Point]):
+class Contour(ContourMapping):
     """Represents a contour as a list of points.
 
     Behavior:
