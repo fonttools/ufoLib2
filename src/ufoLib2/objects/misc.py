@@ -67,12 +67,12 @@ def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
     )
 
 
-def _object_lib(parent_lib: dict[str, Any], object: HasIdentifier) -> dict[str, Any]:
-    if object.identifier is None:
+def _object_lib(parent_lib: dict[str, Any], obj: HasIdentifier) -> dict[str, Any]:
+    if obj.identifier is None:
         # Use UUID4 because it allows us to set a new identifier without
         # checking if it's already used anywhere else and be right most
         # of the time.
-        object.identifier = str(uuid.uuid4())
+        obj.identifier = str(uuid.uuid4())
 
     object_libs: dict[str, Any]
     if "public.objectLibs" not in parent_lib:
@@ -81,9 +81,11 @@ def _object_lib(parent_lib: dict[str, Any], object: HasIdentifier) -> dict[str, 
         object_libs = parent_lib["public.objectLibs"]
         assert isinstance(object_libs, collections.abc.MutableMapping)
 
-    if object.identifier in object_libs:
-        return object_libs[object.identifier]
-    lib = object_libs[object.identifier] = {}
+    if obj.identifier in object_libs:
+        object_lib: dict[str, Any] = object_libs[obj.identifier]
+        return object_lib
+    lib: dict[str, Any] = {}
+    object_libs[obj.identifier] = lib
     return lib
 
 
@@ -115,7 +117,7 @@ Tds = TypeVar("Tds", bound="DataStore")
 
 
 @define
-class DataStore(MutableMapping):
+class DataStore(MutableMapping[str, bytes]):
     """Represents the base class for ImageSet and DataSet.
 
     Both behave like a dictionary that loads its "values" lazily by default and only
@@ -265,7 +267,7 @@ class DataStore(MutableMapping):
         return list(self._data.keys())
 
 
-class AttrDictMixin(Mapping):
+class AttrDictMixin(Mapping[str, Any]):
     """Read attribute values using mapping interface.
 
     For use with Anchors and Guidelines classes, where client code

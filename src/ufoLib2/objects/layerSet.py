@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import OrderedDict
 from typing import AbstractSet, Any, Iterable, Iterator, Sized
 
 from attr import define, field
@@ -53,7 +52,7 @@ class LayerSet:
             del font.layers["myLayerName"]
     """
 
-    _layers: OrderedDict[str, Layer | Placeholder] = field(
+    _layers: dict[str, Layer | Placeholder] = field(
         validator=_must_have_at_least_one_item,
     )
 
@@ -83,7 +82,7 @@ class LayerSet:
             value: an iterable of :class:`.Layer` objects.
             defaultLayerName: the name of the default layer of the ones in ``value``.
         """
-        layers: OrderedDict[str, Layer | Placeholder] = OrderedDict()
+        layers: dict[str, Layer | Placeholder] = {}
         defaultLayer = None
         for layer in value:
             if not isinstance(layer, Layer):
@@ -109,7 +108,7 @@ class LayerSet:
             lazy: If True, load glyphs, data files and images as they are accessed. If
                 False, load everything up front.
         """
-        layers: OrderedDict[str, Layer | Placeholder] = OrderedDict()
+        layers: dict[str, Layer | Placeholder] = {}
         defaultLayer = None
 
         defaultLayerName = reader.getDefaultLayerName()
@@ -221,10 +220,7 @@ class LayerSet:
             raise Error(
                 "`order` must contain the same layers that are currently present."
             )
-        layers = OrderedDict()
-        for name in order:
-            layers[name] = self._layers[name]
-        self._layers = layers
+        self._layers = {name: self._layers[name] for name in order}
 
     def newLayer(self, name: str, **kwargs: Any) -> Layer:
         """Creates and returns a named layer.

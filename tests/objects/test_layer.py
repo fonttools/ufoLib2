@@ -5,7 +5,7 @@ import pytest
 from ufoLib2.objects import Glyph, Layer
 
 
-def test_init_layer_with_glyphs_dict():
+def test_init_layer_with_glyphs_dict() -> None:
     a = Glyph()
     b = Glyph()
 
@@ -28,10 +28,10 @@ def test_init_layer_with_glyphs_dict():
         Layer(glyphs={"a": a, "b": a})
 
     with pytest.raises(TypeError, match="Expected Glyph, found int"):
-        Layer(glyphs={"a": 1})
+        Layer(glyphs={"a": 1})  # type: ignore
 
 
-def test_init_layer_with_glyphs_list():
+def test_init_layer_with_glyphs_list() -> None:
     a = Glyph("a")
     b = Glyph("b")
     layer = Layer(glyphs=[a, b])
@@ -50,10 +50,10 @@ def test_init_layer_with_glyphs_list():
         Layer(glyphs=[a, b, Glyph("b")])
 
     with pytest.raises(TypeError, match="Expected Glyph, found int"):
-        Layer(glyphs=[1])
+        Layer(glyphs=[1])  # type: ignore
 
 
-def test_addGlyph():
+def test_addGlyph() -> None:
     a = Glyph("a")
 
     layer = Layer()
@@ -67,7 +67,7 @@ def test_addGlyph():
         layer.addGlyph(a)
 
 
-def test_insertGlyph():
+def test_insertGlyph() -> None:
     g = Glyph()
     pen = g.getPen()
     pen.moveTo((0, 0))
@@ -99,7 +99,7 @@ def test_insertGlyph():
         layer.insertGlyph(g)
 
 
-def test_newGlyph():
+def test_newGlyph() -> None:
     layer = Layer()
     a = layer.newGlyph("a")
 
@@ -110,7 +110,7 @@ def test_newGlyph():
         layer.newGlyph("a")
 
 
-def test_renameGlyph():
+def test_renameGlyph() -> None:
     g = Glyph()
 
     layer = Layer(glyphs={"a": g})

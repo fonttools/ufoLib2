@@ -27,12 +27,12 @@ class DataSet(DataStore):
     @staticmethod
     def list_contents(reader: UFOReader) -> list[str]:
         """Returns a list of POSIX filename strings in the data store."""
-        return reader.getDataDirectoryListing()
+        return reader.getDataDirectoryListing()  # type: ignore
 
     @staticmethod
     def read_data(reader: UFOReader, filename: str) -> bytes:
         """Returns the data at filename within the store."""
-        return reader.readData(filename)
+        return reader.readData(filename)  # type: ignore
 
     @staticmethod
     def write_data(writer: UFOWriter, filename: str, data: bytes) -> None:

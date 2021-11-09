@@ -1,23 +1,23 @@
 from __future__ import annotations
 
-from collections import OrderedDict
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 from fontTools import ufoLib
 
 import ufoLib2
 import ufoLib2.objects
-from ufoLib2.objects import Layer, LayerSet
+from ufoLib2.objects import Font, Layer, LayerSet
 from ufoLib2.objects.misc import _NOT_LOADED
 
 
-def test_import_version():
+def test_import_version() -> None:
     assert hasattr(ufoLib2, "__version__")
-    assert isinstance(ufoLib2.__version__, str)
+    assert isinstance(ufoLib2.__version__, str)  # type: ignore
 
 
-def test_LayerSet_load_layers_on_iteration(tmp_path):
+def test_LayerSet_load_layers_on_iteration(tmp_path: Path) -> None:
     ufo = ufoLib2.Font()
     ufo.layers.newLayer("test")
     ufo_save_path = tmp_path / "test.ufo"
@@ -25,23 +25,23 @@ def test_LayerSet_load_layers_on_iteration(tmp_path):
     ufo = ufoLib2.Font.open(ufo_save_path)
     assert set(ufo.layers.keys()) == {"public.default", "test"}
     for layer in ufo.layers:
-        assert layer is not _NOT_LOADED
+        assert layer is not _NOT_LOADED  # type: ignore
 
 
-def test_lazy_data_loading_saveas(ufo_UbuTestData, tmp_path):
+def test_lazy_data_loading_saveas(ufo_UbuTestData: Font, tmp_path: Path) -> None:
     ufo = ufo_UbuTestData
     ufo_path = tmp_path / "UbuTestData2.ufo"
     ufo.save(ufo_path)
     assert all(v is not _NOT_LOADED for v in ufo.data._data.values())
 
 
-def test_lazy_data_loading_inplace_no_load(ufo_UbuTestData):
+def test_lazy_data_loading_inplace_no_load(ufo_UbuTestData: Font) -> None:
     ufo = ufo_UbuTestData
     ufo.save()
     assert all(v is _NOT_LOADED for v in ufo.data._data.values())
 
 
-def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData):
+def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData: Font) -> None:
     ufo = ufo_UbuTestData
     some_data = b"abc"
     ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] = some_data
@@ -52,7 +52,7 @@ def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData):
     assert ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] == some_data
 
 
-def test_deepcopy_lazy_object(datadir):
+def test_deepcopy_lazy_object(datadir: Path) -> None:
     path = datadir / "UbuTestData.ufo"
     font1 = ufoLib2.Font.open(path, lazy=True)
 
@@ -84,7 +84,7 @@ def test_deepcopy_lazy_object(datadir):
     assert font2.path is None
 
 
-def test_unlazify(datadir):
+def test_unlazify(datadir: Path) -> None:
     reader = ufoLib.UFOReader(datadir / "UbuTestData.ufo")
     font = ufoLib2.Font.read(reader, lazy=True)
 
@@ -96,28 +96,28 @@ def test_unlazify(datadir):
     assert font._lazy is False
 
 
-def test_auto_unlazify_font(datadir):
+def test_auto_unlazify_font(datadir: Path) -> None:
     font1 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=True)
     font2 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=False)
 
     assert font1 == font2
 
 
-def test_auto_unlazify_data(datadir):
+def test_auto_unlazify_data(datadir: Path) -> None:
     font1 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=True)
     font2 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=False)
 
     assert font1.data == font2.data
 
 
-def test_auto_unlazify_images(datadir):
+def test_auto_unlazify_images(datadir: Path) -> None:
     font1 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=True)
     font2 = ufoLib2.Font.open(datadir / "UbuTestData.ufo", lazy=False)
 
     assert font1.images == font2.images
 
 
-def test_font_eq_and_ne(ufo_UbuTestData):
+def test_font_eq_and_ne(ufo_UbuTestData: Font) -> None:
     font1 = ufo_UbuTestData
     font2 = deepcopy(font1)
 
@@ -128,19 +128,19 @@ def test_font_eq_and_ne(ufo_UbuTestData):
     assert font1 != font2
 
 
-def test_empty_layerset():
+def test_empty_layerset() -> None:
     with pytest.raises(ValueError):
-        LayerSet(layers={}, defaultLayer=None)
+        LayerSet(layers={}, defaultLayer=None)  # type: ignore
 
 
-def test_default_layerset():
+def test_default_layerset() -> None:
     layers = LayerSet.default()
     assert len(layers) == 1
     assert "public.default" in layers
     assert len(layers["public.default"]) == 0
 
 
-def test_custom_layerset():
+def test_custom_layerset() -> None:
     default = Layer()
     ls1 = LayerSet.from_iterable([default])
     assert next(iter(ls1)) is ls1.defaultLayer
@@ -151,12 +151,12 @@ def test_custom_layerset():
     ls2 = LayerSet.from_iterable([Layer(name="abc")], defaultLayerName="abc")
     assert ls2["abc"] is ls2.defaultLayer
 
-    layers2 = OrderedDict()
+    layers2 = {}
     layers2["public.default"] = default
-    LayerSet(layers=layers2, defaultLayer=default)
+    LayerSet(layers=layers2, defaultLayer=default)  # type: ignore
 
 
-def test_guidelines():
+def test_guidelines() -> None:
     font = ufoLib2.Font()
 
     # accept either a mapping or a Guideline object
@@ -170,7 +170,7 @@ def test_guidelines():
     ]
 
     # setter should clear existing guidelines
-    font.guidelines = [{"x": 100}, ufoLib2.objects.Guideline(y=20)]
+    font.guidelines = [{"x": 100}, ufoLib2.objects.Guideline(y=20)]  # type: ignore
 
     assert len(font.guidelines) == 2
     assert font.guidelines == [

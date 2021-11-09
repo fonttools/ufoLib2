@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from ufoLib2.objects import Anchor, Font, Guideline
 
 
-def test_object_lib_roundtrip(tmp_path):
+def test_object_lib_roundtrip(tmp_path: Path) -> None:
     ufo = Font()
 
     ufo.info.guidelines = [Guideline(x=100), Guideline(y=200)]
@@ -45,6 +47,7 @@ def test_object_lib_roundtrip(tmp_path):
     # Roundtrip
     ufo_reload = Font.open(tmp_path / "test.ufo")
 
+    assert ufo_reload.info.guidelines is not None
     reload_guideline_lib = ufo_reload.objectLib(ufo_reload.info.guidelines[1])
     reload_glyph = ufo_reload["test"]
     reload_glyph_guideline_lib = reload_glyph.objectLib(reload_glyph.guidelines[1])
@@ -61,7 +64,7 @@ def test_object_lib_roundtrip(tmp_path):
     assert reload_component_lib == component_lib
 
 
-def test_object_lib_prune(tmp_path):
+def test_object_lib_prune(tmp_path: Path) -> None:
     ufo = Font()
 
     ufo.info.guidelines = [Guideline(x=100), Guideline(y=200)]

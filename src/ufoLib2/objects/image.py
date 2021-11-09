@@ -10,7 +10,7 @@ from .misc import _convert_transform
 
 
 @define
-class Image(Mapping):
+class Image(Mapping[str, Any]):
     """Represents a background image reference.
 
     See http://unifiedfontobject.org/versions/ufo3/images/ and

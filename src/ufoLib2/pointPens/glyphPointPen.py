@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from ufoLib2.objects.glyph import Glyph
 
 
-class GlyphPointPen(AbstractPointPen):
+class GlyphPointPen(AbstractPointPen):  # type: ignore
     """A point pen.
 
     See :mod:`fontTools.pens.basePen` and :mod:`fontTools.pens.pointPen` for an

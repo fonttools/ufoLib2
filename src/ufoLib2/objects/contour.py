@@ -14,7 +14,7 @@ from ufoLib2.typing import GlyphSet
 
 
 @define
-class Contour(MutableSequence):
+class Contour(MutableSequence[Point]):
     """Represents a contour as a list of points.
 
     Behavior:

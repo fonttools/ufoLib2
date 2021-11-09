@@ -18,7 +18,7 @@ from ufoLib2.objects import (
 from ufoLib2.objects.misc import BoundingBox
 
 
-def test_glyph_defcon_behavior():
+def test_glyph_defcon_behavior() -> None:
     glyph = Glyph()
     glyph.appendAnchor(Anchor(1, 2, "top"))
     glyph.appendAnchor({"x": 3, "y": 4, "name": "bottom"})
@@ -34,7 +34,7 @@ def test_glyph_defcon_behavior():
     assert glyph.guidelines == [Guideline(x=1), Guideline(x=2)]
 
 
-def test_copyDataFromGlyph(ufo_UbuTestData):
+def test_copyDataFromGlyph(ufo_UbuTestData: Font) -> None:
     font = ufo_UbuTestData
 
     a = font["a"]
@@ -67,7 +67,7 @@ def test_copyDataFromGlyph(ufo_UbuTestData):
     assert b.contours != a.contours
     assert b.components != a.components
 
-    def _assert_equal_but_distinct_objects(glyph1, glyph2):
+    def _assert_equal_but_distinct_objects(glyph1: Glyph, glyph2: Glyph) -> None:
         assert glyph1.width == glyph2.width
         assert glyph1.height == glyph2.height
         assert glyph1.unicodes == glyph2.unicodes
@@ -105,7 +105,7 @@ def test_copyDataFromGlyph(ufo_UbuTestData):
     _assert_equal_but_distinct_objects(d, a)
 
 
-def test_appendContour(ufo_UbuTestData):
+def test_appendContour(ufo_UbuTestData: Font) -> None:
     font = ufo_UbuTestData
 
     A = font["A"]
@@ -119,14 +119,14 @@ def test_appendContour(ufo_UbuTestData):
     assert A.contours[-1] is c
 
     with pytest.raises(TypeError, match="Expected Contour, found object"):
-        A.appendContour(object())
+        A.appendContour(object())  # type: ignore
 
 
-def test_glyph_without_name():
+def test_glyph_without_name() -> None:
     assert Glyph().name is None
 
 
-def test_glyph_repr():
+def test_glyph_repr() -> None:
     g = Glyph()
     assert repr(g) == f"<ufoLib2.objects.glyph.Glyph at {hex(id(g))}>"
 
@@ -134,7 +134,7 @@ def test_glyph_repr():
     assert repr(g) == f"<ufoLib2.objects.glyph.Glyph 'a' at {hex(id(g))}>"
 
 
-def test_glyph_get_bounds():
+def test_glyph_get_bounds() -> None:
     a = Glyph("a")
     pen = a.getPen()
     pen.moveTo((0, 0))
@@ -162,14 +162,14 @@ def test_glyph_get_bounds():
     assert b.getControlBounds(layer) == (-50, 100, -40, 120)
 
 
-def test_glyph_get_bounds_empty():
+def test_glyph_get_bounds_empty() -> None:
     g = Glyph()
     assert g.getBounds() is None
     assert g.getControlBounds() is None
 
 
 @pytest.fixture
-def layer():
+def layer() -> Layer:
     a = Glyph("a")
     pen = a.getPen()
     pen.moveTo((8, 0))
@@ -186,7 +186,7 @@ def layer():
     return layer
 
 
-def test_glyph_get_margins(layer):
+def test_glyph_get_margins(layer: Layer) -> None:
     a = layer["a"]
 
     # for simple contour glyphs without components, layer is optional/unused
@@ -227,7 +227,7 @@ def test_glyph_get_margins(layer):
     assert c.getTopMargin() is None
 
 
-def test_simple_glyph_set_left_margins(layer):
+def test_simple_glyph_set_left_margins(layer: Layer) -> None:
     a = layer["a"]
     b = layer["b"]  # same width, has component 'a' shifted +2 horizontally
 
@@ -235,7 +235,7 @@ def test_simple_glyph_set_left_margins(layer):
     assert b.getLeftMargin(layer) == 10
     assert a.width == 30
     assert b.width == 30
-    assert a.anchors[0].x, a.anchors[0].y == (10, 20)
+    assert (a.anchors[0].x, a.anchors[0].y) == (10, 30)
 
     a.setLeftMargin(8)  # no change
     assert a.getLeftMargin() == 8
@@ -245,17 +245,17 @@ def test_simple_glyph_set_left_margins(layer):
     assert a.getLeftMargin() == 10
     assert a.width == 32
     # anchors were shifted
-    assert a.anchors[0].x, a.anchors[0].y == (12, 20)
+    assert (a.anchors[0].x, a.anchors[0].y) == (12, 30)
     # composite glyph "b" also shifts, but keeps original width
     assert b.getLeftMargin(layer) == 12
     assert b.width == 30
 
     a.setLeftMargin(-2)  # -12
-    assert a.getLeftMargin(-2)
+    assert a.getLeftMargin() == -2
     assert a.width == 20
 
 
-def test_composite_glyph_set_left_margins(layer):
+def test_composite_glyph_set_left_margins(layer: Layer) -> None:
     b = layer["b"]
 
     assert b.getLeftMargin(layer) == 10
@@ -266,7 +266,7 @@ def test_composite_glyph_set_left_margins(layer):
     assert b.width == 32
 
 
-def test_simple_glyph_set_right_margins(layer):
+def test_simple_glyph_set_right_margins(layer: Layer) -> None:
     a = layer["a"]
     b = layer["b"]  # same width, has component 'a' shifted +2 horizontally
 
@@ -274,7 +274,7 @@ def test_simple_glyph_set_right_margins(layer):
     assert b.getRightMargin(layer) == 10
     assert a.width == 30
     assert b.width == 30
-    assert a.anchors[0].x, a.anchors[0].y == (10, 20)
+    assert (a.anchors[0].x, a.anchors[0].y) == (10, 30)
 
     a.setRightMargin(12)  # no change
     assert a.getRightMargin() == 12
@@ -284,7 +284,7 @@ def test_simple_glyph_set_right_margins(layer):
     assert a.getRightMargin() == 10
     # only width changes, anchors stay same
     assert a.width == 28
-    assert a.anchors[0].x, a.anchors[0].y == (10, 20)
+    assert (a.anchors[0].x, a.anchors[0].y) == (10, 30)
     # composite glyph "b" does _not_ change when "a" RSB changes
     assert b.getRightMargin(layer) == 10
     assert b.width == 30
@@ -294,7 +294,7 @@ def test_simple_glyph_set_right_margins(layer):
     assert a.width == 16
 
 
-def test_composite_glyph_set_right_margins(layer):
+def test_composite_glyph_set_right_margins(layer: Layer) -> None:
     b = layer["b"]
 
     assert b.getRightMargin(layer) == 10
@@ -305,7 +305,7 @@ def test_composite_glyph_set_right_margins(layer):
     assert b.width == 32
 
 
-def test_simple_glyph_set_bottom_margins(layer):
+def test_simple_glyph_set_bottom_margins(layer: Layer) -> None:
     a = layer["a"]
     b = layer["b"]  # same height/origin, has component 'a' shifted -5 vertically
     a.verticalOrigin = b.verticalOrigin = a.height = b.height = 30
@@ -322,7 +322,7 @@ def test_simple_glyph_set_bottom_margins(layer):
     assert b.height == b.verticalOrigin == 30
 
 
-def test_composite_glyph_set_bottom_margins(layer):
+def test_composite_glyph_set_bottom_margins(layer: Layer) -> None:
     b = layer["b"]
     b.verticalOrigin = b.height = 30
 
@@ -334,7 +334,7 @@ def test_composite_glyph_set_bottom_margins(layer):
     assert b.height == 35
 
 
-def test_simple_glyph_set_top_margins(layer):
+def test_simple_glyph_set_top_margins(layer: Layer) -> None:
     a = layer["a"]
     b = layer["b"]  # same height/origin, has component 'a' shifted -5 vertically
     a.verticalOrigin = b.verticalOrigin = a.height = b.height = 30
@@ -351,7 +351,7 @@ def test_simple_glyph_set_top_margins(layer):
     assert b.height == b.verticalOrigin == 30
 
 
-def test_composite_glyph_set_top_margins(layer):
+def test_composite_glyph_set_top_margins(layer: Layer) -> None:
     b = layer["b"]
     b.verticalOrigin = b.height = 30
 
