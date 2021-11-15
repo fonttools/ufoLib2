@@ -54,7 +54,7 @@ toml==0.10.2
     #   pytest
 tomli==1.2.2
     # via black
-typing-extensions==3.10.0.2
+typing-extensions==4.0.0
     # via
     #   black
     #   mypy
