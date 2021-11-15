@@ -46,7 +46,7 @@ pyparsing==3.0.6
     # via packaging
 pytest==6.2.5
     # via -r requirements-dev.in
-regex==2021.11.2
+regex==2021.11.10
     # via black
 toml==0.10.2
     # via
