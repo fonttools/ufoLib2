@@ -9,7 +9,8 @@ from fontTools import ufoLib
 import ufoLib2
 import ufoLib2.objects
 from ufoLib2.objects import Font, Layer, LayerSet
-from ufoLib2.objects.misc import _NOT_LOADED
+from ufoLib2.objects.layerSet import _LAYER_NOT_LOADED
+from ufoLib2.objects.misc import _DATA_NOT_LOADED
 
 
 def test_import_version() -> None:
@@ -25,20 +26,20 @@ def test_LayerSet_load_layers_on_iteration(tmp_path: Path) -> None:
     ufo = ufoLib2.Font.open(ufo_save_path)
     assert set(ufo.layers.keys()) == {"public.default", "test"}
     for layer in ufo.layers:
-        assert layer is not _NOT_LOADED  # type: ignore
+        assert layer is not _LAYER_NOT_LOADED
 
 
 def test_lazy_data_loading_saveas(ufo_UbuTestData: Font, tmp_path: Path) -> None:
     ufo = ufo_UbuTestData
     ufo_path = tmp_path / "UbuTestData2.ufo"
     ufo.save(ufo_path)
-    assert all(v is not _NOT_LOADED for v in ufo.data._data.values())
+    assert all(v is not _DATA_NOT_LOADED for v in ufo.data._data.values())
 
 
 def test_lazy_data_loading_inplace_no_load(ufo_UbuTestData: Font) -> None:
     ufo = ufo_UbuTestData
     ufo.save()
-    assert all(v is _NOT_LOADED for v in ufo.data._data.values())
+    assert all(v is _DATA_NOT_LOADED for v in ufo.data._data.values())
 
 
 def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData: Font) -> None:
@@ -47,7 +48,7 @@ def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData: Font) -> None:
     ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] = some_data
     ufo.save()
     assert all(
-        v is _NOT_LOADED for k, v in ufo.data._data.items() if "T_S_I__0" not in k
+        v is _DATA_NOT_LOADED for k, v in ufo.data._data.items() if "T_S_I__0" not in k
     )
     assert ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] == some_data
 
@@ -153,7 +154,7 @@ def test_custom_layerset() -> None:
 
     layers2 = {}
     layers2["public.default"] = default
-    LayerSet(layers=layers2, defaultLayer=default)  # type: ignore
+    LayerSet(layers=layers2, defaultLayer=default)
 
 
 def test_guidelines() -> None:

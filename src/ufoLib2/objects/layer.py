@@ -1,33 +1,35 @@
 from __future__ import annotations
 
-from typing import Any, Iterator, KeysView, Sequence, overload
+from typing import Any, Dict, Iterator, KeysView, Optional, Sequence, overload
 
 from attr import define, field
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
+from ufoLib2.objects.lib import Lib
 from ufoLib2.objects.misc import (
-    _NOT_LOADED,
     BoundingBox,
-    Placeholder,
+    _convert_Lib,
     _deepcopy_unlazify_attrs,
+    _get_lib,
     _prune_object_libs,
+    _set_lib,
     unionBounds,
 )
 from ufoLib2.typing import T
 
+_GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
 
-def _convert_glyphs(
-    value: dict[str, Glyph | Placeholder] | Sequence[Glyph]
-) -> dict[str, Glyph | Placeholder]:
-    result: dict[str, Glyph | Placeholder] = {}
+
+def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyph]:
+    result: dict[str, Glyph] = {}
     glyph_ids = set()
     if isinstance(value, dict):
         for name, glyph in value.items():
-            if not isinstance(glyph, Placeholder):
-                if not isinstance(glyph, Glyph):
-                    raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
+            if not isinstance(glyph, Glyph):
+                raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
+            if glyph is not _GLYPH_NOT_LOADED:
                 glyph_id = id(glyph)
                 if glyph_id in glyph_ids:
                     raise KeyError(f"{glyph!r} can't be added twice")
@@ -95,13 +97,11 @@ class Layer:
     """
 
     _name: str = DEFAULT_LAYER_NAME
-    _glyphs: dict[str, Glyph | Placeholder] = field(
-        factory=dict, converter=_convert_glyphs
-    )
-    color: str | None = None
+    _glyphs: Dict[str, Glyph] = field(factory=dict, converter=_convert_glyphs)
+    color: Optional[str] = None
     """The color assigned to the layer."""
 
-    lib: dict[str, Any] = field(factory=dict)
+    _lib: Lib = field(factory=Lib, converter=_convert_Lib)
     """The layer's lib for mapping string keys to arbitrary data."""
 
     _glyphSet: Any = field(default=None, init=False, eq=False)
@@ -118,9 +118,9 @@ class Layer:
                 up front.
         """
         glyphNames = glyphSet.keys()
-        glyphs: dict[str, Glyph | Placeholder]
+        glyphs: dict[str, Glyph]
         if lazy:
-            glyphs = {gn: _NOT_LOADED for gn in glyphNames}
+            glyphs = {gn: _GLYPH_NOT_LOADED for gn in glyphNames}
         else:
             glyphs = {}
             for glyphName in glyphNames:
@@ -148,7 +148,7 @@ class Layer:
 
     def __getitem__(self, name: str) -> Glyph:
         glyph_object = self._glyphs[name]
-        if isinstance(glyph_object, Placeholder):
+        if glyph_object is _GLYPH_NOT_LOADED:
             return self.loadGlyph(name)
         return glyph_object
 
@@ -217,6 +217,8 @@ class Layer:
     def name(self) -> str:
         """The name of the layer."""
         return self._name
+
+    lib = property(_get_lib, _set_lib)
 
     @property
     def bounds(self) -> BoundingBox | None:
@@ -329,7 +331,7 @@ class Layer:
             for name in set(glyphSet.contents).difference(glyphs):
                 glyphSet.deleteGlyph(name)
         for name, glyph in glyphs.items():
-            if isinstance(glyph, Placeholder):
+            if glyph is _GLYPH_NOT_LOADED:
                 if saveAs:
                     glyph = self.loadGlyph(name)
                 else:

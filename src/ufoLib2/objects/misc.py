@@ -5,7 +5,18 @@ import uuid
 from abc import abstractmethod
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Iterator, NamedTuple, Sequence, TypeVar, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterator,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Set,
+    TypeVar,
+    cast,
+)
 
 import attr
 from attr import define, field
@@ -15,6 +26,7 @@ from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.ufoLib import UFOReader, UFOWriter
 
 from ufoLib2.constants import OBJECT_LIBS_KEY
+from ufoLib2.objects.lib import Lib
 from ufoLib2.typing import Drawable, GlyphSet, HasIdentifier
 
 
@@ -105,11 +117,11 @@ def _prune_object_libs(parent_lib: dict[str, Any], identifiers: set[str]) -> Non
     }
 
 
-class Placeholder:
-    """Represents a sentinel value to signal a "lazy" object hasn't been loaded yet."""
+class DataPlaceholder(bytes):
+    """Represents a sentinel value to signal a "lazy" DataSet item hasn't been loaded yet."""
 
 
-_NOT_LOADED = Placeholder()
+_DATA_NOT_LOADED = DataPlaceholder(b"__UFOLIB2_DATA_NOT_LOADED__")
 
 
 # Create a generic variable for mypy that can be 'DataStore' or any subclass.
@@ -130,11 +142,11 @@ class DataStore(DataStoreMapping):
     differ in which reader and writer methods they call.
     """
 
-    _data: dict[str, bytes | Placeholder] = field(factory=dict)
+    _data: Dict[str, bytes] = field(factory=dict)
 
-    _lazy: bool | None = field(default=False, kw_only=True, eq=False, init=False)
-    _reader: UFOReader | None = field(default=None, init=False, repr=False, eq=False)
-    _scheduledForDeletion: set[str] = field(
+    _lazy: Optional[bool] = field(default=False, kw_only=True, eq=False, init=False)
+    _reader: Optional[UFOReader] = field(default=None, init=False, repr=False, eq=False)
+    _scheduledForDeletion: Set[str] = field(
         factory=set, init=False, repr=False, eq=False
     )
 
@@ -165,7 +177,7 @@ class DataStore(DataStoreMapping):
         self = cls()
         for fileName in cls.list_contents(reader):
             if lazy:
-                self._data[fileName] = _NOT_LOADED
+                self._data[fileName] = _DATA_NOT_LOADED
             else:
                 self._data[fileName] = cls.read_data(reader, fileName)
         self._lazy = lazy
@@ -217,7 +229,7 @@ class DataStore(DataStoreMapping):
 
     def __getitem__(self, fileName: str) -> bytes:
         data_object = self._data[fileName]
-        if isinstance(data_object, Placeholder):
+        if data_object is _DATA_NOT_LOADED:
             data_object = self._data[fileName] = self.read_data(self._reader, fileName)
         return data_object
 
@@ -255,7 +267,7 @@ class DataStore(DataStoreMapping):
             #    might be modified.
             # 2) We save elsewhere. Load all data files to write them back out.
             # XXX: Move write_data into `if saveAs` branch to simplify code?
-            if isinstance(data, Placeholder):
+            if data is _DATA_NOT_LOADED:
                 if saveAs:
                     data = self.read_data(self._reader, fileName)
                     self._data[fileName] = data
@@ -308,3 +320,15 @@ def _convert_transform(t: Transform | Sequence[float]) -> Transform:
     """Return a passed-in Transform as is, otherwise convert a sequence of
     numbers to a Transform if need be."""
     return t if isinstance(t, Transform) else Transform(*t)
+
+
+def _convert_Lib(value: Mapping[str, Any]) -> Lib:
+    return value if isinstance(value, Lib) else Lib(value)
+
+
+def _get_lib(self: Any) -> Lib:
+    return cast(Lib, self._lib)
+
+
+def _set_lib(self: Any, value: Mapping[str, Any]) -> None:
+    self._lib = _convert_Lib(value)

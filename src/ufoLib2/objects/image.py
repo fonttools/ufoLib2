@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, Iterator
+from typing import TYPE_CHECKING, Any, ClassVar, Iterator, Optional
 
 from attr import define, field
 from fontTools.misc.transform import Identity, Transform
@@ -23,13 +23,13 @@ class Image(ImageMapping):
     http://unifiedfontobject.org/versions/ufo3/glyphs/glif/#image.
     """
 
-    fileName: str | None = None
+    fileName: Optional[str] = None
     """The filename of the image."""
 
     transformation: Transform = field(default=Identity, converter=_convert_transform)
     """The affine transformation applied to the image."""
 
-    color: str | None = None
+    color: Optional[str] = None
     """The color applied to the image."""
 
     def clear(self) -> None:
@@ -46,7 +46,7 @@ class Image(ImageMapping):
     # the fontTools.ufoLib.validators.imageValidator requires that image is a
     # subclass of Mapping...
 
-    _transformation_keys_: tuple[str, str, str, str, str, str] = (
+    _transformation_keys_: ClassVar[tuple[str, str, str, str, str, str]] = (
         "xScale",
         "xyScale",
         "yxScale",
@@ -54,7 +54,7 @@ class Image(ImageMapping):
         "xOffset",
         "yOffset",
     )
-    _valid_keys_: tuple[str, str, str, str, str, str, str, str] = (
+    _valid_keys_: ClassVar[tuple[str, str, str, str, str, str, str, str]] = (
         "fileName",
         *_transformation_keys_,
         "color",

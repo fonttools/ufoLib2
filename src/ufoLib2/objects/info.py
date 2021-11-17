@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import Any, Sequence, TypeVar
+from typing import Any, List, Optional, Sequence, TypeVar
 
 import attr
 from attr import define, field
@@ -41,7 +41,7 @@ def _convert_GaspBehavior(seq: Sequence[GaspBehavior | int]) -> list[GaspBehavio
 class GaspRangeRecord(AttrDictMixin):
     rangeMaxPPEM: int = field(validator=_positive)
     # Use Set[GaspBehavior] instead of List?
-    rangeGaspBehavior: list[GaspBehavior] = field(converter=_convert_GaspBehavior)
+    rangeGaspBehavior: List[GaspBehavior] = field(converter=_convert_GaspBehavior)
 
 
 @define
@@ -114,26 +114,26 @@ class Info:
     mostly done during saving and loading.
     """
 
-    familyName: str | None = None
-    styleName: str | None = None
-    styleMapFamilyName: str | None = None
-    styleMapStyleName: str | None = None
-    versionMajor: int | None = field(default=None, validator=_optional_positive)
-    versionMinor: int | None = field(default=None, validator=_optional_positive)
+    familyName: Optional[str] = None
+    styleName: Optional[str] = None
+    styleMapFamilyName: Optional[str] = None
+    styleMapStyleName: Optional[str] = None
+    versionMajor: Optional[int] = field(default=None, validator=_optional_positive)
+    versionMinor: Optional[int] = field(default=None, validator=_optional_positive)
 
-    copyright: str | None = None
-    trademark: str | None = None
+    copyright: Optional[str] = None
+    trademark: Optional[str] = None
 
-    unitsPerEm: float | None = field(default=None, validator=_optional_positive)
-    descender: float | None = None
-    xHeight: float | None = None
-    capHeight: float | None = None
-    ascender: float | None = None
-    italicAngle: float | None = None
+    unitsPerEm: Optional[float] = field(default=None, validator=_optional_positive)
+    descender: Optional[float] = None
+    xHeight: Optional[float] = None
+    capHeight: Optional[float] = None
+    ascender: Optional[float] = None
+    italicAngle: Optional[float] = None
 
-    note: str | None = None
+    note: Optional[str] = None
 
-    _guidelines: list[Guideline] | None = field(
+    _guidelines: Optional[List[Guideline]] = field(
         default=None, converter=_convert_guidelines
     )
 
@@ -145,7 +145,7 @@ class Info:
     def guidelines(self, value: list[Guideline] | None) -> None:
         self._guidelines = _convert_guidelines(value)
 
-    _openTypeGaspRangeRecords: list[GaspRangeRecord] | None = field(
+    _openTypeGaspRangeRecords: Optional[List[GaspRangeRecord]] = field(
         default=None, converter=_convert_gasp_range_records
     )
 
@@ -157,36 +157,36 @@ class Info:
     def openTypeGaspRangeRecords(self, value: list[GaspRangeRecord] | None) -> None:
         self._openTypeGaspRangeRecords = _convert_gasp_range_records(value)
 
-    openTypeHeadCreated: str | None = None
-    openTypeHeadLowestRecPPEM: int | None = field(
+    openTypeHeadCreated: Optional[str] = None
+    openTypeHeadLowestRecPPEM: Optional[int] = field(
         default=None, validator=_optional_positive
     )
-    openTypeHeadFlags: list[int] | None = None
+    openTypeHeadFlags: Optional[List[int]] = None
 
-    openTypeHheaAscender: int | None = None
-    openTypeHheaDescender: int | None = None
-    openTypeHheaLineGap: int | None = None
-    openTypeHheaCaretSlopeRise: int | None = None
-    openTypeHheaCaretSlopeRun: int | None = None
-    openTypeHheaCaretOffset: int | None = None
+    openTypeHheaAscender: Optional[int] = None
+    openTypeHheaDescender: Optional[int] = None
+    openTypeHheaLineGap: Optional[int] = None
+    openTypeHheaCaretSlopeRise: Optional[int] = None
+    openTypeHheaCaretSlopeRun: Optional[int] = None
+    openTypeHheaCaretOffset: Optional[int] = None
 
-    openTypeNameDesigner: str | None = None
-    openTypeNameDesignerURL: str | None = None
-    openTypeNameManufacturer: str | None = None
-    openTypeNameManufacturerURL: str | None = None
-    openTypeNameLicense: str | None = None
-    openTypeNameLicenseURL: str | None = None
-    openTypeNameVersion: str | None = None
-    openTypeNameUniqueID: str | None = None
-    openTypeNameDescription: str | None = None
-    openTypeNamePreferredFamilyName: str | None = None
-    openTypeNamePreferredSubfamilyName: str | None = None
-    openTypeNameCompatibleFullName: str | None = None
-    openTypeNameSampleText: str | None = None
-    openTypeNameWWSFamilyName: str | None = None
-    openTypeNameWWSSubfamilyName: str | None = None
+    openTypeNameDesigner: Optional[str] = None
+    openTypeNameDesignerURL: Optional[str] = None
+    openTypeNameManufacturer: Optional[str] = None
+    openTypeNameManufacturerURL: Optional[str] = None
+    openTypeNameLicense: Optional[str] = None
+    openTypeNameLicenseURL: Optional[str] = None
+    openTypeNameVersion: Optional[str] = None
+    openTypeNameUniqueID: Optional[str] = None
+    openTypeNameDescription: Optional[str] = None
+    openTypeNamePreferredFamilyName: Optional[str] = None
+    openTypeNamePreferredSubfamilyName: Optional[str] = None
+    openTypeNameCompatibleFullName: Optional[str] = None
+    openTypeNameSampleText: Optional[str] = None
+    openTypeNameWWSFamilyName: Optional[str] = None
+    openTypeNameWWSSubfamilyName: Optional[str] = None
 
-    _openTypeNameRecords: list[NameRecord] | None = field(
+    _openTypeNameRecords: Optional[List[NameRecord]] = field(
         default=None, converter=_convert_name_records
     )
 
@@ -198,7 +198,7 @@ class Info:
     def openTypeNameRecords(self, value: list[NameRecord] | None) -> None:
         self._openTypeNameRecords = _convert_name_records(value)
 
-    _openTypeOS2WidthClass: WidthClass | None = field(
+    _openTypeOS2WidthClass: Optional[WidthClass] = field(
         default=None, converter=_convert_WidthClass
     )
 
@@ -210,72 +210,74 @@ class Info:
     def openTypeOS2WidthClass(self, value: WidthClass | None) -> None:
         self._openTypeOS2WidthClass = value if value is None else WidthClass(value)
 
-    openTypeOS2WeightClass: int | None = field(default=None)
+    openTypeOS2WeightClass: Optional[int] = field(default=None)
 
     @openTypeOS2WeightClass.validator
     def _validate_weight_class(self, attribute: Any, value: int | None) -> None:
         if value is not None and (value < 1 or value > 1000):
             raise ValueError("'openTypeOS2WeightClass' must be between 1 and 1000")
 
-    openTypeOS2Selection: list[int] | None = None
-    openTypeOS2VendorID: str | None = None
-    openTypeOS2Panose: list[int] | None = None
-    openTypeOS2FamilyClass: list[int] | None = None
-    openTypeOS2UnicodeRanges: list[int] | None = None
-    openTypeOS2CodePageRanges: list[int] | None = None
-    openTypeOS2TypoAscender: int | None = None
-    openTypeOS2TypoDescender: int | None = None
-    openTypeOS2TypoLineGap: int | None = None
-    openTypeOS2WinAscent: int | None = field(default=None, validator=_optional_positive)
-    openTypeOS2WinDescent: int | None = field(
+    openTypeOS2Selection: Optional[List[int]] = None
+    openTypeOS2VendorID: Optional[str] = None
+    openTypeOS2Panose: Optional[List[int]] = None
+    openTypeOS2FamilyClass: Optional[List[int]] = None
+    openTypeOS2UnicodeRanges: Optional[List[int]] = None
+    openTypeOS2CodePageRanges: Optional[List[int]] = None
+    openTypeOS2TypoAscender: Optional[int] = None
+    openTypeOS2TypoDescender: Optional[int] = None
+    openTypeOS2TypoLineGap: Optional[int] = None
+    openTypeOS2WinAscent: Optional[int] = field(
         default=None, validator=_optional_positive
     )
-    openTypeOS2Type: list[int] | None = None
-    openTypeOS2SubscriptXSize: int | None = None
-    openTypeOS2SubscriptYSize: int | None = None
-    openTypeOS2SubscriptXOffset: int | None = None
-    openTypeOS2SubscriptYOffset: int | None = None
-    openTypeOS2SuperscriptXSize: int | None = None
-    openTypeOS2SuperscriptYSize: int | None = None
-    openTypeOS2SuperscriptXOffset: int | None = None
-    openTypeOS2SuperscriptYOffset: int | None = None
-    openTypeOS2StrikeoutSize: int | None = None
-    openTypeOS2StrikeoutPosition: int | None = None
+    openTypeOS2WinDescent: Optional[int] = field(
+        default=None, validator=_optional_positive
+    )
+    openTypeOS2Type: Optional[List[int]] = None
+    openTypeOS2SubscriptXSize: Optional[int] = None
+    openTypeOS2SubscriptYSize: Optional[int] = None
+    openTypeOS2SubscriptXOffset: Optional[int] = None
+    openTypeOS2SubscriptYOffset: Optional[int] = None
+    openTypeOS2SuperscriptXSize: Optional[int] = None
+    openTypeOS2SuperscriptYSize: Optional[int] = None
+    openTypeOS2SuperscriptXOffset: Optional[int] = None
+    openTypeOS2SuperscriptYOffset: Optional[int] = None
+    openTypeOS2StrikeoutSize: Optional[int] = None
+    openTypeOS2StrikeoutPosition: Optional[int] = None
 
-    openTypeVheaVertTypoAscender: int | None = None
-    openTypeVheaVertTypoDescender: int | None = None
-    openTypeVheaVertTypoLineGap: int | None = None
-    openTypeVheaCaretSlopeRise: int | None = None
-    openTypeVheaCaretSlopeRun: int | None = None
-    openTypeVheaCaretOffset: int | None = None
+    openTypeVheaVertTypoAscender: Optional[int] = None
+    openTypeVheaVertTypoDescender: Optional[int] = None
+    openTypeVheaVertTypoLineGap: Optional[int] = None
+    openTypeVheaCaretSlopeRise: Optional[int] = None
+    openTypeVheaCaretSlopeRun: Optional[int] = None
+    openTypeVheaCaretOffset: Optional[int] = None
 
-    postscriptFontName: str | None = None
-    postscriptFullName: str | None = None
-    postscriptSlantAngle: float | None = None
-    postscriptUniqueID: int | None = None
-    postscriptUnderlineThickness: float | None = None
-    postscriptUnderlinePosition: float | None = None
-    postscriptIsFixedPitch: bool | None = None
-    postscriptBlueValues: list[float] | None = None
-    postscriptOtherBlues: list[float] | None = None
-    postscriptFamilyBlues: list[float] | None = None
-    postscriptFamilyOtherBlues: list[float] | None = None
-    postscriptStemSnapH: list[float] | None = None
-    postscriptStemSnapV: list[float] | None = None
-    postscriptBlueFuzz: float | None = None
-    postscriptBlueShift: float | None = None
-    postscriptBlueScale: float | None = None
-    postscriptForceBold: bool | None = None
-    postscriptDefaultWidthX: float | None = None
-    postscriptNominalWidthX: float | None = None
-    postscriptWeightName: str | None = None
-    postscriptDefaultCharacter: str | None = None
-    postscriptWindowsCharacterSet: str | None = None
+    postscriptFontName: Optional[str] = None
+    postscriptFullName: Optional[str] = None
+    postscriptSlantAngle: Optional[float] = None
+    postscriptUniqueID: Optional[int] = None
+    postscriptUnderlineThickness: Optional[float] = None
+    postscriptUnderlinePosition: Optional[float] = None
+    postscriptIsFixedPitch: Optional[bool] = None
+    postscriptBlueValues: Optional[List[float]] = None
+    postscriptOtherBlues: Optional[List[float]] = None
+    postscriptFamilyBlues: Optional[List[float]] = None
+    postscriptFamilyOtherBlues: Optional[List[float]] = None
+    postscriptStemSnapH: Optional[List[float]] = None
+    postscriptStemSnapV: Optional[List[float]] = None
+    postscriptBlueFuzz: Optional[float] = None
+    postscriptBlueShift: Optional[float] = None
+    postscriptBlueScale: Optional[float] = None
+    postscriptForceBold: Optional[bool] = None
+    postscriptDefaultWidthX: Optional[float] = None
+    postscriptNominalWidthX: Optional[float] = None
+    postscriptWeightName: Optional[str] = None
+    postscriptDefaultCharacter: Optional[str] = None
+    postscriptWindowsCharacterSet: Optional[str] = None
 
     # old stuff
-    macintoshFONDName: str | None = None
-    macintoshFONDFamilyID: int | None = None
-    year: int | None = None
+    macintoshFONDName: Optional[str] = None
+    macintoshFONDFamilyID: Optional[int] = None
+    year: Optional[int] = None
 
     @classmethod
     def read(cls, reader: UFOReader) -> Info:

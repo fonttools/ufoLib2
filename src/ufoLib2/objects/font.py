@@ -2,7 +2,19 @@ from __future__ import annotations
 
 import os
 import shutil
-from typing import Any, Iterable, Iterator, KeysView, Mapping, MutableMapping, cast
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    KeysView,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Sequence,
+    cast,
+)
 
 import attr
 import fs.base
@@ -17,13 +29,18 @@ from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
+from ufoLib2.objects.kerning import Kerning, KerningPair
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
+from ufoLib2.objects.lib import Lib
 from ufoLib2.objects.misc import (
     BoundingBox,
+    _convert_Lib,
     _deepcopy_unlazify_attrs,
+    _get_lib,
     _object_lib,
     _prune_object_libs,
+    _set_lib,
 )
 from ufoLib2.typing import HasIdentifier, PathLike, T
 
@@ -42,6 +59,10 @@ def _convert_ImageSet(value: ImageSet | MutableMapping[str, bytes]) -> ImageSet:
 
 def _convert_Features(value: Features | str) -> Features:
     return value if isinstance(value, Features) else Features(value)
+
+
+def _convert_Kerning(value: Mapping[KerningPair, float]) -> Kerning:
+    return value if isinstance(value, Kerning) else Kerning(value)
 
 
 @define(kw_only=True)
@@ -119,15 +140,15 @@ class Font:
     features: Features = field(factory=Features, converter=_convert_Features)
     """Features: The font Features object."""
 
-    groups: dict[str, list[str]] = field(factory=dict)
+    groups: Dict[str, List[str]] = field(factory=dict)
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
-    kerning: dict[tuple[str, str], float] = field(factory=dict)
+    kerning: Kerning = field(factory=Kerning, converter=_convert_Kerning)
     """Dict[Tuple[str, str], float]: A mapping of a tuple of first and second kerning
     pair to a kerning value."""
 
-    lib: dict[str, Any] = field(factory=dict)
-    """Dict[str, Any]: A mapping of keys to arbitrary values."""
+    _lib: Lib = field(factory=Lib, converter=_convert_Lib)
+    """Dict[str, PlistEncodable]: A mapping of keys to arbitrary plist values."""
 
     data: DataSet = field(factory=DataSet, converter=_convert_DataSet)
     """DataSet: A mapping of data file paths to arbitrary data."""
@@ -136,12 +157,14 @@ class Font:
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
     # init=False args, set by alternate open/read classmethod constructors
-    _path: PathLike | None = field(
+    _path: Optional[PathLike] = field(
         default=None, metadata=dict(copyable=False), eq=False, init=False
     )
-    _lazy: bool | None = field(default=None, init=False, eq=False)
-    _reader: UFOReader | None = field(default=None, init=False, eq=False)
-    _fileStructure: UFOFileStructure | None = field(default=None, init=False, eq=False)
+    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
+    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
+    _fileStructure: Optional[UFOFileStructure] = field(
+        default=None, init=False, eq=False
+    )
 
     @classmethod
     def open(cls, path: PathLike, lazy: bool = True, validate: bool = True) -> Font:
@@ -177,8 +200,8 @@ class Font:
             info=Info.read(reader),
             features=Features(reader.readFeatures()),
             groups=reader.readGroups(),
-            kerning=reader.readKerning(),
-            lib=reader.readLib(),
+            kerning=Kerning(reader.readKerning()),
+            lib=Lib(reader.readLib()),
         )
         self._lazy = lazy
         self._fileStructure = reader.fileStructure
@@ -307,7 +330,7 @@ class Font:
             Sets the font's glyph order. If ``value`` is None or an empty list, the
             glyph order key will be deleted from the lib if it exists.
         """
-        return list(self.lib.get("public.glyphOrder", []))
+        return list(cast(Sequence[str], self.lib.get("public.glyphOrder", [])))
 
     @glyphOrder.setter
     def glyphOrder(self, value: list[str] | None) -> None:
@@ -337,6 +360,8 @@ class Font:
         self.info.guidelines = []
         for guideline in value:
             self.appendGuideline(guideline)
+
+    lib = property(_get_lib, _set_lib)
 
     def objectLib(self, object: HasIdentifier) -> dict[str, Any]:
         """Return the lib for an object with an identifier, as stored in a font's lib.

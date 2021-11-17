@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from typing import AbstractSet, Any, Iterable, Iterator, Sized
+from typing import (
+    TYPE_CHECKING,
+    AbstractSet,
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    Optional,
+    Sized,
+)
 
 from attr import define, field
 from fontTools.ufoLib import UFOReader, UFOWriter
@@ -8,8 +17,15 @@ from fontTools.ufoLib import UFOReader, UFOWriter
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.errors import Error
 from ufoLib2.objects.layer import Layer
-from ufoLib2.objects.misc import _NOT_LOADED, Placeholder, _deepcopy_unlazify_attrs
+from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
 from ufoLib2.typing import T
+
+if TYPE_CHECKING:
+    from typing import Type
+
+    from cattr import GenConverter
+
+_LAYER_NOT_LOADED = Layer(name="___UFOLIB2_LAZY_LAYER___")
 
 
 def _must_have_at_least_one_item(self: Any, attribute: Any, value: Sized) -> None:
@@ -52,14 +68,14 @@ class LayerSet:
             del font.layers["myLayerName"]
     """
 
-    _layers: dict[str, Layer | Placeholder] = field(
+    _layers: Dict[str, Layer] = field(
         validator=_must_have_at_least_one_item,
     )
 
     defaultLayer: Layer
     """The Layer that is marked as the default, typically named ``public.default``."""
 
-    _reader: UFOReader | None = field(default=None, init=False, eq=False)
+    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
         if not any(layer is self.defaultLayer for layer in self._layers.values()):
@@ -82,7 +98,7 @@ class LayerSet:
             value: an iterable of :class:`.Layer` objects.
             defaultLayerName: the name of the default layer of the ones in ``value``.
         """
-        layers: dict[str, Layer | Placeholder] = {}
+        layers: dict[str, Layer] = {}
         defaultLayer = None
         for layer in value:
             if not isinstance(layer, Layer):
@@ -108,7 +124,7 @@ class LayerSet:
             lazy: If True, load glyphs, data files and images as they are accessed. If
                 False, load everything up front.
         """
-        layers: dict[str, Layer | Placeholder] = {}
+        layers: dict[str, Layer] = {}
         defaultLayer = None
 
         defaultLayerName = reader.getDefaultLayerName()
@@ -121,7 +137,7 @@ class LayerSet:
                     defaultLayer = layer
                 layers[layerName] = layer
             else:
-                layers[layerName] = _NOT_LOADED
+                layers[layerName] = _LAYER_NOT_LOADED
 
         assert defaultLayer is not None
 
@@ -164,13 +180,13 @@ class LayerSet:
 
     def __getitem__(self, name: str) -> Layer:
         layer_object = self._layers[name]
-        if isinstance(layer_object, Placeholder):
+        if layer_object is _LAYER_NOT_LOADED:
             return self.loadLayer(name)
         return layer_object
 
     def __iter__(self) -> Iterator[Layer]:
         for layer_name, layer_object in self._layers.items():
-            if isinstance(layer_object, Placeholder):
+            if layer_object is _LAYER_NOT_LOADED:
                 yield self.loadLayer(layer_name)
             else:
                 yield layer_object
@@ -300,7 +316,7 @@ class LayerSet:
         defaultLayer = self.defaultLayer
         for name, layer in layers.items():
             default = layer is defaultLayer
-            if isinstance(layer, Placeholder):
+            if layer is _LAYER_NOT_LOADED:
                 if saveAs:
                     layer = self.loadLayer(name, lazy=False)
                 else:
@@ -308,3 +324,18 @@ class LayerSet:
             glyphSet = writer.getGlyphSet(name, defaultLayer=default)
             layer.write(glyphSet, saveAs=saveAs)
         writer.writeLayerContents(self.layerOrder)
+
+    def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
+        return {
+            "defaultLayerName": self.defaultLayer.name,
+            "layers": [converter.unstructure(layer) for layer in self],
+        }
+
+    @staticmethod
+    def _structure(
+        data: dict[str, Any], cls: Type[LayerSet], converter: GenConverter
+    ) -> LayerSet:
+        return cls.from_iterable(
+            [converter.structure(layer, Layer) for layer in data["layers"]],
+            data["defaultLayerName"],
+        )

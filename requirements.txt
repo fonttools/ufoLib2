@@ -7,10 +7,14 @@
 appdirs==1.4.4
     # via fs
 attrs==21.2.0
+    # via
+    #   cattrs
+    #   ufoLib2 (setup.cfg)
+cattrs==1.8.0
     # via ufoLib2 (setup.cfg)
 fonttools[ufo]==4.28.1
     # via ufoLib2 (setup.cfg)
-fs==2.4.13
+fs==2.4.14
     # via fonttools
 pytz==2021.3
     # via fs

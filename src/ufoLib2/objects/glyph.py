@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Iterator, Mapping
+from typing import Any, Iterator, List, Mapping, Optional, cast
 
 from attr import define, field
 from fontTools.misc.transform import Transform
@@ -17,7 +17,16 @@ from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
-from ufoLib2.objects.misc import BoundingBox, _object_lib, getBounds, getControlBounds
+from ufoLib2.objects.lib import Lib
+from ufoLib2.objects.misc import (
+    BoundingBox,
+    _convert_Lib,
+    _get_lib,
+    _object_lib,
+    _set_lib,
+    getBounds,
+    getControlBounds,
+)
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 from ufoLib2.typing import GlyphSet, HasIdentifier
 
@@ -52,7 +61,7 @@ class Glyph:
         :attr:`.Glyph.components` and :attr:`.Glyph.anchors` attributes.
     """
 
-    _name: str | None = None
+    _name: Optional[str] = None
 
     width: float = 0
     """The width of the glyph."""
@@ -60,26 +69,26 @@ class Glyph:
     height: float = 0
     """The height of the glyph."""
 
-    unicodes: list[int] = field(factory=list)
+    unicodes: List[int] = field(factory=list)
     """The Unicode code points assigned to the glyph. Note that a glyph can have
     multiple."""
 
     _image: Image = field(factory=Image)
 
-    lib: dict[str, Any] = field(factory=dict)
+    _lib: Lib = field(factory=Lib, converter=_convert_Lib)
     """The glyph's mapping of string keys to arbitrary data."""
 
-    note: str | None = None
+    note: Optional[str] = None
     """A free form text note about the glyph."""
 
-    _anchors: list[Anchor] = field(factory=list)
-    components: list[Component] = field(factory=list)
+    _anchors: List[Anchor] = field(factory=list)
+    components: List[Component] = field(factory=list)
     """The list of components the glyph contains."""
 
-    contours: list[Contour] = field(factory=list)
+    contours: List[Contour] = field(factory=list)
     """The list of contours the glyph contains."""
 
-    _guidelines: list[Guideline] = field(factory=list)
+    _guidelines: List[Guideline] = field(factory=list)
 
     def __len__(self) -> int:
         return len(self.contours)
@@ -100,6 +109,8 @@ class Glyph:
             f"'{self._name}' " if self._name is not None else "",
             hex(id(self)),
         )
+
+    lib = property(_get_lib, _set_lib)
 
     @property
     def anchors(self) -> list[Anchor]:
@@ -376,7 +387,7 @@ class Glyph:
             Sets the mark color. If value is None, deletes the key from the lib if
             present.
         """
-        return self.lib.get("public.markColor")
+        return cast(Optional[str], self.lib.get("public.markColor"))
 
     @markColor.setter
     def markColor(self, value: str | None) -> None:
@@ -398,7 +409,7 @@ class Glyph:
             Sets the vertical origin. If value is None, deletes the key from the lib if
             present.
         """
-        return self.lib.get("public.verticalOrigin")
+        return cast(Optional[float], self.lib.get("public.verticalOrigin"))
 
     @verticalOrigin.setter
     def verticalOrigin(self, value: float | None) -> None:
