@@ -17,16 +17,8 @@ from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
-from ufoLib2.objects.lib import Lib
-from ufoLib2.objects.misc import (
-    BoundingBox,
-    _convert_Lib,
-    _get_lib,
-    _object_lib,
-    _set_lib,
-    getBounds,
-    getControlBounds,
-)
+from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
+from ufoLib2.objects.misc import BoundingBox, _object_lib, getBounds, getControlBounds
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 from ufoLib2.typing import GlyphSet, HasIdentifier
 

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from base64 import b85decode, b85encode
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Mapping, Tuple, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Mapping, Union, cast
 
 import attr
 from attr import field, frozen
 
 from ufoLib2.constants import DATA_LIB_KEY
+from ufoLib2.objects.misc import BYTES_ENCODINGS, DEFAULT_ENCODING
 
 if TYPE_CHECKING:
     from typing import Type
@@ -26,17 +26,17 @@ if TYPE_CHECKING:
 # ]
 
 
-DEFAULT_ENCODING = "base85"
+def _convert_Lib(value: Mapping[str, Any]) -> Lib:
+    return value if isinstance(value, Lib) else Lib(value)
 
-BYTES_ENCODINGS: dict[
-    str,
-    Tuple[
-        Callable[[bytes], str],  # bytes -> str encoding function
-        Callable[[str], bytes],  # str -> bytes decoding function
-    ],
-] = {
-    "base85": (lambda data: b85encode(data).decode("utf-8"), b85decode),
-}
+
+# getter/setter properties used by Font, Layer, Glyph
+def _get_lib(self: Any) -> Lib:
+    return cast(Lib, self._lib)
+
+
+def _set_lib(self: Any, value: Mapping[str, Any]) -> None:
+    self._lib = _convert_Lib(value)
 
 
 def _check_encoding(_instance, _attribute, value):  # type: ignore
@@ -110,7 +110,10 @@ def _deserialize_data_inplace(key: Union[int, str], value: Any, container: Any) 
 
 class Lib(Dict[str, Any]):
     def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
-        del converter  # unused
+        # avoid encoding if converter supports bytes natively
+        if isinstance(converter.unstructure(b"\0"), bytes):
+            return dict(self)
+
         data: dict[str, Any] = _serialize_data(self)
         return data
 

@@ -7,14 +7,11 @@ from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
-from ufoLib2.objects.lib import Lib
+from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
 from ufoLib2.objects.misc import (
     BoundingBox,
-    _convert_Lib,
     _deepcopy_unlazify_attrs,
-    _get_lib,
     _prune_object_libs,
-    _set_lib,
     unionBounds,
 )
 from ufoLib2.typing import T

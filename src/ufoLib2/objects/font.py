@@ -32,15 +32,12 @@ from ufoLib2.objects.info import Info
 from ufoLib2.objects.kerning import Kerning, KerningPair
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
-from ufoLib2.objects.lib import Lib
+from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
 from ufoLib2.objects.misc import (
     BoundingBox,
-    _convert_Lib,
     _deepcopy_unlazify_attrs,
-    _get_lib,
     _object_lib,
     _prune_object_libs,
-    _set_lib,
 )
 from ufoLib2.typing import HasIdentifier, PathLike, T
 
