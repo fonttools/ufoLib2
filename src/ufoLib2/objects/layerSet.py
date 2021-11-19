@@ -326,10 +326,13 @@ class LayerSet:
         writer.writeLayerContents(self.layerOrder)
 
     def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
-        return {
-            "defaultLayerName": self.defaultLayer.name,
-            "layers": [converter.unstructure(layer) for layer in self],
-        }
+        d: dict[str, Any] = {"layers": [converter.unstructure(layer) for layer in self]}
+        if (
+            not converter.omit_if_default
+            or self.defaultLayer.name != DEFAULT_LAYER_NAME
+        ):
+            d["defaultLayerName"] = self.defaultLayer.name
+        return d
 
     @staticmethod
     def _structure(
@@ -337,5 +340,5 @@ class LayerSet:
     ) -> LayerSet:
         return cls.from_iterable(
             [converter.structure(layer, Layer) for layer in data["layers"]],
-            data["defaultLayerName"],
+            data.get("defaultLayerName", DEFAULT_LAYER_NAME),
         )
