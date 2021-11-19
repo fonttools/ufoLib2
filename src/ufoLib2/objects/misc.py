@@ -3,20 +3,17 @@ from __future__ import annotations
 import collections.abc
 import uuid
 from abc import abstractmethod
-from base64 import b85decode, b85encode
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Dict,
     Iterator,
     NamedTuple,
     Optional,
     Sequence,
     Set,
-    Tuple,
     Type,
     TypeVar,
     cast,
@@ -132,19 +129,6 @@ _DATA_NOT_LOADED = DataPlaceholder(b"__UFOLIB2_DATA_NOT_LOADED__")
 
 # Create a generic variable for mypy that can be 'DataStore' or any subclass.
 Tds = TypeVar("Tds", bound="DataStore")
-
-
-DEFAULT_ENCODING = "base85"
-
-BYTES_ENCODINGS: dict[
-    str,
-    Tuple[
-        Callable[[bytes], str],  # bytes -> str encoding function
-        Callable[[str], bytes],  # str -> bytes decoding function
-    ],
-] = {
-    "base85": (lambda data: b85encode(data).decode("utf-8"), b85decode),
-}
 
 
 # For Python 3.7 compatibility.
@@ -304,19 +288,18 @@ class DataStore(DataStoreMapping):
         """Returns a list of filenames in the data store."""
         return list(self._data.keys())
 
-    def _unstructure(self, converter: GenConverter) -> dict[str, dict[str, str]]:
+    def _unstructure(self, converter: GenConverter) -> dict[str, str]:
         # avoid encoding if converter supports bytes natively
-        if isinstance(converter.unstructure(b"\0"), bytes):
+        test = converter.unstructure(b"\0")
+        if isinstance(test, bytes):
             # mypy complains that 'Argument 1 to "dict" has incompatible type
             # "DataStore"; expected "SupportsKeysAndGetItem[str, Dict[str, str]]"'.
             # We _are_ a subclass of Mapping so we do support keys and getitem...
             return dict(self)  # type: ignore
+        elif not isinstance(test, str):
+            raise NotImplementedError(type(test))
 
-        encode, _ = BYTES_ENCODINGS[DEFAULT_ENCODING]
-        data: dict[str, dict[str, str]] = {
-            k: {"data": encode(v), "encoding": DEFAULT_ENCODING}
-            for k, v in self.items()
-        }
+        data: dict[str, str] = {k: converter.unstructure(v) for k, v in self.items()}
         return data
 
     @staticmethod
@@ -325,17 +308,15 @@ class DataStore(DataStoreMapping):
         cls: Type[DataStore],
         converter: GenConverter,
     ) -> DataStore:
-        del converter  # unused
         self = cls()
         for k, v in data.items():
-            if isinstance(v, dict):
-                _, decode = BYTES_ENCODINGS[v["encoding"]]
-                self[k] = decode(v["data"])
+            if isinstance(v, str):
+                self[k] = converter.structure(v, bytes)
             elif isinstance(v, bytes):
                 self[k] = v
             else:
                 raise TypeError(
-                    f"Expected dict[str, str] or bytes, found: {type(v).__name__!r}"
+                    f"Expected (base64) str or bytes, found: {type(v).__name__!r}"
                 )
         return self
 

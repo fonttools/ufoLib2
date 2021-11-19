@@ -37,7 +37,7 @@ def is_ufoLib2_class_with_custom_structure(cls: Type[Any]) -> bool:
     return is_ufoLib2_class(cls) and hasattr(cls, "_structure")
 
 
-def register_hooks(conv: GenConverter) -> None:
+def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
     def attrs_hook_factory(
         cls: Type[Any], gen_fn: Callable[..., Callable[[Any], Any]], structuring: bool
     ) -> Callable[[Any], Any]:
@@ -98,6 +98,18 @@ def register_hooks(conv: GenConverter) -> None:
         custom_structure_hook_factory,
     )
 
+    if not allow_bytes:
+        from base64 import b64decode, b64encode
+
+        def unstructure_bytes(v: bytes) -> str:
+            return (b64encode(v) if v else b"").decode("utf8")
+
+        def structure_bytes(v: str, _: Any) -> bytes:
+            return b64decode(v)
+
+        conv.register_unstructure_hook(bytes, unstructure_bytes)
+        conv.register_structure_hook(bytes, structure_bytes)
+
 
 json_converter = cattr.preconf.orjson.make_converter(
     omit_if_default=True,
@@ -106,4 +118,4 @@ json_converter = cattr.preconf.orjson.make_converter(
     # forbid_extra_keys=True,
     prefer_attrib_converters=False,
 )
-register_hooks(json_converter)
+register_hooks(json_converter, allow_bytes=False)
