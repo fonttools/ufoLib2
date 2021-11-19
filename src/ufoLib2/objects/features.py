@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Type
+
 from attr import define
+
+if TYPE_CHECKING:
+    from cattr import GenConverter
 
 
 @define
@@ -18,3 +23,12 @@ class Features:
 
     def __str__(self) -> str:
         return self.text
+
+    def _unstructure(self, converter: GenConverter) -> str:
+        del converter  # unused
+        return self.text
+
+    @staticmethod
+    def _structure(data: str, cls: Type[Features], converter: GenConverter) -> Features:
+        del converter  # unused
+        return cls(data)
