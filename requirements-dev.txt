@@ -8,11 +8,11 @@ attrs==21.2.0
     # via
     #   -c requirements.txt
     #   pytest
-black==21.10b0
+black==21.11b1
     # via -r requirements-dev.in
 click==8.0.3
     # via black
-coverage==6.1.1
+coverage==6.1.2
     # via -r requirements-dev.in
 flake8==4.0.1
     # via -r requirements-dev.in
@@ -28,7 +28,7 @@ mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
-packaging==21.2
+packaging==21.3
     # via pytest
 pathspec==0.9.0
     # via black
@@ -42,11 +42,11 @@ pycodestyle==2.8.0
     # via flake8
 pyflakes==2.4.0
     # via flake8
-pyparsing==2.4.7
+pyparsing==3.0.6
     # via packaging
 pytest==6.2.5
     # via -r requirements-dev.in
-regex==2021.11.2
+regex==2021.11.10
     # via black
 toml==0.10.2
     # via
@@ -54,7 +54,7 @@ toml==0.10.2
     #   pytest
 tomli==1.2.2
     # via black
-typing-extensions==3.10.0.2
+typing-extensions==4.0.0
     # via
     #   black
     #   mypy
