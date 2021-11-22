@@ -272,7 +272,7 @@ class Info:
     postscriptNominalWidthX: Optional[float] = None
     postscriptWeightName: Optional[str] = None
     postscriptDefaultCharacter: Optional[str] = None
-    postscriptWindowsCharacterSet: Optional[str] = None
+    postscriptWindowsCharacterSet: Optional[int] = None
 
     # old stuff
     macintoshFONDName: Optional[str] = None
