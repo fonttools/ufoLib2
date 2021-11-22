@@ -70,8 +70,13 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
                 kwargs[a.name] = override(omit=True)
             elif a.name[0] == "_":
                 kwargs[a.name] = override(
-                    omit_if_default=conv.omit_if_default, rename=a.name[1:]
+                    omit_if_default=a.metadata.get(
+                        "omit_if_default", conv.omit_if_default
+                    ),
+                    rename=a.name[1:],
                 )
+            elif "omit_if_default" in a.metadata:
+                kwargs[a.name] = override(omit_if_default=a.metadata["omit_if_default"])
             elif a.type in conv.type_overrides:
                 kwargs[a.name] = conv.type_overrides[a.type]
 

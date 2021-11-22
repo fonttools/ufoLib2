@@ -93,7 +93,7 @@ class Layer:
             del layer["myGlyphName"]
     """
 
-    _name: str = DEFAULT_LAYER_NAME
+    _name: str = field(default=DEFAULT_LAYER_NAME, metadata={"omit_if_default": False})
     _glyphs: Dict[str, Glyph] = field(factory=dict, converter=_convert_glyphs)
     color: Optional[str] = None
     """The color assigned to the layer."""

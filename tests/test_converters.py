@@ -212,7 +212,7 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
                 "postscriptBlueScale": 0.25,
             },
         ),
-        (Layer(), {}),
+        (Layer(), {"name": "public.default"}),
         (
             Layer(
                 name="foreground",
@@ -227,7 +227,7 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
                 "lib": {"foobar": 0.1},
             },
         ),
-        (LayerSet.default(), {"layers": [{}]}),
+        (LayerSet.default(), {"layers": [{"name": "public.default"}]}),
         (
             LayerSet.from_iterable(
                 [Layer("foreground"), Layer("background")],
@@ -255,7 +255,11 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
                 images={"foobarbaz": b"\0"},
             ),
             {
-                "layers": {"layers": [{"glyphs": {"a": {"name": "a"}}}]},
+                "layers": {
+                    "layers": [
+                        {"name": "public.default", "glyphs": {"a": {"name": "a"}}}
+                    ]
+                },
                 "info": {"familyName": "Test"},
                 "features": "languagesystem DFLT dflt;",
                 "groups": {"LOWERCASE": ["a"]},
