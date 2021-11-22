@@ -10,7 +10,7 @@ attrs==21.2.0
     # via ufoLib2 (setup.cfg)
 fonttools[ufo]==4.28.2
     # via ufoLib2 (setup.cfg)
-fs==2.4.13
+fs==2.4.14
     # via fonttools
 pytz==2021.3
     # via fs
