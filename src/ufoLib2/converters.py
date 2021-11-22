@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from functools import partial
 from typing import Any, Callable, Tuple, Type, cast
 
@@ -14,10 +15,16 @@ from cattr.gen import (
 )
 from fontTools.misc.transform import Transform
 
+is_py37 = sys.version_info[:2] == (3, 7)
 
-def get_origin(cls: Type[Any]) -> Any:
-    # returns base class of generic types, or itself if not generic
-    return getattr(cls, "__origin__", cls)
+if is_py37:
+
+    def get_origin(cl: Type[Any]) -> Any:
+        return getattr(cl, "__origin__", None)
+
+
+else:
+    from typing import get_origin  # type: ignore
 
 
 def is_ufoLib2_class(cls: Type[Any]) -> bool:
@@ -42,6 +49,8 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         cls: Type[Any], gen_fn: Callable[..., Callable[[Any], Any]], structuring: bool
     ) -> Callable[[Any], Any]:
         base = get_origin(cls)
+        if base is None:
+            base = cls
         attribs = fields(base)
         if any(isinstance(a.type, str) for a in attribs):
             # PEP 563 annotations need to be resolved.
