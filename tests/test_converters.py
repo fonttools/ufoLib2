@@ -255,11 +255,7 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
                 images={"foobarbaz": b"\0"},
             ),
             {
-                "layers": {
-                    "layers": [
-                        {"name": "public.default", "glyphs": {"a": {"name": "a"}}}
-                    ]
-                },
+                "layers": [{"name": "public.default", "glyphs": {"a": {"name": "a"}}}],
                 "info": {"familyName": "Test"},
                 "features": "languagesystem DFLT dflt;",
                 "groups": {"LOWERCASE": ["a"]},

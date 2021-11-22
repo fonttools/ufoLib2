@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Iterable,
@@ -13,6 +14,7 @@ from typing import (
     MutableMapping,
     Optional,
     Sequence,
+    Type,
     cast,
 )
 
@@ -40,6 +42,9 @@ from ufoLib2.objects.misc import (
     _prune_object_libs,
 )
 from ufoLib2.typing import HasIdentifier, PathLike, T
+
+if TYPE_CHECKING:
+    from cattr import GenConverter
 
 
 def _convert_Info(value: Info | Mapping[str, Any]) -> Info:
@@ -587,3 +592,54 @@ class Font:
         # the FS object does not implement a filesystem path.
         if not isinstance(path, fs.base.FS):
             self._path = path
+
+    def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
+        _Factory = cast(Type[Any], attr.Factory)
+
+        data: dict[str, Any] = {
+            (a.name[1:] if a.name[0] == "_" else a.name): converter.unstructure(
+                getattr(self, a.name)
+            )
+            for a in attr.fields(type(self))
+            if a.init
+            and not (
+                converter.omit_if_default
+                and getattr(self, a.name)
+                == (
+                    a.default.factory()
+                    if isinstance(a.default, _Factory)
+                    else a.default
+                )
+            )
+        }
+        # move layers data up to remove the ugly nested d["layers"]["layers"]
+        if "layers" in data:
+            if "defaultLayerName" in data["layers"]:
+                data["defaultLayerName"] = data["layers"]["defaultLayerName"]
+            data["layers"] = data["layers"]["layers"]
+        return data
+
+    @staticmethod
+    def _structure(
+        data: dict[str, Any], cls: Type[Font], converter: GenConverter
+    ) -> Font:
+        attr.resolve_types(cls)
+
+        layers_keys = {"layers", "defaultLayerName"}
+        layers_data = {k: data[k] for k in layers_keys if k in data}
+
+        kwargs: dict[str, Any] = {}
+        if layers_data:
+            kwargs["layers"] = converter.structure(layers_data, LayerSet)
+
+        for a in attr.fields(cls):
+            if not a.init:
+                continue
+            key = a.name[1:] if a.name[0] == "_" else a.name
+            if key in layers_keys:
+                continue
+            if key in data:
+                assert a.type is not None
+                kwargs[key] = converter.structure(data[key], a.type)
+
+        return cls(**kwargs)
