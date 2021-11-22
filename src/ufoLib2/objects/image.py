@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, ClassVar, Iterator, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Iterator, Optional, Tuple
 
 from attr import define, field
 from fontTools.misc.transform import Identity, Transform
@@ -46,7 +46,7 @@ class Image(ImageMapping):
     # the fontTools.ufoLib.validators.imageValidator requires that image is a
     # subclass of Mapping...
 
-    _transformation_keys_: ClassVar[tuple[str, str, str, str, str, str]] = (
+    _transformation_keys_: ClassVar[Tuple[str, str, str, str, str, str]] = (
         "xScale",
         "xyScale",
         "yxScale",
@@ -54,7 +54,7 @@ class Image(ImageMapping):
         "xOffset",
         "yOffset",
     )
-    _valid_keys_: ClassVar[tuple[str, str, str, str, str, str, str, str]] = (
+    _valid_keys_: ClassVar[Tuple[str, str, str, str, str, str, str, str]] = (
         "fileName",
         *_transformation_keys_,
         "color",
