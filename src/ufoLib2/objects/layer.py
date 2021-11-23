@@ -1,6 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterator, KeysView, Optional, Sequence, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterator,
+    KeysView,
+    Optional,
+    Sequence,
+    Type,
+    overload,
+)
 
 from attr import define, field
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -15,6 +25,9 @@ from ufoLib2.objects.misc import (
     unionBounds,
 )
 from ufoLib2.typing import T
+
+if TYPE_CHECKING:
+    from cattr import GenConverter
 
 _GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
 
@@ -342,6 +355,41 @@ class Layer:
         if saveAs:
             # all glyphs are loaded by now, no need to keep ref to glyphSet
             self._glyphSet = None
+
+    def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
+        # unstructure glyphs as a list sorted by glyph name, to avoid repeating
+        # the glyph.name in the dict key. We sort because the glyph order is
+        # logically stored elsewhere (in lib['public.glyphOrder']), and the
+        # internal insertion order of the Layers._glyphs dict is irrelevant.
+        glyphs = [
+            converter.unstructure(self[glyph_name])
+            for glyph_name in sorted(self._glyphs)
+        ]
+        d: dict[str, Any] = {
+            # never omit name even if == 'public.default' as that acts as
+            # the layer's "key" in the layerSet.
+            "name": self._name,
+        }
+        default: Any
+        for key, value, default in [
+            ("glyphs", glyphs, []),
+            ("color", self.color, None),
+            ("lib", self._lib, {}),
+        ]:
+            if not converter.omit_if_default or value != default:
+                d[key] = value
+        return d
+
+    @staticmethod
+    def _structure(
+        data: dict[str, Any], cls: Type[Layer], converter: GenConverter
+    ) -> Layer:
+        return cls(
+            name=data["name"],
+            glyphs=[converter.structure(g, Glyph) for g in data.get("glyphs", ())],
+            color=data.get("color"),
+            lib=converter.structure(data.get("lib", {}), Lib),
+        )
 
 
 def _fetch_glyph_identifiers(glyph: Glyph) -> set[str]:

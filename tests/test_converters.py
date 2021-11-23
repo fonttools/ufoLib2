@@ -222,7 +222,7 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
             ),
             {
                 "name": "foreground",
-                "glyphs": {"a": {"name": "a"}, "b": {"name": "b"}},
+                "glyphs": [{"name": "a"}, {"name": "b"}],
                 "color": "1,0,1,1",
                 "lib": {"foobar": 0.1},
             },
@@ -245,7 +245,7 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
         (Font(), {}),
         (
             Font(
-                layers=LayerSet.from_iterable([Layer(glyphs={"a": Glyph("a")})]),
+                layers=LayerSet.from_iterable([Layer(glyphs=[Glyph("a")])]),
                 info=Info(familyName="Test"),
                 features="languagesystem DFLT dflt;",
                 groups={"LOWERCASE": ["a"]},
@@ -255,7 +255,7 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
                 images={"foobarbaz": b"\0"},
             ),
             {
-                "layers": [{"name": "public.default", "glyphs": {"a": {"name": "a"}}}],
+                "layers": [{"name": "public.default", "glyphs": [{"name": "a"}]}],
                 "info": {"familyName": "Test"},
                 "features": "languagesystem DFLT dflt;",
                 "groups": {"LOWERCASE": ["a"]},
