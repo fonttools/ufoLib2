@@ -284,7 +284,7 @@ def test_unstructure_structure(obj: Any, expected: dict[str, Any]) -> None:
     assert json_converter.structure(expected, type(obj)) == obj
 
 
-def test_unstructure_lazy_font(ufo_UbuTestData):
+def test_unstructure_lazy_font(ufo_UbuTestData: Font) -> None:
     font1 = ufo_UbuTestData
     assert font1._lazy
 
