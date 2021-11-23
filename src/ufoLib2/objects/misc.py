@@ -300,6 +300,9 @@ class DataStore(DataStoreMapping):
             raise NotImplementedError(type(test))
 
         data: dict[str, str] = {k: converter.unstructure(v) for k, v in self.items()}
+        # since we unpacked all data by now, we're no longer lazy
+        if self._lazy:
+            self._lazy = False
         return data
 
     @staticmethod

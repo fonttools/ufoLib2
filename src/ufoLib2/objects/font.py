@@ -596,6 +596,9 @@ class Font:
     def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
         _Factory = cast(Type[Any], attr.Factory)
 
+        if self._lazy:
+            self.unlazify()
+
         data: dict[str, Any] = {
             (a.name[1:] if a.name[0] == "_" else a.name): converter.unstructure(
                 getattr(self, a.name)
