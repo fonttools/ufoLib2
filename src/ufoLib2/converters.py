@@ -52,12 +52,11 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         if base is None:
             base = cls
         attribs = fields(base)
-        if any(isinstance(a.type, str) for a in attribs):
-            # PEP 563 annotations need to be resolved.
-            # As of cattrs 1.8.0, make_dict_*_fn functions don't call resolve_types
-            # so we need to do it ourselves:
-            # https://github.com/python-attrs/cattrs/issues/169
-            resolve_types(base)
+        # PEP 563 annotations need to be resolved.
+        # As of cattrs 1.8.0, make_dict_*_fn functions don't call resolve_types
+        # so we need to do it ourselves:
+        # https://github.com/python-attrs/cattrs/issues/169
+        resolve_types(base)
 
         kwargs: dict[str, bool | AttributeOverride] = {}
         if structuring:
