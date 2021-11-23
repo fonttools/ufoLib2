@@ -133,6 +133,7 @@ class Font:
     layers: LayerSet = field(
         factory=LayerSet.default,
         validator=attr.validators.instance_of(LayerSet),
+        metadata={"omit_if_default": False},
     )
     """LayerSet: A mapping of layer names to Layer objects."""
 
@@ -606,7 +607,7 @@ class Font:
             for a in attr.fields(type(self))
             if a.init
             and not (
-                converter.omit_if_default
+                a.metadata.get("omit_if_default", converter.omit_if_default)
                 and getattr(self, a.name)
                 == (
                     a.default.factory()

@@ -242,7 +242,19 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
         (DataSet({"foo": b"bar"}), {"foo": "YmFy"}),
         (ImageSet(), {}),
         (ImageSet({"foo": b"bar"}), {"foo": "YmFy"}),
-        (Font(), {}),
+        (Font(), {"layers": [{"name": "public.default"}]}),
+        (
+            Font(
+                layers=LayerSet.from_iterable(
+                    [Layer(name="foreground"), Layer(name="background")],
+                    defaultLayerName="foreground",
+                )
+            ),
+            {
+                "layers": [{"name": "foreground"}, {"name": "background"}],
+                "defaultLayerName": "foreground",
+            },
+        ),
         (
             Font(
                 layers=LayerSet.from_iterable([Layer(glyphs=[Glyph("a")])]),
