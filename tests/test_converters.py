@@ -282,3 +282,14 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
 def test_unstructure_structure(obj: Any, expected: dict[str, Any]) -> None:
     assert json_converter.unstructure(obj) == expected
     assert json_converter.structure(expected, type(obj)) == obj
+
+
+def test_unstructure_lazy_font(ufo_UbuTestData):
+    font1 = ufo_UbuTestData
+    assert font1._lazy
+
+    font_data = json_converter.unstructure(font1)
+    assert not font1._lazy
+
+    font2 = json_converter.structure(font_data, Font)
+    assert font2 == font1
