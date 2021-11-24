@@ -4,7 +4,6 @@ import sys
 from functools import partial
 from typing import Any, Callable, Tuple, Type, cast
 
-import cattr.preconf.orjson
 from attr import fields, has, resolve_types
 from cattr import GenConverter
 from cattr.gen import (
@@ -25,6 +24,12 @@ if is_py37:
 
 else:
     from typing import get_origin  # type: ignore
+
+
+__all__ = [
+    "default_converter",
+    "register_hooks",
+]
 
 
 def is_ufoLib2_class(cls: Type[Any]) -> bool:
@@ -124,11 +129,11 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         conv.register_structure_hook(bytes, structure_bytes)
 
 
-json_converter = cattr.preconf.orjson.make_converter(
+default_converter = GenConverter(
     omit_if_default=True,
     # 'forbid_extra_keys' conflicts with override(rename=...).
     # Re-enable once https://github.com/python-attrs/cattrs/issues/190 gets fixed
     # forbid_extra_keys=True,
     prefer_attrib_converters=False,
 )
-register_hooks(json_converter, allow_bytes=False)
+register_hooks(default_converter, allow_bytes=False)
