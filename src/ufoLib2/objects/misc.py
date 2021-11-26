@@ -331,6 +331,9 @@ else:
     AttrDictMixinMapping = Mapping
 
 
+_T = TypeVar("_T", bound="AttrDictMixin")
+
+
 class AttrDictMixin(AttrDictMixinMapping):
     """Read attribute values using mapping interface.
 
@@ -373,6 +376,25 @@ class AttrDictMixin(AttrDictMixinMapping):
 
     def __len__(self) -> int:
         return sum(1 for _ in self)
+
+    @classmethod
+    def coerce_from_dict(cls: Type[_T], value: _T | Mapping[str, Any]) -> _T:
+        if isinstance(value, cls):
+            return value
+        elif isinstance(value, Mapping):
+            attr_map = cls._key_to_attr_map()
+            return cls(**{attr_map[k]: v for k, v in value.items()})  # type: ignore
+        raise TypeError(
+            f"Expected {cls.__name__} or mapping, found: {type(value).__name__}"
+        )
+
+    @classmethod
+    def coerce_from_optional_dict(
+        cls: Type[_T], value: _T | Mapping[str, Any] | None
+    ) -> _T | None:
+        if value is None:
+            return None
+        return cls.coerce_from_dict(value)
 
 
 def _convert_transform(t: Transform | Sequence[float]) -> Transform:
