@@ -5,6 +5,7 @@ import uuid
 from abc import abstractmethod
 from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
+from functools import lru_cache
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -333,22 +334,42 @@ else:
 class AttrDictMixin(AttrDictMixinMapping):
     """Read attribute values using mapping interface.
 
-    For use with Anchors and Guidelines classes, where client code
+    For use with Anchors, Guidelines and WoffMetadata classes, where client code
     expects them to behave as dict.
     """
 
     # XXX: Use generics?
 
-    def __getitem__(self, key: str) -> Any:
-        try:
-            return getattr(self, key)
-        except AttributeError:
-            raise KeyError(key)
+    @classmethod
+    @lru_cache(None)
+    def _key_to_attr_map(cls, reverse: bool = False) -> dict[str, str]:
+        result = {}
+        for a in attr.fields(cls):
+            attr_name = a.name
+            key = attr_name
+            if "rename_attr" in a.metadata:
+                key = a.metadata["rename_attr"]
+            if reverse:
+                result[attr_name] = key
+            else:
+                result[key] = attr_name
+        return result
 
-    def __iter__(self) -> Iterator[Any]:
-        for key in attr.fields_dict(self.__class__):
-            if getattr(self, key) is not None:
-                yield key
+    def __getitem__(self, key: str) -> Any:
+        attr_name = self._key_to_attr_map()[key]
+        try:
+            value = getattr(self, attr_name)
+        except AttributeError as e:
+            raise KeyError(key) from e
+        if value is None:
+            raise KeyError(key)
+        return value
+
+    def __iter__(self) -> Iterator[str]:
+        key_map = self._key_to_attr_map(reverse=True)
+        for attr_name in attr.fields_dict(self.__class__):
+            if getattr(self, attr_name) is not None:
+                yield key_map[attr_name]
 
     def __len__(self) -> int:
         return sum(1 for _ in self)
