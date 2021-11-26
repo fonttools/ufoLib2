@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import Any, List, Optional, Sequence, TypeVar
+from functools import partial
+from typing import Any, Callable, List, Mapping, Optional, Sequence, TypeVar
 
 import attr
 from attr import define, field
@@ -10,7 +11,43 @@ from fontTools.ufoLib import UFOReader
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.misc import AttrDictMixin
 
-__all__ = ("Info", "GaspRangeRecord", "NameRecord", "WidthClass")
+from .woff import (
+    WoffMetadataCopyright,
+    WoffMetadataCredit,
+    WoffMetadataCredits,
+    WoffMetadataDescription,
+    WoffMetadataExtension,
+    WoffMetadataExtensionItem,
+    WoffMetadataExtensionName,
+    WoffMetadataExtensionValue,
+    WoffMetadataLicense,
+    WoffMetadataLicensee,
+    WoffMetadataText,
+    WoffMetadataTrademark,
+    WoffMetadataUniqueID,
+    WoffMetadataVendor,
+)
+
+__all__ = (
+    "Info",
+    "GaspRangeRecord",
+    "NameRecord",
+    "WidthClass",
+    "WoffMetadataCopyright",
+    "WoffMetadataCredit",
+    "WoffMetadataCredits",
+    "WoffMetadataDescription",
+    "WoffMetadataExtension",
+    "WoffMetadataExtensionItem",
+    "WoffMetadataExtensionName",
+    "WoffMetadataExtensionValue",
+    "WoffMetadataLicense",
+    "WoffMetadataLicensee",
+    "WoffMetadataText",
+    "WoffMetadataTrademark",
+    "WoffMetadataUniqueID",
+    "WoffMetadataVendor",
+)
 
 
 def _positive(instance: Any, attribute: Any, value: int) -> None:
@@ -66,43 +103,71 @@ class WidthClass(IntEnum):
     ULTRA_EXPANDED = 9
 
 
-Tc = TypeVar("Tc", Guideline, GaspRangeRecord, NameRecord)
+Tc = TypeVar("Tc", bound=AttrDictMixin)
 
 
-def _convert_optional_list(
-    lst: Sequence[Any] | None, klass: type[Tc]
+def _convert_optional_list_of_dicts(
+    cls: type[Tc], lst: Sequence[Tc | Mapping[str, Any]] | None
 ) -> list[Tc] | None:
     if lst is None:
         return None
-    result = []
-    for d in lst:
-        if isinstance(d, klass):
-            result.append(d)
-        else:
-            result.append(klass(**d))
-    return result
+    return [cls.coerce_from_dict(d) for d in lst]
 
 
 def _convert_guidelines(
-    values: Sequence[Guideline | Any] | None,
+    values: Sequence[Guideline | Mapping[str, Any]] | None,
 ) -> list[Guideline] | None:
-    return _convert_optional_list(values, Guideline)
+    return _convert_optional_list_of_dicts(Guideline, values)
 
 
 def _convert_gasp_range_records(
-    values: Sequence[GaspRangeRecord | Any] | None,
+    values: Sequence[GaspRangeRecord | Mapping[str, Any]] | None,
 ) -> list[GaspRangeRecord] | None:
-    return _convert_optional_list(values, GaspRangeRecord)
+    return _convert_optional_list_of_dicts(GaspRangeRecord, values)
 
 
 def _convert_name_records(
-    values: Sequence[NameRecord | Any] | None,
+    values: Sequence[NameRecord | Mapping[str, Any]] | None,
 ) -> list[NameRecord] | None:
-    return _convert_optional_list(values, NameRecord)
+    return _convert_optional_list_of_dicts(NameRecord, values)
 
 
 def _convert_WidthClass(value: int | None) -> WidthClass | None:
     return None if value is None else WidthClass(value)
+
+
+def _convert_WoffMetadataExtensions(
+    values: Sequence[WoffMetadataExtension | Mapping[str, Any]] | None
+) -> list[WoffMetadataExtension] | None:
+    return _convert_optional_list_of_dicts(WoffMetadataExtension, values)
+
+
+def _converter_setter_property(
+    cls: type[Any], converter: Callable[[Any], Any], name: str | None = None
+) -> Any:
+    if name is None:
+        class_name = cls.__name__
+        # lower the first char of class name and prepend underscore
+        name = f"_{class_name[0].lower()}{class_name[1:]}"
+    attr_name: str = name
+
+    def getter(self: Any) -> Any:
+        return getattr(self, attr_name)
+
+    def setter(self: Any, value: Any) -> None:
+        setattr(self, attr_name, converter(value))
+
+    return property(getter, setter)
+
+
+def _dict_setter_property(cls: type[Tc], name: str | None = None) -> Any:
+    return _converter_setter_property(cls, cls.coerce_from_optional_dict, name)
+
+
+def _dict_list_setter_property(cls: type[Tc], name: str | None = None) -> Any:
+    return _converter_setter_property(
+        cls, partial(_convert_optional_list_of_dicts, cls), name
+    )
 
 
 @define
@@ -278,6 +343,68 @@ class Info:
     macintoshFONDName: Optional[str] = None
     macintoshFONDFamilyID: Optional[int] = None
     year: Optional[int] = None
+
+    # woff metadata
+    woffMajorVersion: Optional[int] = field(default=None, validator=_optional_positive)
+    woffMinorVersion: Optional[int] = field(default=None, validator=_optional_positive)
+    _woffMetadataUniqueID: Optional[WoffMetadataUniqueID] = field(
+        default=None,
+        # mute mypy error "unsupported converter, only named functions and types ..."
+        # The woff metadata attributes are too many to bother defining named
+        # converters and properties. Maybe one day...
+        converter=WoffMetadataUniqueID.coerce_from_optional_dict,  # type: ignore
+    )
+    woffMetadataUniqueID = _dict_setter_property(WoffMetadataUniqueID)
+
+    _woffMetadataVendor: Optional[WoffMetadataVendor] = field(
+        default=None,
+        converter=WoffMetadataVendor.coerce_from_optional_dict,  # type: ignore
+    )
+    woffMetadataVendor = _dict_setter_property(WoffMetadataVendor)
+
+    _woffMetadataCredits: Optional[WoffMetadataCredits] = field(
+        default=None,
+        converter=WoffMetadataCredits.coerce_from_optional_dict,  # type: ignore
+    )
+    woffMetadataCredits = _dict_setter_property(WoffMetadataCredits)
+
+    _woffMetadataDescription: Optional[WoffMetadataDescription] = field(
+        default=None,
+        converter=WoffMetadataDescription.coerce_from_optional_dict,  # type: ignore
+    )
+    woffMetadataDescription = _dict_setter_property(WoffMetadataDescription)
+
+    _woffMetadataLicense: Optional[WoffMetadataLicense] = field(
+        default=None,
+        converter=WoffMetadataLicense.coerce_from_optional_dict,  # type: ignore
+    )
+    woffMetadataLicense = _dict_setter_property(WoffMetadataLicense)
+
+    _woffMetadataCopyright: Optional[WoffMetadataCopyright] = field(
+        default=None,
+        converter=WoffMetadataCopyright.coerce_from_optional_dict,  # type: ignore
+    )
+    woffMetadataCopyright = _dict_setter_property(WoffMetadataCopyright)
+
+    _woffMetadataTrademark: Optional[WoffMetadataTrademark] = field(
+        default=None,
+        converter=WoffMetadataTrademark.coerce_from_optional_dict,  # type: ignore
+    )
+    woffMetadataTrademark = _dict_setter_property(WoffMetadataTrademark)
+
+    _woffMetadataLicensee: Optional[WoffMetadataLicensee] = field(
+        default=None,
+        converter=WoffMetadataLicensee.coerce_from_optional_dict,  # type: ignore
+    )
+    woffMetadataLicensee = _dict_setter_property(WoffMetadataLicensee)
+
+    _woffMetadataExtensions: Optional[List[WoffMetadataExtension]] = field(
+        default=None,
+        converter=_convert_WoffMetadataExtensions,
+    )
+    woffMetadataExtensions = _dict_list_setter_property(
+        WoffMetadataExtension, "_woffMetadataExtensions"
+    )
 
     @classmethod
     def read(cls, reader: UFOReader) -> Info:
