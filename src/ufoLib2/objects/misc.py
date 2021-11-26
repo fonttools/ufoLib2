@@ -215,8 +215,7 @@ class DataStore(DataStoreMapping):
 
     def unlazify(self) -> None:
         """Load all data into memory."""
-        if self._lazy:
-            assert self._reader is not None
+        if self._lazy and self._reader is not None:
             for _ in self.items():
                 pass
         self._lazy = False
