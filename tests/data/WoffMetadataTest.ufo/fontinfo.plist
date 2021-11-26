@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>woffMajorVersion</key>
+    <integer>1</integer>
+    <key>woffMetadataCopyright</key>
+    <dict>
+      <key>text</key>
+      <array>
+        <dict>
+          <key>language</key>
+          <string>en</string>
+          <key>text</key>
+          <string>Copyright ©2009 Font Vendor</string>
+        </dict>
+        <dict>
+          <key>language</key>
+          <string>ko</string>
+          <key>text</key>
+          <string>저작권 ©2009 Font Vendor</string>
+        </dict>
+      </array>
+    </dict>
+    <key>woffMetadataCredits</key>
+    <dict>
+      <key>credits</key>
+      <array>
+        <dict>
+          <key>name</key>
+          <string>Font Designer</string>
+          <key>role</key>
+          <string>Lead</string>
+          <key>url</key>
+          <string>http://fontdesigner.example.com</string>
+        </dict>
+        <dict>
+          <key>name</key>
+          <string>Another Font Designer</string>
+          <key>role</key>
+          <string>Contributor</string>
+          <key>url</key>
+          <string>http://anotherdesigner.example.com</string>
+        </dict>
+      </array>
+    </dict>
+    <key>woffMetadataDescription</key>
+    <dict>
+      <key>text</key>
+      <array>
+        <dict>
+          <key>language</key>
+          <string>en</string>
+          <key>text</key>
+          <string>A member of the Demo font family...</string>
+        </dict>
+      </array>
+    </dict>
+    <key>woffMetadataExtensions</key>
+    <array>
+      <dict>
+        <key>id</key>
+        <string>org.example.fonts.metadata.v1</string>
+        <key>items</key>
+        <array>
+          <dict>
+            <key>id</key>
+            <string>org.example.fonts.metadata.v1.why</string>
+            <key>names</key>
+            <array>
+              <dict>
+                <key>language</key>
+                <string>en</string>
+                <key>text</key>
+                <string>Purpose</string>
+              </dict>
+              <dict>
+                <key>language</key>
+                <string>fr</string>
+                <key>text</key>
+                <string>But</string>
+              </dict>
+            </array>
+            <key>values</key>
+            <array>
+              <dict>
+                <key>language</key>
+                <string>en</string>
+                <key>text</key>
+                <string>An example of WOFF packaging</string>
+              </dict>
+              <dict>
+                <key>language</key>
+                <string>fr</string>
+                <key>text</key>
+                <string>Un exemple de l'empaquetage de WOFF</string>
+              </dict>
+            </array>
+          </dict>
+        </array>
+        <key>names</key>
+        <array>
+          <dict>
+            <key>language</key>
+            <string>en</string>
+            <key>text</key>
+            <string>Additional font information</string>
+          </dict>
+          <dict>
+            <key>language</key>
+            <string>fr</string>
+            <key>text</key>
+            <string>L'information supplémentaire de fonte</string>
+          </dict>
+        </array>
+      </dict>
+    </array>
+    <key>woffMetadataLicense</key>
+    <dict>
+      <key>id</key>
+      <string>fontvendor-Web-corporate-v2</string>
+      <key>text</key>
+      <array>
+        <dict>
+          <key>language</key>
+          <string>en</string>
+          <key>text</key>
+          <string>A license goes here</string>
+        </dict>
+        <dict>
+          <key>language</key>
+          <string>fr</string>
+          <key>text</key>
+          <string>Un permis va ici</string>
+        </dict>
+      </array>
+      <key>url</key>
+      <string>http://fontvendor.example.com/license</string>
+    </dict>
+    <key>woffMetadataLicensee</key>
+    <dict>
+      <key>name</key>
+      <string>Wonderful Websites, Inc.</string>
+    </dict>
+    <key>woffMetadataTrademark</key>
+    <dict>
+      <key>text</key>
+      <array>
+        <dict>
+          <key>language</key>
+          <string>en</string>
+          <key>text</key>
+          <string>Demo Font is a trademark of Font Vendor</string>
+        </dict>
+        <dict>
+          <key>language</key>
+          <string>fr</string>
+          <key>text</key>
+          <string>Demo Font est une marque déposée de Font Vendor</string>
+        </dict>
+      </array>
+    </dict>
+    <key>woffMetadataUniqueID</key>
+    <dict>
+      <key>id</key>
+      <string>com.example.fontvendor.demofont.rev12345</string>
+    </dict>
+    <key>woffMetadataVendor</key>
+    <dict>
+      <key>name</key>
+      <string>Font Vendor</string>
+      <key>url</key>
+      <string>http://fontvendor.example.com</string>
+    </dict>
+    <key>woffMinorVersion</key>
+    <integer>0</integer>
+  </dict>
+</plist>

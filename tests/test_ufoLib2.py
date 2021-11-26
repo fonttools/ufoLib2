@@ -178,3 +178,17 @@ def test_guidelines() -> None:
         ufoLib2.objects.Guideline(x=100),
         ufoLib2.objects.Guideline(y=20),
     ]
+
+
+def test_woff_metadata(datadir: Path, tmp_path: Path) -> None:
+    # The WoffMetadataTest.ufo contains all the WOFF metadata, here we check
+    # that ufoLib validators accept the data and can read/write fontinfo.plist.
+    input_path = datadir / "WoffMetadataTest.ufo"
+    output_path = tmp_path / "WoffMetadataTest.ufo"
+
+    font = Font.open(input_path, validate=True)
+    font.save(output_path, validate=True)
+
+    assert (input_path / "fontinfo.plist").read_bytes() == (
+        (output_path / "fontinfo.plist").read_bytes()
+    )
