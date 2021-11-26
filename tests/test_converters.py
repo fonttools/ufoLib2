@@ -24,7 +24,26 @@ from ufoLib2.objects import (
     Lib,
     Point,
 )
-from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, WidthClass
+from ufoLib2.objects.info import (
+    GaspBehavior,
+    GaspRangeRecord,
+    NameRecord,
+    WidthClass,
+    WoffMetadataCopyright,
+    WoffMetadataCredit,
+    WoffMetadataCredits,
+    WoffMetadataDescription,
+    WoffMetadataExtension,
+    WoffMetadataExtensionItem,
+    WoffMetadataExtensionName,
+    WoffMetadataExtensionValue,
+    WoffMetadataLicense,
+    WoffMetadataLicensee,
+    WoffMetadataText,
+    WoffMetadataTrademark,
+    WoffMetadataUniqueID,
+    WoffMetadataVendor,
+)
 
 
 @pytest.mark.parametrize(
@@ -187,6 +206,95 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
                 ],
                 openTypeOS2WidthClass=WidthClass.MEDIUM,
                 postscriptBlueScale=0.25,
+                woffMajorVersion=1,
+                woffMinorVersion=0,
+                woffMetadataUniqueID=WoffMetadataUniqueID(
+                    "com.example.fontvendor.demofont.rev12345"
+                ),
+                woffMetadataVendor=WoffMetadataVendor(
+                    name="Font Vendor",
+                    url="http://fontvendor.example.com",
+                ),
+                woffMetadataCredits=WoffMetadataCredits(
+                    [
+                        WoffMetadataCredit(
+                            name="Font Designer",
+                            url="http://fontdesigner.example.com",
+                            role="Lead",
+                        ),
+                        WoffMetadataCredit(
+                            name="Another Font Designer",
+                            url="http://anotherdesigner.example.com",
+                            role="Contributor",
+                        ),
+                    ]
+                ),
+                woffMetadataDescription=WoffMetadataDescription(
+                    text=[
+                        WoffMetadataText(
+                            "A member of the Demo font family...", language="en"
+                        )
+                    ]
+                ),
+                woffMetadataLicense=WoffMetadataLicense(
+                    id="fontvendor-Web-corporate-v2",
+                    url="http://fontvendor.example.com/license",
+                    text=[
+                        WoffMetadataText("A license goes here", language="en"),
+                        WoffMetadataText("Un permis va ici", language="fr"),
+                    ],
+                ),
+                woffMetadataCopyright=WoffMetadataCopyright(
+                    [
+                        WoffMetadataText("Copyright ©2009 Font Vendor", language="en"),
+                        WoffMetadataText("저작권 ©2009 Font Vendor", language="ko"),
+                    ],
+                ),
+                woffMetadataTrademark=WoffMetadataTrademark(
+                    [
+                        WoffMetadataText(
+                            "Demo Font is a trademark of Font Vendor", language="en"
+                        ),
+                        WoffMetadataText(
+                            "Demo Font est une marque déposée de Font Vendor",
+                            language="fr",
+                        ),
+                    ]
+                ),
+                woffMetadataLicensee=WoffMetadataLicensee(
+                    "Wonderful Websites, Inc.",
+                ),
+                woffMetadataExtensions=[
+                    WoffMetadataExtension(
+                        id="org.example.fonts.metadata.v1",
+                        names=[
+                            WoffMetadataExtensionName(
+                                "Additional font information", language="en"
+                            ),
+                            WoffMetadataExtensionName(
+                                "L'information supplémentaire de fonte", language="fr"
+                            ),
+                        ],
+                        items_=[
+                            WoffMetadataExtensionItem(
+                                id="org.example.fonts.metadata.v1.why",
+                                names=[
+                                    WoffMetadataExtensionName("Purpose", language="en"),
+                                    WoffMetadataExtensionName("But", language="fr"),
+                                ],
+                                values_=[
+                                    WoffMetadataExtensionValue(
+                                        "An example of WOFF packaging", language="en"
+                                    ),
+                                    WoffMetadataExtensionValue(
+                                        "Un exemple de l'empaquetage de WOFF",
+                                        language="fr",
+                                    ),
+                                ],
+                            )
+                        ],
+                    )
+                ],
             ),
             {
                 "familyName": "Test",
@@ -210,6 +318,96 @@ from ufoLib2.objects.info import GaspBehavior, GaspRangeRecord, NameRecord, Widt
                 ],
                 "openTypeOS2WidthClass": 5,
                 "postscriptBlueScale": 0.25,
+                "woffMajorVersion": 1,
+                "woffMinorVersion": 0,
+                "woffMetadataUniqueID": {
+                    "id": "com.example.fontvendor.demofont.rev12345"
+                },
+                "woffMetadataVendor": {
+                    "name": "Font Vendor",
+                    "url": "http://fontvendor.example.com",
+                },
+                "woffMetadataCredits": {
+                    "credits": [
+                        {
+                            "name": "Font Designer",
+                            "role": "Lead",
+                            "url": "http://fontdesigner.example.com",
+                        },
+                        {
+                            "name": "Another Font Designer",
+                            "role": "Contributor",
+                            "url": "http://anotherdesigner.example.com",
+                        },
+                    ]
+                },
+                "woffMetadataDescription": {
+                    "text": [
+                        {
+                            "language": "en",
+                            "text": "A member of the Demo font family...",
+                        }
+                    ]
+                },
+                "woffMetadataLicense": {
+                    "id": "fontvendor-Web-corporate-v2",
+                    "text": [
+                        {"language": "en", "text": "A license goes here"},
+                        {"language": "fr", "text": "Un permis va ici"},
+                    ],
+                    "url": "http://fontvendor.example.com/license",
+                },
+                "woffMetadataCopyright": {
+                    "text": [
+                        {"language": "en", "text": "Copyright ©2009 Font Vendor"},
+                        {"language": "ko", "text": "저작권 ©2009 Font Vendor"},
+                    ]
+                },
+                "woffMetadataTrademark": {
+                    "text": [
+                        {
+                            "language": "en",
+                            "text": "Demo Font is a trademark of Font Vendor",
+                        },
+                        {
+                            "language": "fr",
+                            "text": "Demo Font est une marque déposée "
+                            "de Font Vendor",
+                        },
+                    ]
+                },
+                "woffMetadataLicensee": {"name": "Wonderful Websites, Inc."},
+                "woffMetadataExtensions": [
+                    {
+                        "id": "org.example.fonts.metadata.v1",
+                        "names": [
+                            {"language": "en", "text": "Additional font information"},
+                            {
+                                "language": "fr",
+                                "text": "L'information supplémentaire de fonte",
+                            },
+                        ],
+                        "items": [
+                            {
+                                "id": "org.example.fonts.metadata.v1.why",
+                                "names": [
+                                    {"language": "en", "text": "Purpose"},
+                                    {"language": "fr", "text": "But"},
+                                ],
+                                "values": [
+                                    {
+                                        "language": "en",
+                                        "text": "An example of WOFF packaging",
+                                    },
+                                    {
+                                        "language": "fr",
+                                        "text": "Un exemple de l'empaquetage de WOFF",
+                                    },
+                                ],
+                            }
+                        ],
+                    }
+                ],
             },
         ),
         (Layer(), {"name": "public.default"}),
