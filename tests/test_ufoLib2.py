@@ -189,6 +189,6 @@ def test_woff_metadata(datadir: Path, tmp_path: Path) -> None:
     font = Font.open(input_path, validate=True)
     font.save(output_path, validate=True)
 
-    assert (input_path / "fontinfo.plist").read_bytes() == (
-        (output_path / "fontinfo.plist").read_bytes()
+    assert (input_path / "fontinfo.plist").read_text("utf-8") == (
+        (output_path / "fontinfo.plist").read_text("utf-8")
     )
