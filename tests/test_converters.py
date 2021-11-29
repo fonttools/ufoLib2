@@ -410,52 +410,62 @@ from ufoLib2.objects.info import (
                 ],
             },
         ),
-        (Layer(), {"name": "public.default"}),
+        # 'public.default' is a special case, default=True by definition
+        (Layer(), {"name": "public.default", "default": True}),
+        (Layer("foo", default=True), {"name": "foo", "default": True}),
+        (Layer("bar"), {"name": "bar"}),
         (
             Layer(
                 name="foreground",
                 glyphs={"a": Glyph("a"), "b": Glyph("b")},
                 color="1,0,1,1",
                 lib=Lib(foobar=0.1),
+                default=True,
             ),
             {
                 "name": "foreground",
                 "glyphs": [{"name": "a"}, {"name": "b"}],
                 "color": "1,0,1,1",
                 "lib": {"foobar": 0.1},
+                "default": True,
             },
         ),
-        (LayerSet.default(), {"layers": [{"name": "public.default"}]}),
+        (LayerSet.default(), [{"name": "public.default", "default": True}]),
         (
             LayerSet.from_iterable(
                 [Layer("foreground"), Layer("background")],
-                defaultLayerName="foreground",
+                defaultLayerName="foreground",  # deprecated
             ),
-            {
-                "layers": [{"name": "foreground"}, {"name": "background"}],
-                "defaultLayerName": "foreground",
-            },
+            [{"name": "foreground", "default": True}, {"name": "background"}],
+        ),
+        (
+            LayerSet.from_iterable(
+                [Layer("foreground", default=True), Layer("background")],
+            ),
+            [{"name": "foreground", "default": True}, {"name": "background"}],
         ),
         (DataSet(), {}),
         (DataSet({"foo": b"bar"}), {"foo": "YmFy"}),
         (ImageSet(), {}),
         (ImageSet({"foo": b"bar"}), {"foo": "YmFy"}),
-        (Font(), {"layers": [{"name": "public.default"}]}),
+        (Font(), {"layers": [{"name": "public.default", "default": True}]}),
         (
             Font(
-                layers=LayerSet.from_iterable(
-                    [Layer(name="foreground"), Layer(name="background")],
-                    defaultLayerName="foreground",
-                )
+                layers=[
+                    Layer(name="foreground", default=True),
+                    Layer(name="background"),
+                ]
             ),
             {
-                "layers": [{"name": "foreground"}, {"name": "background"}],
-                "defaultLayerName": "foreground",
+                "layers": [
+                    {"name": "foreground", "default": True},
+                    {"name": "background"},
+                ],
             },
         ),
         (
             Font(
-                layers=LayerSet.from_iterable([Layer(glyphs=[Glyph("a")])]),
+                layers=[Layer(glyphs=[Glyph("a")])],
                 info=Info(familyName="Test"),
                 features="languagesystem DFLT dflt;",
                 groups={"LOWERCASE": ["a"]},
@@ -465,7 +475,13 @@ from ufoLib2.objects.info import (
                 images={"foobarbaz": b"\0"},
             ),
             {
-                "layers": [{"name": "public.default", "glyphs": [{"name": "a"}]}],
+                "layers": [
+                    {
+                        "name": "public.default",
+                        "glyphs": [{"name": "a"}],
+                        "default": True,
+                    }
+                ],
                 "info": {"familyName": "Test"},
                 "features": "languagesystem DFLT dflt;",
                 "groups": {"LOWERCASE": ["a"]},
@@ -487,7 +503,8 @@ def test_unstructure_lazy_font(ufo_UbuTestData: Font) -> None:
     assert font1._lazy
 
     font_data = default_converter.unstructure(font1)
-    assert not font1._lazy
 
     font2 = default_converter.structure(font_data, Font)
     assert font2 == font1
+
+    assert not font2._lazy

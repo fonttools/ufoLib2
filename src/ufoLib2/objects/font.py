@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import shutil
 from typing import (
-    TYPE_CHECKING,
     Any,
     Dict,
     Iterable,
@@ -14,11 +13,9 @@ from typing import (
     MutableMapping,
     Optional,
     Sequence,
-    Type,
     cast,
 )
 
-import attr
 import fs.base
 import fs.tempfs
 from attr import define, field
@@ -43,8 +40,9 @@ from ufoLib2.objects.misc import (
 )
 from ufoLib2.typing import HasIdentifier, PathLike, T
 
-if TYPE_CHECKING:
-    from cattr import GenConverter
+
+def _convert_LayerSet(value: LayerSet | Iterable[Layer]) -> LayerSet:
+    return value if isinstance(value, LayerSet) else LayerSet.from_iterable(value)
 
 
 def _convert_Info(value: Info | Mapping[str, Any]) -> Info:
@@ -132,7 +130,7 @@ class Font:
 
     layers: LayerSet = field(
         factory=LayerSet.default,
-        validator=attr.validators.instance_of(LayerSet),
+        converter=_convert_LayerSet,
         metadata={"omit_if_default": False},
     )
     """LayerSet: A mapping of layer names to Layer objects."""
@@ -214,31 +212,31 @@ class Font:
         return self
 
     def __contains__(self, name: object) -> bool:
-        return name in self.layers.defaultLayer
+        return name in self.layers._defaultLayer
 
     def __delitem__(self, name: str) -> None:
-        del self.layers.defaultLayer[name]
+        del self.layers._defaultLayer[name]
 
     def __getitem__(self, name: str) -> Glyph:
-        return self.layers.defaultLayer[name]
+        return self.layers._defaultLayer[name]
 
     def __setitem__(self, name: str, glyph: Glyph) -> None:
-        self.layers.defaultLayer[name] = glyph
+        self.layers._defaultLayer[name] = glyph
 
     def __iter__(self) -> Iterator[Glyph]:
-        return iter(self.layers.defaultLayer)
+        return iter(self.layers._defaultLayer)
 
     def __len__(self) -> int:
-        return len(self.layers.defaultLayer)
+        return len(self.layers._defaultLayer)
 
     def get(self, name: str, default: T | None = None) -> T | Glyph | None:
         """Return the :class:`.Glyph` object for name if it is present in the
         default layer, otherwise return ``default``."""
-        return self.layers.defaultLayer.get(name, default)
+        return self.layers._defaultLayer.get(name, default)
 
     def keys(self) -> KeysView[str]:
         """Return a list of glyph names in the default layer."""
-        return self.layers.defaultLayer.keys()
+        return self.layers._defaultLayer.keys()
 
     def close(self) -> None:
         """Closes the UFOReader if it still exists to finalize any outstanding
@@ -399,7 +397,7 @@ class Font:
 
         |defcon_compat|
         """
-        return self.layers.defaultLayer.bounds
+        return self.layers._defaultLayer.bounds
 
     @property
     def controlPointBounds(self) -> BoundingBox | None:
@@ -408,7 +406,7 @@ class Font:
 
         |defcon_compat|
         """
-        return self.layers.defaultLayer.controlPointBounds
+        return self.layers._defaultLayer.controlPointBounds
 
     def addGlyph(self, glyph: Glyph) -> None:
         """Appends glyph object to the default layer unless its name is already
@@ -418,12 +416,12 @@ class Font:
             Call the method on the layer directly if you want to overwrite entries
             with the same name or append copies of the glyph.
         """
-        self.layers.defaultLayer.addGlyph(glyph)
+        self.layers._defaultLayer.addGlyph(glyph)
 
     def newGlyph(self, name: str) -> Glyph:
         """Creates and returns new :class:`.Glyph` object in default layer with
         name."""
-        return self.layers.defaultLayer.newGlyph(name)
+        return self.layers._defaultLayer.newGlyph(name)
 
     def newLayer(self, name: str, **kwargs: Any) -> Layer:
         """Creates and returns a new :class:`.Layer`.
@@ -443,7 +441,7 @@ class Font:
             overwrite: If False, raises exception if newName is already taken.
                 If True, overwrites (read: deletes) the old :class:`.Glyph` object.
         """
-        self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
+        self.layers._defaultLayer.renameGlyph(name, newName, overwrite)
 
     def renameLayer(self, name: str, newName: str, overwrite: bool = False) -> None:
         """Renames a :class:`.Layer`.
@@ -488,7 +486,7 @@ class Font:
         if saveAs is None:
             saveAs = self._reader is not writer
         # TODO move this check to fontTools UFOWriter
-        if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:
+        if self.layers._defaultLayer.name != DEFAULT_LAYER_NAME:
             assert DEFAULT_LAYER_NAME not in self.layers.layerOrder
         # save font attrs
         writer.writeFeatures(self.features.text)
@@ -593,57 +591,3 @@ class Font:
         # the FS object does not implement a filesystem path.
         if not isinstance(path, fs.base.FS):
             self._path = path
-
-    def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
-        _Factory = cast(Type[Any], attr.Factory)
-
-        if self._lazy:
-            self.unlazify()
-
-        data: dict[str, Any] = {
-            (a.name[1:] if a.name[0] == "_" else a.name): converter.unstructure(
-                getattr(self, a.name)
-            )
-            for a in attr.fields(type(self))
-            if a.init
-            and not (
-                a.metadata.get("omit_if_default", converter.omit_if_default)
-                and getattr(self, a.name)
-                == (
-                    a.default.factory()
-                    if isinstance(a.default, _Factory)
-                    else a.default
-                )
-            )
-        }
-        # move layers data up to remove the ugly nested d["layers"]["layers"]
-        if "layers" in data:
-            if "defaultLayerName" in data["layers"]:
-                data["defaultLayerName"] = data["layers"]["defaultLayerName"]
-            data["layers"] = data["layers"]["layers"]
-        return data
-
-    @staticmethod
-    def _structure(
-        data: dict[str, Any], cls: Type[Font], converter: GenConverter
-    ) -> Font:
-        attr.resolve_types(cls)
-
-        layers_keys = {"layers", "defaultLayerName"}
-        layers_data = {k: data[k] for k in layers_keys if k in data}
-
-        kwargs: dict[str, Any] = {}
-        if layers_data:
-            kwargs["layers"] = converter.structure(layers_data, LayerSet)
-
-        for a in attr.fields(cls):
-            if not a.init:
-                continue
-            key = a.name[1:] if a.name[0] == "_" else a.name
-            if key in layers_keys:
-                continue
-            if key in data:
-                assert a.type is not None
-                kwargs[key] = converter.structure(data[key], a.type)
-
-        return cls(**kwargs)

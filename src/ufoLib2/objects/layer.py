@@ -114,10 +114,22 @@ class Layer:
     _lib: Lib = field(factory=Lib, converter=_convert_Lib)
     """The layer's lib for mapping string keys to arbitrary data."""
 
+    _default: bool = False
+    """Can set to True to mark a layer as default. If layer name is 'public.default'
+    the default attribute is automatically True. Exactly one layer must be marked as
+    default in a font."""
+
     _glyphSet: Any = field(default=None, init=False, eq=False)
 
+    def __attrs_post_init__(self) -> None:
+        if self._name == DEFAULT_LAYER_NAME and not self._default:
+            # layer named 'public.default' is default by definition
+            self._default = True
+
     @classmethod
-    def read(cls, name: str, glyphSet: GlyphSet, lazy: bool = True) -> Layer:
+    def read(
+        cls, name: str, glyphSet: GlyphSet, lazy: bool = True, default: bool = False
+    ) -> Layer:
         """Instantiates a Layer object from a
         :class:`fontTools.ufoLib.glifLib.GlyphSet`.
 
@@ -137,7 +149,7 @@ class Layer:
                 glyph = Glyph(glyphName)
                 glyphSet.readGlyph(glyphName, glyph, glyph.getPointPen())
                 glyphs[glyphName] = glyph
-        self = cls(name, glyphs)
+        self = cls(name, glyphs, default=default)
         if lazy:
             self._glyphSet = glyphSet
         glyphSet.readLayerInfo(self)
@@ -177,10 +189,11 @@ class Layer:
 
     def __repr__(self) -> str:
         n = len(self._glyphs)
-        return "<{}.{} '{}' ({}) at {}>".format(
+        return "<{}.{} '{}' ({}{}) at {}>".format(
             self.__class__.__module__,
             self.__class__.__name__,
             self._name,
+            "default, " if self._default else "",
             "empty" if n == 0 else "{} glyph{}".format(n, "s" if n > 1 else ""),
             hex(id(self)),
         )
@@ -229,6 +242,12 @@ class Layer:
         return self._name
 
     lib = property(_get_lib, _set_lib)
+
+    @property
+    def default(self) -> bool:
+        """Read-only property. To change the font's default layer use the
+        LayerSet.defaultLayer property setter."""
+        return self._default
 
     @property
     def bounds(self) -> BoundingBox | None:
@@ -375,6 +394,7 @@ class Layer:
             ("glyphs", glyphs, []),
             ("color", self.color, None),
             ("lib", self._lib, {}),
+            ("default", self._default, False),
         ]:
             if not converter.omit_if_default or value != default:
                 d[key] = value
@@ -389,6 +409,7 @@ class Layer:
             glyphs=[converter.structure(g, Glyph) for g in data.get("glyphs", ())],
             color=data.get("color"),
             lib=converter.structure(data.get("lib", {}), Lib),
+            default=data.get("default", False),
         )
 
 
