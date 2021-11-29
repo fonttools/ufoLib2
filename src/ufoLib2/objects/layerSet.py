@@ -155,10 +155,9 @@ class LayerSet:
         for layerName in reader.getLayerNames():
             isDefault = layerName == defaultLayerName
             if isDefault or not lazy:
-                layer = cls._loadLayer(reader, layerName, lazy)
+                layer = cls._loadLayer(reader, layerName, lazy, isDefault)
                 if isDefault:
                     defaultLayer = layer
-                    layer._default = True
                 layers[layerName] = layer
             else:
                 layers[layerName] = _LAYER_NOT_LOADED
@@ -179,9 +178,11 @@ class LayerSet:
     __deepcopy__ = _deepcopy_unlazify_attrs
 
     @staticmethod
-    def _loadLayer(reader: UFOReader, layerName: str, lazy: bool = True) -> Layer:
+    def _loadLayer(
+        reader: UFOReader, layerName: str, lazy: bool = True, default: bool = False
+    ) -> Layer:
         glyphSet = reader.getGlyphSet(layerName)
-        return Layer.read(layerName, glyphSet, lazy=lazy)
+        return Layer.read(layerName, glyphSet, lazy=lazy, default=default)
 
     def loadLayer(self, layerName: str, lazy: bool = True) -> Layer:
         # XXX: Remove this method and do business via _loadLayer or take this one
