@@ -65,7 +65,7 @@ class Glyph:
     """The Unicode code points assigned to the glyph. Note that a glyph can have
     multiple."""
 
-    _image: Image = field(factory=Image)
+    _image: Optional[Image] = None
 
     _lib: Lib = field(factory=Lib, converter=_convert_Lib)
     """The glyph's mapping of string keys to arbitrary data."""
@@ -179,7 +179,7 @@ class Glyph:
                 self.unicodes.append(value)
 
     @property
-    def image(self) -> Image:
+    def image(self) -> Optional[Image]:
         """The background image reference associated with the glyph.
 
         See http://unifiedfontobject.org/versions/ufo3/glyphs/glif/#image.
@@ -192,7 +192,7 @@ class Glyph:
     @image.setter
     def image(self, image: Image | Mapping[str, Any] | None) -> None:
         if image is None:
-            self._image.clear()
+            self._image = None
         elif isinstance(image, Image):
             self._image = image
         else:
@@ -238,7 +238,8 @@ class Glyph:
         del self.components[:]
         del self.contours[:]
         del self._guidelines[:]
-        self.image.clear()
+        if self._image:
+            self._image.clear()
 
     def clearAnchors(self) -> None:
         """Clears out anchors."""
