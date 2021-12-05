@@ -372,14 +372,12 @@ class Layer:
             self._glyphSet = None
 
     def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
-        # unstructure glyphs as a list sorted by glyph name, to avoid repeating
-        # the glyph.name in the dict key. We sort because the glyph order is
-        # logically stored elsewhere (in lib['public.glyphOrder']), and the
-        # internal insertion order of the Layers._glyphs dict is irrelevant.
-        glyphs = [
-            converter.unstructure(self[glyph_name])
-            for glyph_name in sorted(self._glyphs)
-        ]
+        # omit glyph name attribute, already used as key
+        glyphs: dict[str, dict[str, Any]] = {}
+        for glyph_name in self._glyphs:
+            g = converter.unstructure(self[glyph_name])
+            assert glyph_name == g.pop("name")
+            glyphs[glyph_name] = g
         d: dict[str, Any] = {
             # never omit name even if == 'public.default' as that acts as
             # the layer's "key" in the layerSet.
@@ -387,7 +385,7 @@ class Layer:
         }
         default: Any
         for key, value, default in [
-            ("glyphs", glyphs, []),
+            ("glyphs", glyphs, {}),
             ("color", self.color, None),
             ("lib", self._lib, {}),
             ("default", self._default, False),
@@ -402,7 +400,10 @@ class Layer:
     ) -> Layer:
         return cls(
             name=data["name"],
-            glyphs=[converter.structure(g, Glyph) for g in data.get("glyphs", ())],
+            glyphs={
+                k: converter.structure(v, Glyph)
+                for k, v in data.get("glyphs", {}).items()
+            },
             color=data.get("color"),
             lib=converter.structure(data.get("lib", {}), Lib),
             default=data.get("default", False),

@@ -417,14 +417,14 @@ from ufoLib2.objects.info import (
         (
             Layer(
                 name="foreground",
-                glyphs={"a": Glyph("a"), "b": Glyph("b")},
+                glyphs={"a": Glyph(), "b": Glyph()},
                 color="1,0,1,1",
                 lib=Lib(foobar=0.1),
                 default=True,
             ),
             {
                 "name": "foreground",
-                "glyphs": [{"name": "a"}, {"name": "b"}],
+                "glyphs": {"a": {}, "b": {}},
                 "color": "1,0,1,1",
                 "lib": {"foobar": 0.1},
                 "default": True,
@@ -478,7 +478,7 @@ from ufoLib2.objects.info import (
                 "layers": [
                     {
                         "name": "public.default",
-                        "glyphs": [{"name": "a"}],
+                        "glyphs": {"a": {}},
                         "default": True,
                     }
                 ],
