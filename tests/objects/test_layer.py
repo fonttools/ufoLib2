@@ -39,7 +39,7 @@ def test_init_layer_with_glyphs_list() -> None:
     assert layer["a"] is a
     assert layer["b"] is b
 
-    with pytest.raises(KeyError, match=".*Glyph .* can't be added twice"):
+    with pytest.raises(KeyError, match="glyph named 'a' already exists"):
         Layer(glyphs=[a, a])
 
     c = Glyph()

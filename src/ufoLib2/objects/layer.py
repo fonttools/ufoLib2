@@ -34,8 +34,8 @@ _GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
 
 def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyph]:
     result: dict[str, Glyph] = {}
-    glyph_ids = set()
     if isinstance(value, dict):
+        glyph_ids = set()
         for name, glyph in value.items():
             if not isinstance(glyph, Glyph):
                 raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
@@ -56,10 +56,6 @@ def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyp
         for glyph in value:
             if not isinstance(glyph, Glyph):
                 raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
-            glyph_id = id(glyph)
-            if glyph_id in glyph_ids:
-                raise KeyError(f"{glyph!r} can't be added twice")
-            glyph_ids.add(glyph_id)
             if glyph.name is None:
                 raise ValueError(f"{glyph!r} has no name; can't add it to Layer")
             if glyph.name in result:
