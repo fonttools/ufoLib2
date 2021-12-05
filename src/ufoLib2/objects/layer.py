@@ -388,7 +388,7 @@ class Layer:
             ("glyphs", glyphs, {}),
             ("color", self.color, None),
             ("lib", self._lib, {}),
-            ("default", self._default, False),
+            ("default", self._default, self._name == DEFAULT_LAYER_NAME),
         ]:
             if not converter.omit_if_default or value != default:
                 d[key] = value
@@ -399,7 +399,7 @@ class Layer:
         data: dict[str, Any], cls: Type[Layer], converter: GenConverter
     ) -> Layer:
         return cls(
-            name=data["name"],
+            name=data.get("name", DEFAULT_LAYER_NAME),
             glyphs={
                 k: converter.structure(v, Glyph)
                 for k, v in data.get("glyphs", {}).items()

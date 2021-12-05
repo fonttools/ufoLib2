@@ -411,7 +411,7 @@ from ufoLib2.objects.info import (
             },
         ),
         # 'public.default' is a special case, default=True by definition
-        (Layer(), {"name": "public.default", "default": True}),
+        (Layer(), {"name": "public.default"}),
         (Layer("foo", default=True), {"name": "foo", "default": True}),
         (Layer("bar"), {"name": "bar"}),
         (
@@ -430,7 +430,7 @@ from ufoLib2.objects.info import (
                 "default": True,
             },
         ),
-        (LayerSet.default(), [{"name": "public.default", "default": True}]),
+        (LayerSet.default(), [{"name": "public.default"}]),
         (
             LayerSet.from_iterable(
                 [Layer("foreground"), Layer("background")],
@@ -448,7 +448,7 @@ from ufoLib2.objects.info import (
         (DataSet({"foo": b"bar"}), {"foo": "YmFy"}),
         (ImageSet(), {}),
         (ImageSet({"foo": b"bar"}), {"foo": "YmFy"}),
-        (Font(), {"layers": [{"name": "public.default", "default": True}]}),
+        (Font(), {"layers": [{"name": "public.default"}]}),
         (
             Font(
                 layers=[
@@ -479,7 +479,6 @@ from ufoLib2.objects.info import (
                     {
                         "name": "public.default",
                         "glyphs": {"a": {}},
-                        "default": True,
                     }
                 ],
                 "info": {"familyName": "Test"},
