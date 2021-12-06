@@ -8,7 +8,7 @@ attrs==21.2.0
     # via
     #   -c requirements.txt
     #   pytest
-black==21.11b1
+black==21.12b0
     # via -r requirements-dev.in
 click==8.0.3
     # via black
@@ -54,7 +54,7 @@ toml==0.10.2
     #   pytest
 tomli==1.2.2
     # via black
-typing-extensions==4.0.0
+typing-extensions==4.0.1
     # via
     #   black
     #   mypy
