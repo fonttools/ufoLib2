@@ -4,7 +4,7 @@ import sys
 from functools import partial
 from typing import Any, Callable, Tuple, Type, cast
 
-from attr import fields, has, resolve_types
+from attr import fields, has
 from cattr import GenConverter
 from cattr.gen import (
     AttributeOverride,
@@ -57,12 +57,6 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         if base is None:
             base = cls
         attribs = fields(base)
-        # PEP 563 annotations need to be resolved.
-        # As of cattrs 1.8.0, make_dict_*_fn functions don't call resolve_types
-        # so we need to do it ourselves:
-        # https://github.com/python-attrs/cattrs/issues/169
-        resolve_types(base)
-
         kwargs: dict[str, bool | AttributeOverride] = {}
         if structuring:
             kwargs["_cattrs_forbid_extra_keys"] = conv.forbid_extra_keys
@@ -125,9 +119,7 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
 
 default_converter = GenConverter(
     omit_if_default=True,
-    # 'forbid_extra_keys' conflicts with override(rename=...).
-    # Re-enable once https://github.com/python-attrs/cattrs/issues/190 gets fixed
-    # forbid_extra_keys=True,
+    forbid_extra_keys=True,
     prefer_attrib_converters=False,
 )
 register_hooks(default_converter, allow_bytes=False)
