@@ -6,7 +6,7 @@ import pytest
 from fontTools.misc.transform import Transform
 
 from ufoLib2.constants import DATA_LIB_KEY
-from ufoLib2.converters import default_converter
+from ufoLib2.converters import default_converter, register_hooks
 from ufoLib2.objects import (
     Anchor,
     Component,
@@ -44,6 +44,8 @@ from ufoLib2.objects.info import (
     WoffMetadataUniqueID,
     WoffMetadataVendor,
 )
+
+cattr = pytest.importorskip("cattr")
 
 
 @pytest.mark.parametrize(
@@ -507,3 +509,15 @@ def test_unstructure_lazy_font(ufo_UbuTestData: Font) -> None:
     assert font2 == font1
 
     assert not font2._lazy
+
+
+@pytest.mark.parametrize("forbid_extra_keys", [True, False])
+def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
+    conv = cattr.GenConverter(forbid_extra_keys=forbid_extra_keys)
+    register_hooks(conv)
+    data = {"name": "a", "foo": "bar"}
+    if forbid_extra_keys:
+        with pytest.raises(Exception, match="Extra fields in constructor for .*: foo"):
+            conv.structure(data, Glyph)
+    else:
+        assert conv.structure(data, Glyph) == Glyph(name="a")
