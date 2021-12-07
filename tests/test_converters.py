@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from base64 import b64encode
 from typing import Any
 
 import pytest
@@ -598,3 +599,59 @@ def test_omit_if_default(obj: Any, expected: Any, omit_if_default: bool) -> None
     conv = cattr.GenConverter(omit_if_default=omit_if_default)
     register_hooks(conv)
     assert conv.unstructure(obj) == expected
+
+
+@pytest.mark.parametrize(
+    "allow_bytes, obj, expected",
+    [
+        pytest.param(True, b"foo", b"foo", id="True-bytes"),
+        pytest.param(False, b"foo", b64encode(b"foo").decode(), id="False-bytes"),
+        pytest.param(
+            True, DataSet({"foo": b"bar"}), {"foo": b"bar"}, id="True-DataSet"
+        ),
+        pytest.param(
+            False,
+            DataSet({"foo": b"bar"}),
+            {"foo": b64encode(b"bar").decode()},
+            id="False-DataSet",
+        ),
+        pytest.param(
+            True,
+            ImageSet({"foo.png": b"\x89PNG"}),
+            {"foo.png": b"\x89PNG"},
+            id="True-ImageSet",
+        ),
+        pytest.param(
+            False,
+            ImageSet({"foo.png": b"\x89PNG"}),
+            {"foo.png": b64encode(b"\x89PNG").decode()},
+            id="False-ImageSet",
+        ),
+        pytest.param(
+            True,
+            Lib(foo={"bar": b"baz"}, oof=[b"rab", "zab"]),
+            {"foo": {"bar": b"baz"}, "oof": [b"rab", "zab"]},
+            id="True-Lib",
+        ),
+        pytest.param(
+            False,
+            Lib(foo={"bar": b"baz"}, oof=[b"rab", "zab"]),
+            {
+                "foo": {
+                    "bar": {"data": b64encode(b"baz").decode(), "type": DATA_LIB_KEY},
+                },
+                "oof": [
+                    {"data": b64encode(b"rab").decode(), "type": DATA_LIB_KEY},
+                    "zab",
+                ],
+            },
+            id="False-Lib",
+        ),
+    ],
+)
+def test_allow_bytes(obj: Any, expected: Any, allow_bytes: bool) -> None:
+    conv = cattr.GenConverter()
+    register_hooks(conv, allow_bytes=allow_bytes)
+
+    assert conv.unstructure(obj) == expected
+    assert conv.structure(expected, type(obj)) == obj
