@@ -78,9 +78,6 @@ class Font:
     http://unifiedfontobject.org/versions/ufo3/index.html.
 
     Parameters:
-        path: The path to the UFO to load. The only positional parameter and a
-            defcon-API-compatibility parameter. We recommend to use the
-            :meth:`.Font.open` class method instead.
         layers (LayerSet): A mapping of layer names to Layer objects.
         info (Info): The font Info object.
         features (Features): The font Features object.
