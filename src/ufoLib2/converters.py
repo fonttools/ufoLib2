@@ -21,7 +21,6 @@ if is_py37:
     def get_origin(cl: Type[Any]) -> Any:
         return getattr(cl, "__origin__", None)
 
-
 else:
     from typing import get_origin  # type: ignore
 
