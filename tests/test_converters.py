@@ -6,7 +6,6 @@ import pytest
 from fontTools.misc.transform import Transform
 
 from ufoLib2.constants import DATA_LIB_KEY
-from ufoLib2.converters import default_converter, register_hooks
 from ufoLib2.objects import (
     Anchor,
     Component,
@@ -45,7 +44,9 @@ from ufoLib2.objects.info import (
     WoffMetadataVendor,
 )
 
+# isort: off
 cattr = pytest.importorskip("cattr")
+from ufoLib2.converters import default_converter, register_hooks  # noqa: E402
 
 
 @pytest.mark.parametrize(
