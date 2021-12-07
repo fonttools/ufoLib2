@@ -522,3 +522,79 @@ def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
             conv.structure(data, Glyph)
     else:
         assert conv.structure(data, Glyph) == Glyph(name="a")
+
+
+@pytest.mark.parametrize(
+    "omit_if_default, obj, expected",
+    [
+        pytest.param(
+            True, Anchor(x=1.0, y=2.0), {"x": 1.0, "y": 2.0}, id="True-Anchor"
+        ),
+        pytest.param(
+            False, Anchor(x=1.0, y=2.0), {"x": 1.0, "y": 2.0}, id="False-Anchor"
+        ),
+        pytest.param(True, Component("foo"), {"baseGlyph": "foo"}, id="True-Component"),
+        pytest.param(
+            False,
+            Component("foo"),
+            {"baseGlyph": "foo", "transformation": (1, 0, 0, 1, 0, 0)},
+            id="False-Component",
+        ),
+        pytest.param(True, Contour(), {}, id="True-Contour"),
+        pytest.param(False, Contour(), {"points": []}, id="False-Contour"),
+        pytest.param(True, Point(x=1.0, y=2.0), {"x": 1.0, "y": 2.0}, id="True-Point"),
+        pytest.param(
+            False,
+            Point(x=1.0, y=2.0),
+            {"x": 1.0, "y": 2.0, "smooth": False},
+            id="False-Point",
+        ),
+        pytest.param(True, Glyph(), {}, id="True-Glyph"),
+        pytest.param(
+            False,
+            Glyph(),
+            {
+                "width": 0,
+                "height": 0,
+                "unicodes": [],
+                "lib": {},
+                "anchors": [],
+                "components": [],
+                "contours": [],
+                "guidelines": [],
+            },
+            id="False-Glyph",
+        ),
+        pytest.param(True, Layer(), {"name": "public.default"}, id="True-Layer"),
+        pytest.param(
+            False,
+            Layer(),
+            {"name": "public.default", "default": True, "glyphs": {}, "lib": {}},
+            id="False-Layer",
+        ),
+        pytest.param(
+            True, Font(), {"layers": [{"name": "public.default"}]}, id="True-Font"
+        ),
+        pytest.param(
+            False,
+            Font(),
+            {
+                "data": {},
+                "features": "",
+                "groups": {},
+                "images": {},
+                "info": {},
+                "kerning": {},
+                "layers": [
+                    {"default": True, "glyphs": {}, "lib": {}, "name": "public.default"}
+                ],
+                "lib": {},
+            },
+            id="False-Font",
+        ),
+    ],
+)
+def test_omit_if_default(obj: Any, expected: Any, omit_if_default: bool) -> None:
+    conv = cattr.GenConverter(omit_if_default=omit_if_default)
+    register_hooks(conv)
+    assert conv.unstructure(obj) == expected

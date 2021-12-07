@@ -63,8 +63,14 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         else:
             kwargs["omit_if_default"] = conv.omit_if_default
         for a in attribs:
+            # by default, we omit all Optional attributes (i.e. with None default value),
+            # overriding a Converter's global 'omit_if_default' option. Specific
+            # attibutes can still define their own 'omit_if_default' behavior in
+            # the Attribute.metadata dict.
             kwargs[a.name] = override(
-                omit_if_default=a.metadata.get("omit_if_default"),
+                omit_if_default=a.metadata.get(
+                    "omit_if_default", a.default is None or None
+                ),
                 rename=a.metadata.get(
                     "rename_attr", a.name[1:] if a.name[0] == "_" else None
                 ),

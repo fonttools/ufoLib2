@@ -385,13 +385,14 @@ class Layer:
         }
         default: Any
         for key, value, default in [
-            ("glyphs", glyphs, {}),
-            ("color", self.color, None),
-            ("lib", self._lib, {}),
             ("default", self._default, self._name == DEFAULT_LAYER_NAME),
+            ("glyphs", glyphs, {}),
+            ("lib", self._lib, {}),
         ]:
             if not converter.omit_if_default or value != default:
                 d[key] = value
+        if self.color is not None:
+            d["color"] = self.color
         return d
 
     @staticmethod
