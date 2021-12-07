@@ -344,7 +344,7 @@ class AttrDictMixin(AttrDictMixinMapping):
     # XXX: Use generics?
 
     @classmethod
-    @lru_cache(None)
+    @lru_cache(maxsize=None)
     def _key_to_attr_map(cls, reverse: bool = False) -> dict[str, str]:
         result = {}
         for a in attr.fields(cls):
