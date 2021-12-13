@@ -4,6 +4,7 @@ from ufoLib2.objects.anchor import Anchor
 from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.dataSet import DataSet
+from ufoLib2.objects.features import Features
 from ufoLib2.objects.font import Font
 from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.guideline import Guideline
@@ -21,6 +22,7 @@ __all__ = [
     "Component",
     "Contour",
     "DataSet",
+    "Features",
     "Font",
     "Glyph",
     "Guideline",

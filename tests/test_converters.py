@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import pathlib
 from base64 import b64encode
 from typing import Any
 
@@ -655,3 +657,27 @@ def test_allow_bytes(obj: Any, expected: Any, allow_bytes: bool) -> None:
 
     assert conv.unstructure(obj) == expected
     assert conv.structure(expected, type(obj)) == obj
+
+
+def test_json_dumps(datadir: pathlib.Path) -> None:
+    font = Font.open(datadir / "MutatorSansBoldCondensed.ufo")
+    # need to get rid of CR/LF newlines that sneak in the features.fea when
+    # opening the UFO on Windows
+    font.features.normalize_newlines()
+
+    data = default_converter.unstructure(font)
+
+    expected = (datadir / "MutatorSansBoldCondensed.json").read_text()
+
+    assert json.dumps(data, indent=2, sort_keys=True) == expected
+
+
+def test_json_loads(datadir: pathlib.Path) -> None:
+    data = json.loads((datadir / "MutatorSansBoldCondensed.json").read_bytes())
+
+    expected = Font.open(datadir / "MutatorSansBoldCondensed.ufo")
+    # need to get rid of CR/LF newlines that sneak in the features.fea when
+    # opening the UFO on Windows
+    expected.features.normalize_newlines()
+
+    assert default_converter.structure(data, Font) == expected

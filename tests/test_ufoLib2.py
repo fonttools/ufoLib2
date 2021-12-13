@@ -8,7 +8,7 @@ from fontTools import ufoLib
 
 import ufoLib2
 import ufoLib2.objects
-from ufoLib2.objects import Font, Layer, LayerSet
+from ufoLib2.objects import Features, Font, Layer, LayerSet
 from ufoLib2.objects.layerSet import _LAYER_NOT_LOADED
 from ufoLib2.objects.misc import _DATA_NOT_LOADED
 
@@ -261,3 +261,7 @@ def test_woff_metadata(datadir: Path, tmp_path: Path) -> None:
     assert (input_path / "fontinfo.plist").read_text("utf-8") == (
         (output_path / "fontinfo.plist").read_text("utf-8")
     )
+
+
+def test_features_normalize_newlines() -> None:
+    assert Features("a\r\nb\rc\n").normalize_newlines().text == "a\nb\nc\n"
