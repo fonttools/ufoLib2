@@ -560,6 +560,7 @@ def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
                 "width": 0,
                 "height": 0,
                 "unicodes": [],
+                "image": {"transformation": (1, 0, 0, 1, 0, 0)},
                 "lib": {},
                 "anchors": [],
                 "components": [],
