@@ -660,6 +660,23 @@ def test_allow_bytes(obj: Any, expected: Any, allow_bytes: bool) -> None:
     assert conv.structure(expected, type(obj)) == obj
 
 
+def test_custom_type_overrides() -> None:
+    conv = cattr.GenConverter(type_overrides={Image: cattr.override(omit=True)})
+    register_hooks(conv)
+
+    # check that Glyph.image attribute (of type Image) is omitted
+    assert conv.unstructure(Glyph()) == {
+        "width": 0,
+        "height": 0,
+        "unicodes": [],
+        "lib": {},
+        "anchors": [],
+        "components": [],
+        "contours": [],
+        "guidelines": [],
+    }
+
+
 def test_json_dumps(datadir: pathlib.Path) -> None:
     font = Font.open(datadir / "MutatorSansBoldCondensed.ufo")
     # need to get rid of CR/LF newlines that sneak in the features.fea when

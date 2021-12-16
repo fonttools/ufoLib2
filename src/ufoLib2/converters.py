@@ -4,7 +4,7 @@ import sys
 from functools import partial
 from typing import Any, Callable, Tuple, Type, cast
 
-from attr import fields, has
+from attr import fields, has, resolve_types
 from cattr import GenConverter
 from cattr.gen import (
     AttributeOverride,
@@ -56,6 +56,8 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         if base is None:
             base = cls
         attribs = fields(base)
+        # PEP563 postponed annotations need resolving as we check Attribute.type below
+        resolve_types(base)
         kwargs: dict[str, bool | AttributeOverride] = {}
         if structuring:
             kwargs["_cattrs_forbid_extra_keys"] = conv.forbid_extra_keys
@@ -63,19 +65,28 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         else:
             kwargs["omit_if_default"] = conv.omit_if_default
         for a in attribs:
-            # by default, we omit all Optional attributes (i.e. with None default value),
-            # overriding a Converter's global 'omit_if_default' option. Specific
-            # attibutes can still define their own 'omit_if_default' behavior in
-            # the Attribute.metadata dict.
-            kwargs[a.name] = override(
-                omit_if_default=a.metadata.get(
-                    "omit_if_default", a.default is None or None
-                ),
-                rename=a.metadata.get(
-                    "rename_attr", a.name[1:] if a.name[0] == "_" else None
-                ),
-                omit=not a.init,
-            )
+            if a.type in conv.type_overrides:
+                # cattrs' gen_(un)structure_attrs_fromdict (used by default for attrs
+                # classes that don't have a custom hook registered) check for any
+                # type_overrides (Dict[Type, AttributeOverride]); they allow a custom
+                # converter to omit specific attributes of given type e.g.:
+                # >>> conv = GenConverter(type_overrides={Image: override(omit=True)})
+                attrib_override = conv.type_overrides[a.type]
+            else:
+                # by default, we omit all Optional attributes (i.e. with None default),
+                # overriding a Converter's global 'omit_if_default' option. Specific
+                # attibutes can still define their own 'omit_if_default' behavior in
+                # the Attribute.metadata dict.
+                attrib_override = override(
+                    omit_if_default=a.metadata.get(
+                        "omit_if_default", a.default is None or None
+                    ),
+                    rename=a.metadata.get(
+                        "rename_attr", a.name[1:] if a.name[0] == "_" else None
+                    ),
+                    omit=not a.init,
+                )
+            kwargs[a.name] = attrib_override
 
         return gen_fn(cls, conv, **kwargs)
 
