@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from typing import AbstractSet, Any, Iterable, Iterator, Sized
+from typing import (
+    TYPE_CHECKING,
+    AbstractSet,
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    Optional,
+    Sized,
+)
 
 from attr import define, field
 from fontTools.ufoLib import UFOReader, UFOWriter
@@ -8,8 +17,15 @@ from fontTools.ufoLib import UFOReader, UFOWriter
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.errors import Error
 from ufoLib2.objects.layer import Layer
-from ufoLib2.objects.misc import _NOT_LOADED, Placeholder, _deepcopy_unlazify_attrs
+from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
 from ufoLib2.typing import T
+
+if TYPE_CHECKING:
+    from typing import Type
+
+    from cattr import GenConverter
+
+_LAYER_NOT_LOADED = Layer(name="___UFOLIB2_LAZY_LAYER___")
 
 
 def _must_have_at_least_one_item(self: Any, attribute: Any, value: Sized) -> None:
@@ -52,20 +68,31 @@ class LayerSet:
             del font.layers["myLayerName"]
     """
 
-    _layers: dict[str, Layer | Placeholder] = field(
+    _layers: Dict[str, Layer] = field(
         validator=_must_have_at_least_one_item,
     )
 
-    defaultLayer: Layer
-    """The Layer that is marked as the default, typically named ``public.default``."""
+    _defaultLayer: Layer = field(default=_LAYER_NOT_LOADED, eq=False)
 
-    _reader: UFOReader | None = field(default=None, init=False, eq=False)
+    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
-        if not any(layer is self.defaultLayer for layer in self._layers.values()):
-            raise ValueError(
-                f"Default layer {repr(self.defaultLayer)} must be in layer set."
-            )
+        if self._defaultLayer == _LAYER_NOT_LOADED:
+            found = False
+            for layer in self._layers.values():
+                if layer._default:
+                    if found:
+                        raise ValueError("more than one layer marked as default")
+                    found = True
+                    self._defaultLayer = layer
+            if not found:
+                raise ValueError("no layer marked as default")
+        else:
+            if not any(layer is self._defaultLayer for layer in self._layers.values()):
+                raise ValueError(
+                    f"default layer {repr(self._defaultLayer)} must be in layer set."
+                )
+            assert self._defaultLayer._default
 
     @classmethod
     def default(cls) -> LayerSet:
@@ -82,19 +109,31 @@ class LayerSet:
             value: an iterable of :class:`.Layer` objects.
             defaultLayerName: the name of the default layer of the ones in ``value``.
         """
-        layers: dict[str, Layer | Placeholder] = {}
+        if defaultLayerName != DEFAULT_LAYER_NAME:
+            import warnings
+
+            warnings.warn(
+                "'defaultLayerName' parameter is deprecated; "
+                "use Layer.default attribute instead",
+                DeprecationWarning,
+            )
+        layers: dict[str, Layer] = {}
         defaultLayer = None
         for layer in value:
             if not isinstance(layer, Layer):
                 raise TypeError(f"expected 'Layer', found '{type(layer).__name__}'")
             if layer.name in layers:
                 raise KeyError(f"duplicate layer name: '{layer.name}'")
-            if layer.name == defaultLayerName:
+            if layer.name == defaultLayerName or layer._default:
+                if defaultLayer is not None:
+                    raise ValueError("more than one layer marked as default")
+                if not layer._default:
+                    layer._default = True
                 defaultLayer = layer
             layers[layer.name] = layer
 
-        if defaultLayerName not in layers:
-            raise ValueError(f"expected one layer named '{defaultLayerName}'.")
+        if defaultLayer is None:
+            raise ValueError("no layer marked as default")
         assert defaultLayer is not None
 
         return cls(layers=layers, defaultLayer=defaultLayer)
@@ -108,7 +147,7 @@ class LayerSet:
             lazy: If True, load glyphs, data files and images as they are accessed. If
                 False, load everything up front.
         """
-        layers: dict[str, Layer | Placeholder] = {}
+        layers: dict[str, Layer] = {}
         defaultLayer = None
 
         defaultLayerName = reader.getDefaultLayerName()
@@ -116,12 +155,12 @@ class LayerSet:
         for layerName in reader.getLayerNames():
             isDefault = layerName == defaultLayerName
             if isDefault or not lazy:
-                layer = cls._loadLayer(reader, layerName, lazy)
+                layer = cls._loadLayer(reader, layerName, lazy, isDefault)
                 if isDefault:
                     defaultLayer = layer
                 layers[layerName] = layer
             else:
-                layers[layerName] = _NOT_LOADED
+                layers[layerName] = _LAYER_NOT_LOADED
 
         assert defaultLayer is not None
 
@@ -139,9 +178,11 @@ class LayerSet:
     __deepcopy__ = _deepcopy_unlazify_attrs
 
     @staticmethod
-    def _loadLayer(reader: UFOReader, layerName: str, lazy: bool = True) -> Layer:
+    def _loadLayer(
+        reader: UFOReader, layerName: str, lazy: bool = True, default: bool = False
+    ) -> Layer:
         glyphSet = reader.getGlyphSet(layerName)
-        return Layer.read(layerName, glyphSet, lazy=lazy)
+        return Layer.read(layerName, glyphSet, lazy=lazy, default=default)
 
     def loadLayer(self, layerName: str, lazy: bool = True) -> Layer:
         # XXX: Remove this method and do business via _loadLayer or take this one
@@ -152,6 +193,26 @@ class LayerSet:
         layer = self._loadLayer(self._reader, layerName, lazy)
         self._layers[layerName] = layer
         return layer
+
+    @property
+    def defaultLayer(self) -> Layer:
+        return self._defaultLayer
+
+    @defaultLayer.setter
+    def defaultLayer(self, layer: Layer) -> None:
+        if layer is self._defaultLayer:
+            return
+        if layer not in self._layers.values():
+            raise ValueError(
+                f"Layer {layer!r} not found in layer set; can't set as default"
+            )
+        if self._defaultLayer.name == DEFAULT_LAYER_NAME:
+            raise ValueError(
+                "there's already a layer named 'public.default' which must stay default"
+            )
+        self._defaultLayer._default = False
+        layer._default = True
+        self._defaultLayer = layer
 
     def __contains__(self, name: str) -> bool:
         return name in self._layers
@@ -164,13 +225,13 @@ class LayerSet:
 
     def __getitem__(self, name: str) -> Layer:
         layer_object = self._layers[name]
-        if isinstance(layer_object, Placeholder):
+        if layer_object is _LAYER_NOT_LOADED:
             return self.loadLayer(name)
         return layer_object
 
     def __iter__(self) -> Iterator[Layer]:
         for layer_name, layer_object in self._layers.items():
-            if isinstance(layer_object, Placeholder):
+            if layer_object is _LAYER_NOT_LOADED:
                 yield self.loadLayer(layer_name)
             else:
                 yield layer_object
@@ -232,6 +293,8 @@ class LayerSet:
         if name in self._layers:
             raise KeyError("layer %r already exists" % name)
         self._layers[name] = layer = Layer(name, **kwargs)
+        if layer._default:
+            self.defaultLayer = layer
         return layer
 
     def renameGlyph(self, name: str, newName: str, overwrite: bool = False) -> None:
@@ -279,6 +342,8 @@ class LayerSet:
         del self._layers[name]
         self._layers[newName] = layer
         layer._name = newName
+        if newName == DEFAULT_LAYER_NAME:
+            self.defaultLayer = layer
 
     def write(self, writer: UFOWriter, saveAs: bool | None = None) -> None:
         """Writes this LayerSet to a :class:`fontTools.ufoLib.UFOWriter`.
@@ -300,7 +365,7 @@ class LayerSet:
         defaultLayer = self.defaultLayer
         for name, layer in layers.items():
             default = layer is defaultLayer
-            if isinstance(layer, Placeholder):
+            if layer is _LAYER_NOT_LOADED:
                 if saveAs:
                     layer = self.loadLayer(name, lazy=False)
                 else:
@@ -308,3 +373,12 @@ class LayerSet:
             glyphSet = writer.getGlyphSet(name, defaultLayer=default)
             layer.write(glyphSet, saveAs=saveAs)
         writer.writeLayerContents(self.layerOrder)
+
+    def _unstructure(self, converter: GenConverter) -> list[dict[str, Any]]:
+        return [converter.unstructure(layer) for layer in self]
+
+    @staticmethod
+    def _structure(
+        data: list[dict[str, Any]], cls: Type[LayerSet], converter: GenConverter
+    ) -> LayerSet:
+        return cls.from_iterable(converter.structure(layer, Layer) for layer in data)

@@ -2,9 +2,20 @@ from __future__ import annotations
 
 import os
 import shutil
-from typing import Any, Iterable, Iterator, KeysView, Mapping, MutableMapping, cast
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    Iterator,
+    KeysView,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Sequence,
+    cast,
+)
 
-import attr
 import fs.base
 import fs.tempfs
 from attr import define, field
@@ -17,8 +28,10 @@ from ufoLib2.objects.glyph import Glyph
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.imageSet import ImageSet
 from ufoLib2.objects.info import Info
+from ufoLib2.objects.kerning import Kerning, KerningPair
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
+from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
 from ufoLib2.objects.misc import (
     BoundingBox,
     _deepcopy_unlazify_attrs,
@@ -26,6 +39,10 @@ from ufoLib2.objects.misc import (
     _prune_object_libs,
 )
 from ufoLib2.typing import HasIdentifier, PathLike, T
+
+
+def _convert_LayerSet(value: LayerSet | Iterable[Layer]) -> LayerSet:
+    return value if isinstance(value, LayerSet) else LayerSet.from_iterable(value)
 
 
 def _convert_Info(value: Info | Mapping[str, Any]) -> Info:
@@ -42,6 +59,10 @@ def _convert_ImageSet(value: ImageSet | MutableMapping[str, bytes]) -> ImageSet:
 
 def _convert_Features(value: Features | str) -> Features:
     return value if isinstance(value, Features) else Features(value)
+
+
+def _convert_Kerning(value: Mapping[KerningPair, float]) -> Kerning:
+    return value if isinstance(value, Kerning) else Kerning(value)
 
 
 @define(kw_only=True)
@@ -106,7 +127,8 @@ class Font:
 
     layers: LayerSet = field(
         factory=LayerSet.default,
-        validator=attr.validators.instance_of(LayerSet),
+        converter=_convert_LayerSet,
+        metadata={"omit_if_default": False},
     )
     """LayerSet: A mapping of layer names to Layer objects."""
 
@@ -116,15 +138,15 @@ class Font:
     features: Features = field(factory=Features, converter=_convert_Features)
     """Features: The font Features object."""
 
-    groups: dict[str, list[str]] = field(factory=dict)
+    groups: Dict[str, List[str]] = field(factory=dict)
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
-    kerning: dict[tuple[str, str], float] = field(factory=dict)
+    kerning: Kerning = field(factory=Kerning, converter=_convert_Kerning)
     """Dict[Tuple[str, str], float]: A mapping of a tuple of first and second kerning
     pair to a kerning value."""
 
-    lib: dict[str, Any] = field(factory=dict)
-    """Dict[str, Any]: A mapping of keys to arbitrary values."""
+    _lib: Lib = field(factory=Lib, converter=_convert_Lib)
+    """Dict[str, PlistEncodable]: A mapping of keys to arbitrary plist values."""
 
     data: DataSet = field(factory=DataSet, converter=_convert_DataSet)
     """DataSet: A mapping of data file paths to arbitrary data."""
@@ -133,12 +155,14 @@ class Font:
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
     # init=False args, set by alternate open/read classmethod constructors
-    _path: PathLike | None = field(
+    _path: Optional[PathLike] = field(
         default=None, metadata=dict(copyable=False), eq=False, init=False
     )
-    _lazy: bool | None = field(default=None, init=False, eq=False)
-    _reader: UFOReader | None = field(default=None, init=False, eq=False)
-    _fileStructure: UFOFileStructure | None = field(default=None, init=False, eq=False)
+    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
+    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
+    _fileStructure: Optional[UFOFileStructure] = field(
+        default=None, init=False, eq=False
+    )
 
     @classmethod
     def open(cls, path: PathLike, lazy: bool = True, validate: bool = True) -> Font:
@@ -174,8 +198,8 @@ class Font:
             info=Info.read(reader),
             features=Features(reader.readFeatures()),
             groups=reader.readGroups(),
-            kerning=reader.readKerning(),
-            lib=reader.readLib(),
+            kerning=Kerning(reader.readKerning()),
+            lib=Lib(reader.readLib()),
         )
         self._lazy = lazy
         self._fileStructure = reader.fileStructure
@@ -185,31 +209,31 @@ class Font:
         return self
 
     def __contains__(self, name: object) -> bool:
-        return name in self.layers.defaultLayer
+        return name in self.layers._defaultLayer
 
     def __delitem__(self, name: str) -> None:
-        del self.layers.defaultLayer[name]
+        del self.layers._defaultLayer[name]
 
     def __getitem__(self, name: str) -> Glyph:
-        return self.layers.defaultLayer[name]
+        return self.layers._defaultLayer[name]
 
     def __setitem__(self, name: str, glyph: Glyph) -> None:
-        self.layers.defaultLayer[name] = glyph
+        self.layers._defaultLayer[name] = glyph
 
     def __iter__(self) -> Iterator[Glyph]:
-        return iter(self.layers.defaultLayer)
+        return iter(self.layers._defaultLayer)
 
     def __len__(self) -> int:
-        return len(self.layers.defaultLayer)
+        return len(self.layers._defaultLayer)
 
     def get(self, name: str, default: T | None = None) -> T | Glyph | None:
         """Return the :class:`.Glyph` object for name if it is present in the
         default layer, otherwise return ``default``."""
-        return self.layers.defaultLayer.get(name, default)
+        return self.layers._defaultLayer.get(name, default)
 
     def keys(self) -> KeysView[str]:
         """Return a list of glyph names in the default layer."""
-        return self.layers.defaultLayer.keys()
+        return self.layers._defaultLayer.keys()
 
     def close(self) -> None:
         """Closes the UFOReader if it still exists to finalize any outstanding
@@ -304,7 +328,7 @@ class Font:
             Sets the font's glyph order. If ``value`` is None or an empty list, the
             glyph order key will be deleted from the lib if it exists.
         """
-        return list(self.lib.get("public.glyphOrder", []))
+        return list(cast(Sequence[str], self.lib.get("public.glyphOrder", [])))
 
     @glyphOrder.setter
     def glyphOrder(self, value: list[str] | None) -> None:
@@ -334,6 +358,8 @@ class Font:
         self.info.guidelines = []
         for guideline in value:
             self.appendGuideline(guideline)
+
+    lib = property(_get_lib, _set_lib)
 
     def objectLib(self, object: HasIdentifier) -> dict[str, Any]:
         """Return the lib for an object with an identifier, as stored in a font's lib.
@@ -368,7 +394,7 @@ class Font:
 
         |defcon_compat|
         """
-        return self.layers.defaultLayer.bounds
+        return self.layers._defaultLayer.bounds
 
     @property
     def controlPointBounds(self) -> BoundingBox | None:
@@ -377,7 +403,7 @@ class Font:
 
         |defcon_compat|
         """
-        return self.layers.defaultLayer.controlPointBounds
+        return self.layers._defaultLayer.controlPointBounds
 
     def addGlyph(self, glyph: Glyph) -> None:
         """Appends glyph object to the default layer unless its name is already
@@ -387,12 +413,12 @@ class Font:
             Call the method on the layer directly if you want to overwrite entries
             with the same name or append copies of the glyph.
         """
-        self.layers.defaultLayer.addGlyph(glyph)
+        self.layers._defaultLayer.addGlyph(glyph)
 
     def newGlyph(self, name: str) -> Glyph:
         """Creates and returns new :class:`.Glyph` object in default layer with
         name."""
-        return self.layers.defaultLayer.newGlyph(name)
+        return self.layers._defaultLayer.newGlyph(name)
 
     def newLayer(self, name: str, **kwargs: Any) -> Layer:
         """Creates and returns a new :class:`.Layer`.
@@ -412,7 +438,7 @@ class Font:
             overwrite: If False, raises exception if newName is already taken.
                 If True, overwrites (read: deletes) the old :class:`.Glyph` object.
         """
-        self.layers.defaultLayer.renameGlyph(name, newName, overwrite)
+        self.layers._defaultLayer.renameGlyph(name, newName, overwrite)
 
     def renameLayer(self, name: str, newName: str, overwrite: bool = False) -> None:
         """Renames a :class:`.Layer`.
@@ -457,7 +483,7 @@ class Font:
         if saveAs is None:
             saveAs = self._reader is not writer
         # TODO move this check to fontTools UFOWriter
-        if self.layers.defaultLayer.name != DEFAULT_LAYER_NAME:
+        if self.layers._defaultLayer.name != DEFAULT_LAYER_NAME:
             assert DEFAULT_LAYER_NAME not in self.layers.layerOrder
         # save font attrs
         writer.writeFeatures(self.features.text)

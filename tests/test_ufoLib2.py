@@ -8,8 +8,9 @@ from fontTools import ufoLib
 
 import ufoLib2
 import ufoLib2.objects
-from ufoLib2.objects import Font, Layer, LayerSet
-from ufoLib2.objects.misc import _NOT_LOADED
+from ufoLib2.objects import Features, Font, Layer, LayerSet
+from ufoLib2.objects.layerSet import _LAYER_NOT_LOADED
+from ufoLib2.objects.misc import _DATA_NOT_LOADED
 
 
 def test_import_version() -> None:
@@ -25,20 +26,20 @@ def test_LayerSet_load_layers_on_iteration(tmp_path: Path) -> None:
     ufo = ufoLib2.Font.open(ufo_save_path)
     assert set(ufo.layers.keys()) == {"public.default", "test"}
     for layer in ufo.layers:
-        assert layer is not _NOT_LOADED  # type: ignore
+        assert layer is not _LAYER_NOT_LOADED
 
 
 def test_lazy_data_loading_saveas(ufo_UbuTestData: Font, tmp_path: Path) -> None:
     ufo = ufo_UbuTestData
     ufo_path = tmp_path / "UbuTestData2.ufo"
     ufo.save(ufo_path)
-    assert all(v is not _NOT_LOADED for v in ufo.data._data.values())
+    assert all(v is not _DATA_NOT_LOADED for v in ufo.data._data.values())
 
 
 def test_lazy_data_loading_inplace_no_load(ufo_UbuTestData: Font) -> None:
     ufo = ufo_UbuTestData
     ufo.save()
-    assert all(v is _NOT_LOADED for v in ufo.data._data.values())
+    assert all(v is _DATA_NOT_LOADED for v in ufo.data._data.values())
 
 
 def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData: Font) -> None:
@@ -47,7 +48,7 @@ def test_lazy_data_loading_inplace_load_some(ufo_UbuTestData: Font) -> None:
     ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] = some_data
     ufo.save()
     assert all(
-        v is _NOT_LOADED for k, v in ufo.data._data.items() if "T_S_I__0" not in k
+        v is _DATA_NOT_LOADED for k, v in ufo.data._data.items() if "T_S_I__0" not in k
     )
     assert ufo.data["com.github.fonttools.ttx/T_S_I__0.ttx"] == some_data
 
@@ -138,6 +139,7 @@ def test_default_layerset() -> None:
     assert len(layers) == 1
     assert "public.default" in layers
     assert len(layers["public.default"]) == 0
+    assert layers["public.default"].default
 
 
 def test_custom_layerset() -> None:
@@ -145,15 +147,83 @@ def test_custom_layerset() -> None:
     ls1 = LayerSet.from_iterable([default])
     assert next(iter(ls1)) is ls1.defaultLayer
 
-    with pytest.raises(ValueError):
-        ls1 = LayerSet.from_iterable([Layer(name="abc")])
+    with pytest.raises(ValueError, match="no layer marked as default"):
+        LayerSet.from_iterable([Layer(name="abc")])
 
+    with pytest.raises(ValueError, match="no layer marked as default"):
+        LayerSet({"abc": Layer(name="abc")})
+
+    with pytest.raises(ValueError, match="more than one layer marked as default"):
+        LayerSet.from_iterable([Layer("a", default=True), Layer("b", default=True)])
+
+    with pytest.raises(ValueError, match="more than one layer marked as default"):
+        LayerSet({"a": Layer("a", default=True), "b": Layer("b", default=True)})
+
+    with pytest.raises(KeyError, match="duplicate layer name"):
+        LayerSet.from_iterable([Layer("a", default=True), Layer("a")])
+
+    with pytest.raises(ValueError, match="default layer .* must be in layer set"):
+        LayerSet(layers={"public.default": Layer()}, defaultLayer=Layer())
+
+    # defaultLayerName is deprecated but still works for now
     ls2 = LayerSet.from_iterable([Layer(name="abc")], defaultLayerName="abc")
+    assert ls2["abc"].default
     assert ls2["abc"] is ls2.defaultLayer
 
-    layers2 = {}
-    layers2["public.default"] = default
-    LayerSet(layers=layers2, defaultLayer=default)  # type: ignore
+    # defaultLayer is set automatically based on Layer.default attribute
+    ls3 = LayerSet.from_iterable([Layer(name="abc", default=True), Layer("def")])
+    assert ls3["abc"].default
+    assert ls3["abc"] is ls3.defaultLayer
+    assert not ls3["def"].default
+
+    # also for the default constructor, defaultLayer is guessed from Layer.default
+    ls4 = LayerSet(layers={"foreground": Layer("foreground", default=True)})
+    assert ls4["foreground"] is ls4.defaultLayer
+
+    # unless defaultLayer parameter is set explicitly
+    defaultLayer = Layer("foreground", default=True)
+    ls5 = LayerSet(layers={"foreground": defaultLayer}, defaultLayer=defaultLayer)
+    assert ls5["foreground"] is ls5.defaultLayer
+    assert ls5.defaultLayer is defaultLayer
+
+
+def test_change_default_layer() -> None:
+    font = Font(layers=[Layer("foo", default=True), Layer("bar")])
+    assert font.layers.defaultLayer is font.layers["foo"]
+    assert font.layers["foo"].default
+    assert not font.layers["bar"].default
+
+    font.layers.defaultLayer = font.layers["bar"]
+    assert font.layers.defaultLayer is font.layers["bar"]
+    assert not font.layers["foo"].default
+    assert font.layers["bar"].default
+
+    font.newLayer("baz", default=True)
+    assert font.layers.defaultLayer is font.layers["baz"]
+    assert font.layers["baz"].default
+    assert not font.layers["foo"].default
+    assert not font.layers["bar"].default
+
+    font.renameLayer("foo", "public.default")
+    assert "foo" not in font.layers
+    assert font.layers.defaultLayer is font.layers["public.default"]
+    assert font.layers["public.default"].default
+    assert not font.layers["baz"].default
+
+
+def test_change_default_layer_invalid() -> None:
+    font = Font(layers=[Layer(), Layer("background")])
+
+    with pytest.raises(
+        ValueError,
+        match="there's already a layer named 'public.default' which must stay default",
+    ):
+        font.layers.defaultLayer = font.layers["background"]
+
+    with pytest.raises(
+        ValueError, match="Layer .* not found in layer set; can't set as default"
+    ):
+        font.layers.defaultLayer = Layer("foobar")
 
 
 def test_guidelines() -> None:
@@ -177,3 +247,21 @@ def test_guidelines() -> None:
         ufoLib2.objects.Guideline(x=100),
         ufoLib2.objects.Guideline(y=20),
     ]
+
+
+def test_woff_metadata(datadir: Path, tmp_path: Path) -> None:
+    # The WoffMetadataTest.ufo contains all the WOFF metadata, here we check
+    # that ufoLib validators accept the data and can read/write fontinfo.plist.
+    input_path = datadir / "WoffMetadataTest.ufo"
+    output_path = tmp_path / "WoffMetadataTest.ufo"
+
+    font = Font.open(input_path, validate=True)
+    font.save(output_path, validate=True)
+
+    assert (input_path / "fontinfo.plist").read_text("utf-8") == (
+        (output_path / "fontinfo.plist").read_text("utf-8")
+    )
+
+
+def test_features_normalize_newlines() -> None:
+    assert Features("a\r\nb\rc\n").normalize_newlines().text == "a\nb\nc\n"

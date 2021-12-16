@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from attr import define
 
 
@@ -16,7 +18,7 @@ class Point:
     y: float
     """The y coordinate of the point."""
 
-    type: str | None = None
+    type: Optional[str] = None
     """The type of the point.
 
     ``None`` means "offcurve".
@@ -27,10 +29,10 @@ class Point:
     smooth: bool = False
     """Whether a smooth curvature should be maintained at this point."""
 
-    name: str | None = None
+    name: Optional[str] = None
     """The name of the point, no uniqueness required."""
 
-    identifier: str | None = None
+    identifier: Optional[str] = None
     """The globally unique identifier of the point."""
 
     # XXX: Add post_init to check spec-mandated invariants?

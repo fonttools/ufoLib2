@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import Optional
 
 from attr import define, field
 from fontTools.misc.transform import Identity, Transform
@@ -30,7 +31,7 @@ class Component:
     transformation: Transform = field(default=Identity, converter=_convert_transform)
     """The affine transformation to apply to the :attr:`.Component.baseGlyph`."""
 
-    identifier: str | None = None
+    identifier: Optional[str] = None
     """The globally unique identifier of the component."""
 
     def move(self, delta: tuple[float, float]) -> None:

@@ -1,33 +1,45 @@
 from __future__ import annotations
 
-from typing import Any, Iterator, KeysView, Sequence, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterator,
+    KeysView,
+    Optional,
+    Sequence,
+    Type,
+    overload,
+)
 
 from attr import define, field
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
+from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
 from ufoLib2.objects.misc import (
-    _NOT_LOADED,
     BoundingBox,
-    Placeholder,
     _deepcopy_unlazify_attrs,
     _prune_object_libs,
     unionBounds,
 )
 from ufoLib2.typing import T
 
+if TYPE_CHECKING:
+    from cattr import GenConverter
 
-def _convert_glyphs(
-    value: dict[str, Glyph | Placeholder] | Sequence[Glyph]
-) -> dict[str, Glyph | Placeholder]:
-    result: dict[str, Glyph | Placeholder] = {}
-    glyph_ids = set()
+_GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
+
+
+def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyph]:
+    result: dict[str, Glyph] = {}
     if isinstance(value, dict):
+        glyph_ids = set()
         for name, glyph in value.items():
-            if not isinstance(glyph, Placeholder):
-                if not isinstance(glyph, Glyph):
-                    raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
+            if not isinstance(glyph, Glyph):
+                raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
+            if glyph is not _GLYPH_NOT_LOADED:
                 glyph_id = id(glyph)
                 if glyph_id in glyph_ids:
                     raise KeyError(f"{glyph!r} can't be added twice")
@@ -44,10 +56,6 @@ def _convert_glyphs(
         for glyph in value:
             if not isinstance(glyph, Glyph):
                 raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
-            glyph_id = id(glyph)
-            if glyph_id in glyph_ids:
-                raise KeyError(f"{glyph!r} can't be added twice")
-            glyph_ids.add(glyph_id)
             if glyph.name is None:
                 raise ValueError(f"{glyph!r} has no name; can't add it to Layer")
             if glyph.name in result:
@@ -94,20 +102,30 @@ class Layer:
             del layer["myGlyphName"]
     """
 
-    _name: str = DEFAULT_LAYER_NAME
-    _glyphs: dict[str, Glyph | Placeholder] = field(
-        factory=dict, converter=_convert_glyphs
-    )
-    color: str | None = None
+    _name: str = field(default=DEFAULT_LAYER_NAME, metadata={"omit_if_default": False})
+    _glyphs: Dict[str, Glyph] = field(factory=dict, converter=_convert_glyphs)
+    color: Optional[str] = None
     """The color assigned to the layer."""
 
-    lib: dict[str, Any] = field(factory=dict)
+    _lib: Lib = field(factory=Lib, converter=_convert_Lib)
     """The layer's lib for mapping string keys to arbitrary data."""
+
+    _default: bool = False
+    """Can set to True to mark a layer as default. If layer name is 'public.default'
+    the default attribute is automatically True. Exactly one layer must be marked as
+    default in a font."""
 
     _glyphSet: Any = field(default=None, init=False, eq=False)
 
+    def __attrs_post_init__(self) -> None:
+        if self._name == DEFAULT_LAYER_NAME and not self._default:
+            # layer named 'public.default' is default by definition
+            self._default = True
+
     @classmethod
-    def read(cls, name: str, glyphSet: GlyphSet, lazy: bool = True) -> Layer:
+    def read(
+        cls, name: str, glyphSet: GlyphSet, lazy: bool = True, default: bool = False
+    ) -> Layer:
         """Instantiates a Layer object from a
         :class:`fontTools.ufoLib.glifLib.GlyphSet`.
 
@@ -118,16 +136,16 @@ class Layer:
                 up front.
         """
         glyphNames = glyphSet.keys()
-        glyphs: dict[str, Glyph | Placeholder]
+        glyphs: dict[str, Glyph]
         if lazy:
-            glyphs = {gn: _NOT_LOADED for gn in glyphNames}
+            glyphs = {gn: _GLYPH_NOT_LOADED for gn in glyphNames}
         else:
             glyphs = {}
             for glyphName in glyphNames:
                 glyph = Glyph(glyphName)
                 glyphSet.readGlyph(glyphName, glyph, glyph.getPointPen())
                 glyphs[glyphName] = glyph
-        self = cls(name, glyphs)
+        self = cls(name, glyphs, default=default)
         if lazy:
             self._glyphSet = glyphSet
         glyphSet.readLayerInfo(self)
@@ -148,7 +166,7 @@ class Layer:
 
     def __getitem__(self, name: str) -> Glyph:
         glyph_object = self._glyphs[name]
-        if isinstance(glyph_object, Placeholder):
+        if glyph_object is _GLYPH_NOT_LOADED:
             return self.loadGlyph(name)
         return glyph_object
 
@@ -167,10 +185,11 @@ class Layer:
 
     def __repr__(self) -> str:
         n = len(self._glyphs)
-        return "<{}.{} '{}' ({}) at {}>".format(
+        return "<{}.{} '{}' ({}{}) at {}>".format(
             self.__class__.__module__,
             self.__class__.__name__,
             self._name,
+            "default, " if self._default else "",
             "empty" if n == 0 else "{} glyph{}".format(n, "s" if n > 1 else ""),
             hex(id(self)),
         )
@@ -217,6 +236,14 @@ class Layer:
     def name(self) -> str:
         """The name of the layer."""
         return self._name
+
+    lib = property(_get_lib, _set_lib)
+
+    @property
+    def default(self) -> bool:
+        """Read-only property. To change the font's default layer use the
+        LayerSet.defaultLayer property setter."""
+        return self._default
 
     @property
     def bounds(self) -> BoundingBox | None:
@@ -329,7 +356,7 @@ class Layer:
             for name in set(glyphSet.contents).difference(glyphs):
                 glyphSet.deleteGlyph(name)
         for name, glyph in glyphs.items():
-            if isinstance(glyph, Placeholder):
+            if glyph is _GLYPH_NOT_LOADED:
                 if saveAs:
                     glyph = self.loadGlyph(name)
                 else:
@@ -343,6 +370,45 @@ class Layer:
         if saveAs:
             # all glyphs are loaded by now, no need to keep ref to glyphSet
             self._glyphSet = None
+
+    def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
+        # omit glyph name attribute, already used as key
+        glyphs: dict[str, dict[str, Any]] = {}
+        for glyph_name in self._glyphs:
+            g = converter.unstructure(self[glyph_name])
+            assert glyph_name == g.pop("name")
+            glyphs[glyph_name] = g
+        d: dict[str, Any] = {
+            # never omit name even if == 'public.default' as that acts as
+            # the layer's "key" in the layerSet.
+            "name": self._name,
+        }
+        default: Any
+        for key, value, default in [
+            ("default", self._default, self._name == DEFAULT_LAYER_NAME),
+            ("glyphs", glyphs, {}),
+            ("lib", self._lib, {}),
+        ]:
+            if not converter.omit_if_default or value != default:
+                d[key] = value
+        if self.color is not None:
+            d["color"] = self.color
+        return d
+
+    @staticmethod
+    def _structure(
+        data: dict[str, Any], cls: Type[Layer], converter: GenConverter
+    ) -> Layer:
+        return cls(
+            name=data.get("name", DEFAULT_LAYER_NAME),
+            glyphs={
+                k: converter.structure(v, Glyph)
+                for k, v in data.get("glyphs", {}).items()
+            },
+            color=data.get("color"),
+            lib=converter.structure(data.get("lib", {}), Lib),
+            default=data.get("default", False),
+        )
 
 
 def _fetch_glyph_identifiers(glyph: Glyph) -> set[str]:
