@@ -12,12 +12,12 @@ from typing import (
     overload,
 )
 
-from attr import define, field
+from attr import define, field, setters
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
-from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
+from ufoLib2.objects.lib import Lib, _convert_Lib
 from ufoLib2.objects.misc import (
     BoundingBox,
     _deepcopy_unlazify_attrs,
@@ -107,7 +107,7 @@ class Layer:
     color: Optional[str] = None
     """The color assigned to the layer."""
 
-    _lib: Lib = field(factory=Lib, converter=_convert_Lib)
+    lib: Lib = field(factory=Lib, converter=_convert_Lib, on_setattr=setters.convert)
     """The layer's lib for mapping string keys to arbitrary data."""
 
     _default: bool = False
@@ -236,8 +236,6 @@ class Layer:
     def name(self) -> str:
         """The name of the layer."""
         return self._name
-
-    lib = property(_get_lib, _set_lib)
 
     @property
     def default(self) -> bool:
@@ -387,7 +385,7 @@ class Layer:
         for key, value, default in [
             ("default", self._default, self._name == DEFAULT_LAYER_NAME),
             ("glyphs", glyphs, {}),
-            ("lib", self._lib, {}),
+            ("lib", self.lib, {}),
         ]:
             if not converter.omit_if_default or value != default:
                 d[key] = value
