@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+from typing import Any, Type
 
 import pytest
 from fontTools import ufoLib
 
 import ufoLib2
 import ufoLib2.objects
-from ufoLib2.objects import Features, Font, Layer, LayerSet
+from ufoLib2.objects import Features, Font, Glyph, Kerning, Layer, LayerSet, Lib
 from ufoLib2.objects.layerSet import _LAYER_NOT_LOADED
 from ufoLib2.objects.misc import _DATA_NOT_LOADED
 
@@ -265,3 +266,21 @@ def test_woff_metadata(datadir: Path, tmp_path: Path) -> None:
 
 def test_features_normalize_newlines() -> None:
     assert Features("a\r\nb\rc\n").normalize_newlines().text == "a\nb\nc\n"
+
+
+@pytest.mark.parametrize(
+    "klass, attr_name, attr_type, obj",
+    [
+        (Font, "lib", Lib, {"foo": 1}),
+        (Font, "kerning", Kerning, {("a", "b"): -10}),
+        (Glyph, "lib", Lib, {"bar": [2, 3]}),
+    ],
+)
+def test_font_on_setattr(
+    klass: Type[Any], attr_name: str, attr_type: Type[Any], obj: Any
+) -> None:
+    o = klass()
+    assert isinstance(getattr(o, attr_name), attr_type)
+    assert not isinstance(obj, attr_type)
+    setattr(o, attr_name, obj)
+    assert isinstance(getattr(o, attr_name), attr_type)

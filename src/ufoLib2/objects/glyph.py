@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Iterator, List, Mapping, Optional, cast
 
-from attr import define, field
+from attr import define, field, setters
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
@@ -17,7 +17,7 @@ from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
-from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
+from ufoLib2.objects.lib import Lib, _convert_Lib
 from ufoLib2.objects.misc import BoundingBox, _object_lib, getBounds, getControlBounds
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 from ufoLib2.typing import GlyphSet, HasIdentifier
@@ -67,7 +67,7 @@ class Glyph:
 
     _image: Image = field(factory=Image)
 
-    _lib: Lib = field(factory=Lib, converter=_convert_Lib)
+    lib: Lib = field(factory=Lib, converter=_convert_Lib, on_setattr=setters.convert)
     """The glyph's mapping of string keys to arbitrary data."""
 
     note: Optional[str] = None
@@ -101,8 +101,6 @@ class Glyph:
             f"'{self._name}' " if self._name is not None else "",
             hex(id(self)),
         )
-
-    lib = property(_get_lib, _set_lib)
 
     @property
     def anchors(self) -> list[Anchor]:

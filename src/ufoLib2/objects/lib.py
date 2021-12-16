@@ -26,15 +26,6 @@ def _convert_Lib(value: Mapping[str, Any]) -> Lib:
     return value if isinstance(value, Lib) else Lib(value)
 
 
-# getter/setter properties used by Font, Layer, Glyph
-def _get_lib(self: Any) -> Lib:
-    return cast(Lib, self._lib)
-
-
-def _set_lib(self: Any, value: Mapping[str, Any]) -> None:
-    self._lib = _convert_Lib(value)
-
-
 def is_data_dict(value: Any) -> bool:
     return (
         isinstance(value, Mapping)

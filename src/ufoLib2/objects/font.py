@@ -18,7 +18,7 @@ from typing import (
 
 import fs.base
 import fs.tempfs
-from attr import define, field
+from attr import define, field, setters
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
@@ -31,7 +31,7 @@ from ufoLib2.objects.info import Info
 from ufoLib2.objects.kerning import Kerning, KerningPair
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
-from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
+from ufoLib2.objects.lib import Lib, _convert_Lib
 from ufoLib2.objects.misc import (
     BoundingBox,
     _deepcopy_unlazify_attrs,
@@ -141,11 +141,13 @@ class Font:
     groups: Dict[str, List[str]] = field(factory=dict)
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
-    kerning: Kerning = field(factory=Kerning, converter=_convert_Kerning)
+    kerning: Kerning = field(
+        factory=Kerning, converter=_convert_Kerning, on_setattr=setters.convert
+    )
     """Dict[Tuple[str, str], float]: A mapping of a tuple of first and second kerning
     pair to a kerning value."""
 
-    _lib: Lib = field(factory=Lib, converter=_convert_Lib)
+    lib: Lib = field(factory=Lib, converter=_convert_Lib, on_setattr=setters.convert)
     """Dict[str, PlistEncodable]: A mapping of keys to arbitrary plist values."""
 
     data: DataSet = field(factory=DataSet, converter=_convert_DataSet)
@@ -358,8 +360,6 @@ class Font:
         self.info.guidelines = []
         for guideline in value:
             self.appendGuideline(guideline)
-
-    lib = property(_get_lib, _set_lib)
 
     def objectLib(self, object: HasIdentifier) -> dict[str, Any]:
         """Return the lib for an object with an identifier, as stored in a font's lib.
