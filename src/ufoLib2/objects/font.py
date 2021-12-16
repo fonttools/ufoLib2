@@ -65,6 +65,14 @@ def _convert_Kerning(value: Mapping[KerningPair, float]) -> Kerning:
     return value if isinstance(value, Kerning) else Kerning(value)
 
 
+def _get_kerning(self: Font) -> Kerning:
+    return self._kerning
+
+
+def _set_kerning(self: Font, value: Mapping[KerningPair, float]) -> None:
+    self._kerning = _convert_Kerning(value)
+
+
 @define(kw_only=True)
 class Font:
     """A data class representing a single Unified Font Object (UFO).
@@ -141,7 +149,7 @@ class Font:
     groups: Dict[str, List[str]] = field(factory=dict)
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
-    kerning: Kerning = field(factory=Kerning, converter=_convert_Kerning)
+    _kerning: Kerning = field(factory=Kerning, converter=_convert_Kerning)
     """Dict[Tuple[str, str], float]: A mapping of a tuple of first and second kerning
     pair to a kerning value."""
 
@@ -358,6 +366,8 @@ class Font:
         self.info.guidelines = []
         for guideline in value:
             self.appendGuideline(guideline)
+
+    kerning = property(_get_kerning, _set_kerning)
 
     lib = property(_get_lib, _set_lib)
 
