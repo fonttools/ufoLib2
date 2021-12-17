@@ -26,8 +26,9 @@ else:
 
 
 __all__ = [
-    "default_converter",
     "register_hooks",
+    "structure",
+    "unstructure",
 ]
 
 
@@ -139,3 +140,6 @@ default_converter = GenConverter(
     prefer_attrib_converters=False,
 )
 register_hooks(default_converter, allow_bytes=False)
+
+structure = default_converter.structure
+unstructure = default_converter.unstructure

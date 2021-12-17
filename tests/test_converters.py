@@ -49,7 +49,7 @@ from ufoLib2.objects.info import (
 
 # isort: off
 cattr = pytest.importorskip("cattr")
-from ufoLib2.converters import default_converter, register_hooks  # noqa: E402
+from ufoLib2.converters import register_hooks, structure, unstructure  # noqa: E402
 
 
 @pytest.mark.parametrize(
@@ -499,17 +499,17 @@ from ufoLib2.converters import default_converter, register_hooks  # noqa: E402
     ],
 )
 def test_unstructure_structure(obj: Any, expected: dict[str, Any]) -> None:
-    assert default_converter.unstructure(obj) == expected
-    assert default_converter.structure(expected, type(obj)) == obj
+    assert unstructure(obj) == expected
+    assert structure(expected, type(obj)) == obj
 
 
 def test_unstructure_lazy_font(ufo_UbuTestData: Font) -> None:
     font1 = ufo_UbuTestData
     assert font1._lazy
 
-    font_data = default_converter.unstructure(font1)
+    font_data = unstructure(font1)
 
-    font2 = default_converter.structure(font_data, Font)
+    font2 = structure(font_data, Font)
     assert font2 == font1
 
     assert not font2._lazy
@@ -683,7 +683,7 @@ def test_json_dumps(datadir: pathlib.Path) -> None:
     # opening the UFO on Windows
     font.features.normalize_newlines()
 
-    data = default_converter.unstructure(font)
+    data = unstructure(font)
 
     expected = (datadir / "MutatorSansBoldCondensed.json").read_text()
 
@@ -698,4 +698,4 @@ def test_json_loads(datadir: pathlib.Path) -> None:
     # opening the UFO on Windows
     expected.features.normalize_newlines()
 
-    assert default_converter.structure(data, Font) == expected
+    assert structure(data, Font) == expected
