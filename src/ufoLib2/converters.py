@@ -64,7 +64,8 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
             kwargs["_cattrs_forbid_extra_keys"] = conv.forbid_extra_keys
             kwargs["_cattrs_prefer_attrib_converters"] = conv._prefer_attrib_converters
         else:
-            kwargs["omit_if_default"] = conv.omit_if_default
+            kwargs["omit_if_default"] = conv.omit_if_default  # cattrs < 1.10.0
+            kwargs["_cattrs_omit_if_default"] = conv.omit_if_default  # cattrs >= 1.10.0
         for a in attribs:
             if a.type in conv.type_overrides:
                 # cattrs' gen_(un)structure_attrs_fromdict (used by default for attrs
