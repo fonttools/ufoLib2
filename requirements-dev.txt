@@ -20,7 +20,7 @@ iniconfig==1.1.1
     # via pytest
 isort==5.10.1
     # via -r requirements-dev.in
-mccabe==0.7.0
+mccabe==0.6.1
     # via flake8
 mypy==0.931
     # via -r requirements-dev.in
@@ -46,15 +46,10 @@ pyparsing==3.0.7
     # via packaging
 pytest==7.0.0
     # via -r requirements-dev.in
-regex==2022.1.18
-    # via black
-toml==0.10.2
-    # via
-    #   mypy
-    #   pytest
 tomli==2.0.0
-    # via black
-typing-extensions==4.0.1
     # via
     #   black
     #   mypy
+    #   pytest
+typing-extensions==4.0.1
+    # via mypy
