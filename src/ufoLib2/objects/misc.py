@@ -383,7 +383,7 @@ class AttrDictMixin(AttrDictMixinMapping):
             return value
         elif isinstance(value, Mapping):
             attr_map = cls._key_to_attr_map()
-            return cls(**{attr_map[k]: v for k, v in value.items()})  # type: ignore
+            return cls(**{attr_map[k]: v for k, v in value.items()})
         raise TypeError(
             f"Expected {cls.__name__} or mapping, found: {type(value).__name__}"
         )

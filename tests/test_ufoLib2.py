@@ -197,7 +197,7 @@ def test_change_default_layer() -> None:
     font.layers.defaultLayer = font.layers["bar"]
     assert font.layers.defaultLayer is font.layers["bar"]
     assert not font.layers["foo"].default
-    assert font.layers["bar"].default
+    assert font.layers["bar"].default  # type: ignore
 
     font.newLayer("baz", default=True)
     assert font.layers.defaultLayer is font.layers["baz"]
