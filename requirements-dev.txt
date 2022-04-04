@@ -10,7 +10,7 @@ attrs==21.4.0
     #   pytest
 black==22.3.0
     # via -r requirements-dev.in
-click==8.0.3
+click==8.1.2
     # via black
 coverage==6.3.1
     # via -r requirements-dev.in
