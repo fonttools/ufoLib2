@@ -18,7 +18,7 @@ fs==2.4.15
     # via fonttools
 lxml==4.8.0
     # via ufoLib2 (setup.cfg)
-pytz==2021.3
+pytz==2022.1
     # via fs
 six==1.16.0
     # via fs
