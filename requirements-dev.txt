@@ -46,7 +46,7 @@ pyparsing==3.0.8
     # via packaging
 pytest==7.1.1
     # via -r requirements-dev.in
-tomli==2.0.0
+tomli==2.0.1
     # via
     #   black
     #   mypy
