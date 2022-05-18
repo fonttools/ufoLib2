@@ -389,6 +389,28 @@ class Glyph:
             del self.lib["public.markColor"]
 
     @property
+    def trueTypeOverlap(self) -> bool | None:
+        """The glyph's TrueType overlap
+
+        See https://unifiedfontobject.org/versions/ufo3/glyphs/glif/#publictruetypeoverlap.
+
+        Getter:
+            Returns the TrueType overlap or None.
+
+        Setter:
+            Sets the TrueType overlap. If value is None, deletes the key from the lib if
+            present.
+        """
+        return cast(Optional[bool], self.lib.get("public.truetype.overlap"))
+
+    @trueTypeOverlap.setter
+    def trueTypeOverlap(self, value: bool | None) -> None:
+        if value is not None:
+            self.lib["public.truetype.overlap"] = value
+        elif "public.truetype.overlap" in self.lib:
+            del self.lib["public.truetype.overlap"]
+
+    @property
     def verticalOrigin(self) -> float | None:
         """The vertical origin of the glyph.
 
