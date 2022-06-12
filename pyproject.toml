@@ -1,6 +1,97 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
-build-backend = "setuptools.build_meta"
+requires = [
+    "hatchling>=1.3.1",
+    "hatch-vcs",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "ufoLib2"
+description = "ufoLib2 is a UFO font processing library."
+readme = "README.md"
+license-key = "Apache 2.0"
+requires-python = ">=3.7"
+authors = [
+    { name = "Adrien Tétar", email = "adri-from-59@hotmail.fr" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Text Processing :: Fonts",
+]
+dependencies = [
+    "attrs >= 20.1.0",
+    "fonttools[ufo] >= 4.0.0",
+    'typing_extensions ; python_version < "3.8"',
+]
+dynamic = [
+    "version",
+]
+
+[project.optional-dependencies]
+converters = ["cattrs >= 1.10.0"]
+lxml = ["lxml"]
+
+[project.urls]
+Homepage = "https://github.com/fonttools/ufoLib2"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/docs",
+    "/src",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/ufoLib2",
+]
+
+[tool.hatch.envs.docs]
+dependencies = [
+    "sphinx>=4",
+    "sphinx_rtd_theme>=1",
+]
+features = [
+    "converters",
+]
+
+[tool.hatch.envs.docs.scripts]
+make = "sphinx-build -W -j auto docs/source docs/build"
+
+[tool.hatch.envs.lint]
+skip-install = true
+dependencies = [
+    "mypy>=0.942",
+]
+
+[tool.hatch.envs.lint.scripts]
+typing = "mypy"
+
+[tool.hatch.envs.test]
+dependencies = [
+    "pytest",
+    "pytest-cov",
+]
+features = [
+    "converters",
+]
+
+[tool.hatch.envs.test.scripts]
+cov = [
+    "pytest --cov",
+    "coverage html",
+]
+no-cov = "pytest"
+
+[[tool.hatch.envs.test.matrix]]
+python = ["37", "38", "39", "310", "pypy3"]
 
 [tool.black]
 target-version = ["py37"]
@@ -11,5 +102,31 @@ profile = "black"
 float_to_top = true
 known_first_party = "ufoLib2"
 
-[tool.setuptools_scm]
-write_to = "src/ufoLib2/_version.py"
+[tool.coverage.run]
+branch = true
+parallel = true
+source = [
+    "ufoLib2",
+    "tests",
+]
+
+[tool.coverage.paths]
+source = [
+    "src/ufoLib2",
+    "*/site-packages/ufoLib2",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    # keywords to use in inline comments to skip coverage
+    "pragma: no cover",
+
+    # don't complain if tests don't hit defensive assertion code
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # don't complain if non-runnable code isn't run
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+ignore_errors = true
