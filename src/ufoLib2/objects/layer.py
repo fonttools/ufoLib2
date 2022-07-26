@@ -24,6 +24,7 @@ from ufoLib2.objects.misc import (
     _prune_object_libs,
     unionBounds,
 )
+from ufoLib2.serde import serde
 from ufoLib2.typing import T
 
 if TYPE_CHECKING:
@@ -64,6 +65,7 @@ def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyp
     return result
 
 
+@serde
 @define
 class Layer:
     """Represents a Layer that holds Glyph objects.

@@ -3,8 +3,10 @@ from __future__ import annotations
 from fontTools.ufoLib import UFOReader, UFOWriter
 
 from ufoLib2.objects.misc import DataStore
+from ufoLib2.serde import serde
 
 
+@serde
 class DataSet(DataStore):
     """Represents a mapping of POSIX filename strings to arbitrary data bytes.
 

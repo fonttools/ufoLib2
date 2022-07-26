@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, Mapping, Tuple
 
+from ufoLib2.serde import serde
+
 if TYPE_CHECKING:
     from typing import Type
 
@@ -10,6 +12,7 @@ if TYPE_CHECKING:
 KerningPair = Tuple[str, str]
 
 
+@serde
 class Kerning(Dict[KerningPair, float]):
     def as_nested_dicts(self) -> dict[str, dict[str, float]]:
         result: dict[str, dict[str, float]] = {}

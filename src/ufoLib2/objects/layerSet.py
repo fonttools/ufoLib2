@@ -18,6 +18,7 @@ from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.errors import Error
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
+from ufoLib2.serde import serde
 from ufoLib2.typing import T
 
 if TYPE_CHECKING:
@@ -33,6 +34,7 @@ def _must_have_at_least_one_item(self: Any, attribute: Any, value: Sized) -> Non
         raise ValueError("value must have at least one item.")
 
 
+@serde
 @define
 class LayerSet:
     """Represents a mapping of layer names to Layer objects.

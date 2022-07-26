@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Union, cast
 
 from ufoLib2.constants import DATA_LIB_KEY
+from ufoLib2.serde import serde
 
 if TYPE_CHECKING:
     from typing import Type
@@ -67,6 +68,7 @@ def _structure_data_inplace(
             _structure_data_inplace(k, v, value, converter)
 
 
+@serde
 class Lib(Dict[str, Any]):
     def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
         # avoid encoding if converter supports bytes natively

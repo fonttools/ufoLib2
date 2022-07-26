@@ -5,8 +5,10 @@ from typing import Optional
 from attr import define
 
 from ufoLib2.objects.misc import AttrDictMixin
+from ufoLib2.serde import serde
 
 
+@serde
 @define
 class Anchor(AttrDictMixin):
     """Represents a single anchor.

@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Type
 
 from attr import define
 
+from ufoLib2.serde import serde
+
 if TYPE_CHECKING:
     from cattr import GenConverter
 
@@ -12,6 +14,7 @@ if TYPE_CHECKING:
 RE_NEWLINES = re.compile(r"\r\n|\r")
 
 
+@serde
 @define
 class Features:
     """A data class representing UFO features.

@@ -38,6 +38,7 @@ from ufoLib2.objects.misc import (
     _object_lib,
     _prune_object_libs,
 )
+from ufoLib2.serde import serde
 from ufoLib2.typing import HasIdentifier, PathLike, T
 
 
@@ -73,6 +74,7 @@ def _set_kerning(self: Font, value: Mapping[KerningPair, float]) -> None:
     self._kerning = _convert_Kerning(value)
 
 
+@serde
 @define(kw_only=True)
 class Font:
     """A data class representing a single Unified Font Object (UFO).

@@ -143,3 +143,11 @@ register_hooks(default_converter, allow_bytes=False)
 
 structure = default_converter.structure
 unstructure = default_converter.unstructure
+
+# same as default_converter but allows bytes
+binary_converter = GenConverter(
+    omit_if_default=True,
+    forbid_extra_keys=True,
+    prefer_attrib_converters=False,
+)
+register_hooks(binary_converter, allow_bytes=True)
