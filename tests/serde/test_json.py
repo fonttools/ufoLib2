@@ -7,7 +7,11 @@ from typing import Any
 import pytest
 
 import ufoLib2.objects
-import ufoLib2.serde.json
+
+# isort: off
+pytest.importorskip("cattr")
+
+import ufoLib2.serde.json  # noqa: E402
 
 
 @pytest.mark.parametrize("have_orjson", [False, True], ids=["no-orjson", "with-orjson"])
