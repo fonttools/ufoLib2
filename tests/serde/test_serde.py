@@ -61,6 +61,10 @@ assert {d["class_name"] for d in BASIC_EMPTY_OBJECTS} == set(ufoLib2.objects.__a
     ids=lambda x: x["class_name"],  # type: ignore
 )
 def test_serde_all_objects(fmt: str, object_info: Dict[str, Any]) -> None:
+    if fmt in ("json", "msgpack"):
+        # skip these format tests if cattrs is not installed
+        pytest.importorskip("cattr")
+
     klass = getattr(ufoLib2.objects, object_info["class_name"])
     loads = getattr(klass, f"{fmt}_loads")
     obj = klass(*object_info["args"])
