@@ -70,7 +70,7 @@ def unionBounds(
 
 
 def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
-    if getattr(self, "_lazy", True) and hasattr(self, "unlazify"):
+    if self._lazy:
         self.unlazify()
     return self.__class__(
         **{

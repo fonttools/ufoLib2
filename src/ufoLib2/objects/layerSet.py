@@ -76,6 +76,7 @@ class LayerSet:
 
     _defaultLayer: Layer = field(default=_LAYER_NOT_LOADED, eq=False)
 
+    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
     _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
@@ -167,6 +168,7 @@ class LayerSet:
         assert defaultLayer is not None
 
         self = cls(layers=layers, defaultLayer=defaultLayer)
+        self._lazy = lazy
         if lazy:
             self._reader = reader
 
@@ -174,8 +176,10 @@ class LayerSet:
 
     def unlazify(self) -> None:
         """Load all layers into memory."""
-        for layer in self:
-            layer.unlazify()
+        if self._lazy:
+            for layer in self:
+                layer.unlazify()
+        self._lazy = False
 
     __deepcopy__ = _deepcopy_unlazify_attrs
 

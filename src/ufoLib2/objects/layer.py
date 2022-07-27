@@ -117,6 +117,7 @@ class Layer:
     the default attribute is automatically True. Exactly one layer must be marked as
     default in a font."""
 
+    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
     _glyphSet: Any = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
@@ -148,6 +149,7 @@ class Layer:
                 glyphSet.readGlyph(glyphName, glyph, glyph.getPointPen())
                 glyphs[glyphName] = glyph
         self = cls(name, glyphs, default=default)
+        self._lazy = lazy
         if lazy:
             self._glyphSet = glyphSet
         glyphSet.readLayerInfo(self)
@@ -155,8 +157,10 @@ class Layer:
 
     def unlazify(self) -> None:
         """Load all glyphs into memory."""
-        for _ in self:
-            pass
+        if self._lazy:
+            for _ in self:
+                pass
+        self._lazy = False
 
     __deepcopy__ = _deepcopy_unlazify_attrs
 
