@@ -21,7 +21,9 @@ from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
 from ufoLib2.objects.misc import (
     BoundingBox,
     _deepcopy_unlazify_attrs,
+    _getstate_unlazify_attrs,
     _prune_object_libs,
+    _setstate_attrs,
     unionBounds,
 )
 from ufoLib2.serde import serde
@@ -163,6 +165,9 @@ class Layer:
         self._lazy = False
 
     __deepcopy__ = _deepcopy_unlazify_attrs
+
+    __getstate__ = _getstate_unlazify_attrs
+    __setstate__ = _setstate_attrs
 
     def __contains__(self, name: object) -> bool:
         return name in self._glyphs

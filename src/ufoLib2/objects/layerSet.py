@@ -17,7 +17,11 @@ from fontTools.ufoLib import UFOReader, UFOWriter
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.errors import Error
 from ufoLib2.objects.layer import Layer
-from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
+from ufoLib2.objects.misc import (
+    _deepcopy_unlazify_attrs,
+    _getstate_unlazify_attrs,
+    _setstate_attrs,
+)
 from ufoLib2.serde import serde
 from ufoLib2.typing import T
 
@@ -182,6 +186,9 @@ class LayerSet:
         self._lazy = False
 
     __deepcopy__ = _deepcopy_unlazify_attrs
+
+    __getstate__ = _getstate_unlazify_attrs
+    __setstate__ = _setstate_attrs
 
     @staticmethod
     def _loadLayer(
