@@ -165,9 +165,7 @@ class Font:
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
     # init=False args, set by alternate open/read classmethod constructors
-    _path: Optional[PathLike] = field(
-        default=None, metadata=dict(copyable=False), eq=False, init=False
-    )
+    _path: Optional[PathLike] = field(default=None, eq=False, init=False)
     _lazy: Optional[bool] = field(default=None, init=False, eq=False)
     _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
     _fileStructure: Optional[UFOFileStructure] = field(
