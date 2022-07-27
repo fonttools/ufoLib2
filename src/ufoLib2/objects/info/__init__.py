@@ -10,6 +10,7 @@ from fontTools.ufoLib import UFOReader
 
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.misc import AttrDictMixin
+from ufoLib2.serde import serde
 
 from .woff import (
     WoffMetadataCopyright,
@@ -170,6 +171,7 @@ def _dict_list_setter_property(cls: type[Tc], name: str | None = None) -> Any:
     )
 
 
+@serde
 @define
 class Info:
     """A data class representing the contents of fontinfo.plist.
