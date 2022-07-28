@@ -6,7 +6,7 @@ from typing import IO, Any, AnyStr, BinaryIO, Callable, Type, cast
 
 from ufoLib2.typing import PathLike, T
 
-_SERDE_FORMATS_ = ("json", "msgpack", "pickle")
+_SERDE_FORMATS_ = ("json", "msgpack")
 
 
 def _loads(
@@ -53,19 +53,42 @@ def _dump(
 def serde(cls: Type[T]) -> Type[T]:
     """Decorator to add serialization support to a ufoLib2 class.
 
-    Currently JSON, MessagePack (msgpack) and Pickle are the supported formats,
-    but other formats may be added in the future.
+    This adds f"{format}_loads" / f"{format}_dumps" (from/to bytes) methods, and
+    f"{format}_load" / f"{format}_dump" (for file or path) methods to all ufoLib2
+    objects, not just Font.
 
-    Pickle works out of the box, whereas the others require additional extras
-    to be installed: e.g. ufoLib2[json,msgpack]. If required, this will install
-    the `cattrs` library for structuring/unstructuring custom objects from/to
-    serializable data structures (also available with ufoLib2[converters] extra).
+    Currently the supported formats are JSON and MessagePack (msgpack), but other
+    formats may be added in the future.
 
-    If any of the optional dependencies fails to be imported, this decorator will
-    raise an ImportError when any of the related methods are called.
+    E.g.::
+
+        from ufoLib2 import Font
+
+        font = Font.open("MyFont.ufo")
+        font.json_dump("MyFont.json")
+        font2 = Font.json_load("MyFont.json")
+        font3 = Font.json_loads(font2.json_dumps())
+
+        font3.msgpack_dump("MyFont.msgpack")
+        font4 = Font.msgpack_load("MyFont.msgpack")
+        # etc.
+
+    Note this requires additional extras to be installed: e.g. ufoLib2[json,msgpack].
+    In additions to the respective serialization library, these installs the `cattrs`
+    library for structuring/unstructuring custom objects from/to serializable data
+    structures (also available separately as ufoLib2[converters] extra).
+
+    If any of the optional dependencies fails to be imported, the methods will raise
+    an ImportError when called.
 
     If the faster `orjson` library is present, it will be used in place of the
-    built-in `json` library.
+    built-in `json` library on CPython. On PyPy, the `orjson` library is not available,
+    so the built-in `json` library will be used (though it's pretty fast anyway).
+
+    If you want a serialization format that works out of the box with all ufoLib2
+    objects (but it's mostly limited to Python) you can use the built-in pickle module,
+    which doesn't require to use the `cattrs` converters.
+
     """
 
     supported_formats = []

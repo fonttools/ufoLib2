@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import pickle
 from pathlib import Path
+from typing import Optional
+
+import pytest
 
 from ufoLib2.objects import Font, Glyph, Guideline
 
@@ -101,3 +105,33 @@ def test_data_images_init() -> None:
     assert font.data["bbb/c"] == b"456"
     assert font.images["a.png"] == b"\x89PNG\r\n\x1a\n"
     assert font.images["b.png"] == b"\x89PNG\r\n\x1a\n"
+
+
+@pytest.mark.parametrize(
+    "lazy", [None, False, True], ids=["lazy-unset", "non-lazy", "lazy"]
+)
+def test_pickle_lazy_font(datadir: Path, lazy: Optional[bool]) -> None:
+    if lazy is not None:
+        font = Font.open(datadir / "UbuTestData.ufo", lazy=lazy)
+    else:
+        font = Font()
+
+    assert lazy is font._lazy
+
+    data = pickle.dumps(font)
+
+    assert isinstance(data, bytes) and len(data) > 0
+
+    # picklying unlazifies
+    if lazy:
+        assert font._lazy is False
+    else:
+        assert font._lazy is lazy
+
+    font2 = pickle.loads(data)
+
+    assert isinstance(font2, Font)
+    assert font == font2
+    # unpickling doesn't initialize the lazy flag or a reader, which reset to default
+    assert font2._lazy is None
+    assert font2._reader is None
