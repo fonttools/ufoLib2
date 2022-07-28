@@ -63,6 +63,24 @@ def test_dump_load(
 
     assert font == font2
 
+    with open(tmp_path / "test.json", "wb") as f:
+        font.json_dump(f, indent=indent, sort_keys=sort_keys)  # type: ignore
+
+    # load/dump work with paths too, not just file objects
+    font3 = ufoLib2.objects.Font.json_load(tmp_path / "test.json")  # type: ignore
+
+    assert font == font3
+
+    font.json_dump(  # type: ignore
+        tmp_path / "test2.json",
+        indent=indent,
+        sort_keys=sort_keys,
+    )
+
+    assert (tmp_path / "test.json").read_bytes() == (
+        tmp_path / "test2.json"
+    ).read_bytes()
+
 
 @pytest.mark.parametrize("indent", [1, 3], ids=["indent-1", "indent-3"])
 def test_indent_not_2_orjson(indent: int) -> None:

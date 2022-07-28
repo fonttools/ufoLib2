@@ -33,6 +33,17 @@ def test_dump_load(tmp_path: Path, ufo_UbuTestData: ufoLib2.objects.Font) -> Non
 
     assert font == font2
 
+    # laod/dump work with paths too, not just file objects
+    font3 = ufoLib2.objects.Font.msgpack_load(tmp_path / "test.msgpack")  # type: ignore
+
+    assert font == font3
+
+    font.msgpack_dump(tmp_path / "test2.msgpack")  # type: ignore
+
+    assert (tmp_path / "test.msgpack").read_bytes() == (
+        tmp_path / "test2.msgpack"
+    ).read_bytes()
+
 
 def test_allow_bytes(ufo_UbuTestData: ufoLib2.objects.Font) -> None:
     font = ufo_UbuTestData
