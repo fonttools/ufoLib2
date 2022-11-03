@@ -4,8 +4,8 @@ from enum import IntEnum
 from functools import partial
 from typing import Any, Callable, List, Mapping, Optional, Sequence, TypeVar
 
-import attr
-from attr import define, field
+import attrs
+from attrs import define, field
 from fontTools.ufoLib import UFOReader
 
 from ufoLib2.objects.guideline import Guideline
@@ -60,7 +60,7 @@ def _positive(instance: Any, attribute: Any, value: int) -> None:
         )
 
 
-_optional_positive = attr.validators.optional(_positive)
+_optional_positive = attrs.validators.optional(_positive)
 
 
 # or maybe use IntFlag?

@@ -7,7 +7,7 @@ from ufoLib2.serde import serde
 if TYPE_CHECKING:
     from typing import Type
 
-    from cattr import Converter
+    from cattrs import Converter
 
 KerningPair = Tuple[str, str]
 

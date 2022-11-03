@@ -6,7 +6,7 @@ import pytest
 import ufoLib2.objects
 
 # isort: off
-pytest.importorskip("cattr")
+pytest.importorskip("cattrs")
 
 import ufoLib2.serde.msgpack  # noqa: E402
 

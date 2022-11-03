@@ -8,7 +8,7 @@ from ufoLib2.serde import serde
 if TYPE_CHECKING:
     from typing import Type
 
-    from cattr import Converter
+    from cattrs import Converter
 
 # unfortunately mypy is not smart enough to support recursive types like plist...
 # PlistEncodable = Union[

@@ -18,7 +18,7 @@ from typing import (
 
 import fs.base
 import fs.tempfs
-from attr import define, field
+from attrs import define, field
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME

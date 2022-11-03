@@ -4,7 +4,7 @@ import warnings
 from collections.abc import MutableSequence
 from typing import TYPE_CHECKING, Iterable, Iterator, List, Optional, overload
 
-from attr import define, field
+from attrs import define, field
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import AbstractPointPen, PointToSegmentPen
 

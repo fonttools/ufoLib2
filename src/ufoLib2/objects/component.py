@@ -3,7 +3,7 @@ from __future__ import annotations
 import warnings
 from typing import Optional
 
-from attr import define, field
+from attrs import define, field
 from fontTools.misc.transform import Identity, Transform
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import AbstractPointPen, PointToSegmentPen

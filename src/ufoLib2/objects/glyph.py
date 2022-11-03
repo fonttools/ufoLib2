@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Iterator, List, Mapping, Optional, cast
 
-from attr import define, field
+from attrs import define, field
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (

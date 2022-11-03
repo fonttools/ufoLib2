@@ -21,8 +21,8 @@ from typing import (
     cast,
 )
 
-import attr
-from attr import define, field
+import attrs
+from attrs import define, field
 from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
@@ -32,7 +32,7 @@ from ufoLib2.constants import OBJECT_LIBS_KEY
 from ufoLib2.typing import Drawable, GlyphSet, HasIdentifier
 
 if TYPE_CHECKING:
-    from cattr import Converter
+    from cattrs import Converter
 
 
 class BoundingBox(NamedTuple):
@@ -78,7 +78,7 @@ def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
             (a.name if a.name[0] != "_" else a.name[1:]): deepcopy(
                 getattr(self, a.name), memo
             )
-            for a in attr.fields(self.__class__)
+            for a in attrs.fields(self.__class__)
             if a.init
         },
     )
@@ -89,7 +89,7 @@ def _getstate_unlazify_attrs(self: Any) -> Dict[str, Any]:
         self.unlazify()
     return {
         a.name: getattr(self, a.name) if a.init else a.default
-        for a in attr.fields(self.__class__)
+        for a in attrs.fields(self.__class__)
     }
 
 
@@ -100,8 +100,8 @@ _obj_setattr = object.__setattr__
 # Below is adapted from `attrs._make._ClassBuilder._make_getstate_setstate` method:
 # https://github.com/python-attrs/attrs/blob/36ed0204/src/attr/_make.py#L931-L937
 def _setstate_attrs(self: Any, state: Dict[str, Any]) -> None:
-    _bound_setattr = _obj_setattr.__get__(self, attr.Attribute)  # type: ignore
-    for a in attr.fields(self.__class__):
+    _bound_setattr = _obj_setattr.__get__(self, attrs.Attribute)  # type: ignore
+    for a in attrs.fields(self.__class__):
         if a.name in state:
             _bound_setattr(a.name, state[a.name])
 
@@ -373,7 +373,7 @@ class AttrDictMixin(AttrDictMixinMapping):
     @lru_cache(maxsize=None)
     def _key_to_attr_map(cls, reverse: bool = False) -> dict[str, str]:
         result = {}
-        for a in attr.fields(cls):
+        for a in attrs.fields(cls):
             attr_name = a.name
             key = attr_name
             if "rename_attr" in a.metadata:
@@ -396,7 +396,7 @@ class AttrDictMixin(AttrDictMixinMapping):
 
     def __iter__(self) -> Iterator[str]:
         key_map = self._key_to_attr_map(reverse=True)
-        for attr_name in attr.fields_dict(self.__class__):
+        for attr_name in attrs.fields_dict(self.__class__):
             if getattr(self, attr_name) is not None:
                 yield key_map[attr_name]
 

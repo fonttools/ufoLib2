@@ -4,9 +4,9 @@ import sys
 from functools import partial
 from typing import Any, Callable, Tuple, Type, cast
 
-from attr import fields, has, resolve_types
-from cattr import Converter
-from cattr.gen import (
+from attrs import fields, has, resolve_types
+from cattrs import Converter
+from cattrs.gen import (
     AttributeOverride,
     make_dict_structure_fn,
     make_dict_unstructure_fn,

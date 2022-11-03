@@ -12,7 +12,7 @@ from typing import (
     overload,
 )
 
-from attr import define, field
+from attrs import define, field
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
@@ -30,7 +30,7 @@ from ufoLib2.serde import serde
 from ufoLib2.typing import T
 
 if TYPE_CHECKING:
-    from cattr import Converter
+    from cattrs import Converter
 
 _GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
 

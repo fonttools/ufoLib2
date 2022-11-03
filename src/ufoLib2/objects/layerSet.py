@@ -11,7 +11,7 @@ from typing import (
     Sized,
 )
 
-from attr import define, field
+from attrs import define, field
 from fontTools.ufoLib import UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
@@ -28,7 +28,7 @@ from ufoLib2.typing import T
 if TYPE_CHECKING:
     from typing import Type
 
-    from cattr import Converter
+    from cattrs import Converter
 
 _LAYER_NOT_LOADED = Layer(name="___UFOLIB2_LAZY_LAYER___")
 

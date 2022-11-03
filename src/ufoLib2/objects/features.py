@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Type
 
-from attr import define
+from attrs import define
 
 from ufoLib2.serde import serde
 
 if TYPE_CHECKING:
-    from cattr import Converter
+    from cattrs import Converter
 
 
 RE_NEWLINES = re.compile(r"\r\n|\r")
