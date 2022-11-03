@@ -59,7 +59,9 @@ def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
         attribs = fields(base)
         # PEP563 postponed annotations need resolving as we check Attribute.type below
         resolve_types(base)
-        kwargs: dict[str, bool | AttributeOverride] = {}
+        kwargs: dict[str, bool | AttributeOverride] = {
+            "_cattrs_detailed_validation": conv.detailed_validation
+        }
         if structuring:
             kwargs["_cattrs_forbid_extra_keys"] = conv.forbid_extra_keys
             kwargs["_cattrs_prefer_attrib_converters"] = conv._prefer_attrib_converters

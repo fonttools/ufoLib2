@@ -517,11 +517,17 @@ def test_unstructure_lazy_font(ufo_UbuTestData: Font) -> None:
 
 @pytest.mark.parametrize("forbid_extra_keys", [True, False])
 def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
-    conv = cattrs.Converter(forbid_extra_keys=forbid_extra_keys)
+    conv = cattrs.Converter(
+        forbid_extra_keys=forbid_extra_keys,
+        detailed_validation=False,
+    )
     register_hooks(conv)
     data = {"name": "a", "foo": "bar"}
     if forbid_extra_keys:
-        with pytest.raises(Exception, match="Extra fields in constructor for .*: foo"):
+        with pytest.raises(
+            cattrs.errors.ForbiddenExtraKeysError,
+            match="Extra fields in constructor for .*: foo",
+        ):
             conv.structure(data, Glyph)
     else:
         assert conv.structure(data, Glyph) == Glyph(name="a")
