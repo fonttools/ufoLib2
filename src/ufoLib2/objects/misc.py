@@ -84,13 +84,13 @@ def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
     )
 
 
-def _getstate_unlazify_attrs(self: Any) -> Tuple[Any, ...]:
+def _getstate_unlazify_attrs(self: Any) -> Dict[str, Any]:
     if self._lazy:
         self.unlazify()
-    return tuple(
-        getattr(self, a.name) if a.init else a.default
+    return {
+        a.name: getattr(self, a.name) if a.init else a.default
         for a in attr.fields(self.__class__)
-    )
+    }
 
 
 _obj_setattr = object.__setattr__
@@ -99,10 +99,11 @@ _obj_setattr = object.__setattr__
 # Since we override __getstate__, we must also override __setstate__.
 # Below is adapted from `attrs._make._ClassBuilder._make_getstate_setstate` method:
 # https://github.com/python-attrs/attrs/blob/36ed0204/src/attr/_make.py#L931-L937
-def _setstate_attrs(self: Any, state: Tuple[Any, ...]) -> None:
+def _setstate_attrs(self: Any, state: Dict[str, Any]) -> None:
     _bound_setattr = _obj_setattr.__get__(self, attr.Attribute)  # type: ignore
-    for a, v in zip(attr.fields(self.__class__), state):
-        _bound_setattr(a.name, v)
+    for a in attr.fields(self.__class__):
+        if a.name in state:
+            _bound_setattr(a.name, state[a.name])
 
 
 def _object_lib(parent_lib: dict[str, Any], obj: HasIdentifier) -> dict[str, Any]:
