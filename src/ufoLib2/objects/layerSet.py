@@ -28,7 +28,7 @@ from ufoLib2.typing import T
 if TYPE_CHECKING:
     from typing import Type
 
-    from cattr import GenConverter
+    from cattr import Converter
 
 _LAYER_NOT_LOADED = Layer(name="___UFOLIB2_LAZY_LAYER___")
 
@@ -387,11 +387,11 @@ class LayerSet:
             layer.write(glyphSet, saveAs=saveAs)
         writer.writeLayerContents(self.layerOrder)
 
-    def _unstructure(self, converter: GenConverter) -> list[dict[str, Any]]:
+    def _unstructure(self, converter: Converter) -> list[dict[str, Any]]:
         return [converter.unstructure(layer) for layer in self]
 
     @staticmethod
     def _structure(
-        data: list[dict[str, Any]], cls: Type[LayerSet], converter: GenConverter
+        data: list[dict[str, Any]], cls: Type[LayerSet], converter: Converter
     ) -> LayerSet:
         return cls.from_iterable(converter.structure(layer, Layer) for layer in data)

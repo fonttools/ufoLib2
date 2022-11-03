@@ -5,7 +5,7 @@ from functools import partial
 from typing import Any, Callable, Tuple, Type, cast
 
 from attr import fields, has, resolve_types
-from cattr import GenConverter
+from cattr import Converter
 from cattr.gen import (
     AttributeOverride,
     make_dict_structure_fn,
@@ -49,7 +49,7 @@ def is_ufoLib2_class_with_custom_structure(cls: Type[Any]) -> bool:
     return is_ufoLib2_class(cls) and hasattr(cls, "_structure")
 
 
-def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
+def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
     def attrs_hook_factory(
         cls: Type[Any], gen_fn: Callable[..., Callable[[Any], Any]], structuring: bool
     ) -> Callable[[Any], Any]:
@@ -71,7 +71,7 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
                 # classes that don't have a custom hook registered) check for any
                 # type_overrides (Dict[Type, AttributeOverride]); they allow a custom
                 # converter to omit specific attributes of given type e.g.:
-                # >>> conv = GenConverter(type_overrides={Image: override(omit=True)})
+                # >>> conv = Converter(type_overrides={Image: override(omit=True)})
                 attrib_override = conv.type_overrides[a.type]
             else:
                 # by default, we omit all Optional attributes (i.e. with None default),
@@ -134,7 +134,7 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         conv.register_structure_hook(bytes, structure_bytes)
 
 
-default_converter = GenConverter(
+default_converter = Converter(
     omit_if_default=True,
     forbid_extra_keys=True,
     prefer_attrib_converters=False,
@@ -145,7 +145,7 @@ structure = default_converter.structure
 unstructure = default_converter.unstructure
 
 # same as default_converter but allows bytes
-binary_converter = GenConverter(
+binary_converter = Converter(
     omit_if_default=True,
     forbid_extra_keys=True,
     prefer_attrib_converters=False,

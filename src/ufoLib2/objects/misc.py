@@ -32,7 +32,7 @@ from ufoLib2.constants import OBJECT_LIBS_KEY
 from ufoLib2.typing import Drawable, GlyphSet, HasIdentifier
 
 if TYPE_CHECKING:
-    from cattr import GenConverter
+    from cattr import Converter
 
 
 class BoundingBox(NamedTuple):
@@ -314,7 +314,7 @@ class DataStore(DataStoreMapping):
         """Returns a list of filenames in the data store."""
         return list(self._data.keys())
 
-    def _unstructure(self, converter: GenConverter) -> dict[str, str]:
+    def _unstructure(self, converter: Converter) -> dict[str, str]:
         # avoid encoding if converter supports bytes natively
         test = converter.unstructure(b"\0")
         if isinstance(test, bytes):
@@ -335,7 +335,7 @@ class DataStore(DataStoreMapping):
     def _structure(
         data: Mapping[str, Any],
         cls: Type[DataStore],
-        converter: GenConverter,
+        converter: Converter,
     ) -> DataStore:
         self = cls()
         for k, v in data.items():

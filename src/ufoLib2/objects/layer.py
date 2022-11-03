@@ -30,7 +30,7 @@ from ufoLib2.serde import serde
 from ufoLib2.typing import T
 
 if TYPE_CHECKING:
-    from cattr import GenConverter
+    from cattr import Converter
 
 _GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
 
@@ -382,7 +382,7 @@ class Layer:
             # all glyphs are loaded by now, no need to keep ref to glyphSet
             self._glyphSet = None
 
-    def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
+    def _unstructure(self, converter: Converter) -> dict[str, Any]:
         # omit glyph name attribute, already used as key
         glyphs: dict[str, dict[str, Any]] = {}
         for glyph_name in self._glyphs:
@@ -408,7 +408,7 @@ class Layer:
 
     @staticmethod
     def _structure(
-        data: dict[str, Any], cls: Type[Layer], converter: GenConverter
+        data: dict[str, Any], cls: Type[Layer], converter: Converter
     ) -> Layer:
         return cls(
             name=data.get("name", DEFAULT_LAYER_NAME),

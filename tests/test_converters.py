@@ -517,7 +517,7 @@ def test_unstructure_lazy_font(ufo_UbuTestData: Font) -> None:
 
 @pytest.mark.parametrize("forbid_extra_keys", [True, False])
 def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
-    conv = cattr.GenConverter(forbid_extra_keys=forbid_extra_keys)
+    conv = cattr.Converter(forbid_extra_keys=forbid_extra_keys)
     register_hooks(conv)
     data = {"name": "a", "foo": "bar"}
     if forbid_extra_keys:
@@ -599,7 +599,7 @@ def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
     ],
 )
 def test_omit_if_default(obj: Any, expected: Any, omit_if_default: bool) -> None:
-    conv = cattr.GenConverter(omit_if_default=omit_if_default)
+    conv = cattr.Converter(omit_if_default=omit_if_default)
     register_hooks(conv)
     assert conv.unstructure(obj) == expected
 
@@ -653,7 +653,7 @@ def test_omit_if_default(obj: Any, expected: Any, omit_if_default: bool) -> None
     ],
 )
 def test_allow_bytes(obj: Any, expected: Any, allow_bytes: bool) -> None:
-    conv = cattr.GenConverter()
+    conv = cattr.Converter()
     register_hooks(conv, allow_bytes=allow_bytes)
 
     assert conv.unstructure(obj) == expected
@@ -661,7 +661,7 @@ def test_allow_bytes(obj: Any, expected: Any, allow_bytes: bool) -> None:
 
 
 def test_custom_type_overrides() -> None:
-    conv = cattr.GenConverter(type_overrides={Image: cattr.override(omit=True)})
+    conv = cattr.Converter(type_overrides={Image: cattr.override(omit=True)})
     register_hooks(conv)
 
     # check that Glyph.image attribute (of type Image) is omitted
