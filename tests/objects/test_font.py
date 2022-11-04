@@ -114,6 +114,8 @@ def test_pickle_lazy_font(datadir: Path, lazy: Optional[bool]) -> None:
     if lazy is not None:
         font = Font.open(datadir / "UbuTestData.ufo", lazy=lazy)
     else:
+        # lazy is None by default for a Font that is not opened from a file
+        # but created from scratch
         font = Font()
 
     assert lazy is font._lazy
