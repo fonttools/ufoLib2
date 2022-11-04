@@ -20,7 +20,6 @@ def test_dumps_loads(
 ) -> None:
     if not have_orjson:
         monkeypatch.setattr(ufoLib2.serde.json, "have_orjson", have_orjson)
-        monkeypatch.setattr(ufoLib2.serde.json, "json", json)
 
     font = ufo_UbuTestData
     data = font.json_dumps()  # type: ignore
@@ -52,7 +51,6 @@ def test_dump_load(
 ) -> None:
     if not have_orjson:
         monkeypatch.setattr(ufoLib2.serde.json, "have_orjson", have_orjson)
-        monkeypatch.setattr(ufoLib2.serde.json, "json", json)
 
     font = ufo_UbuTestData
     with open(tmp_path / "test.json", "wb") as f:
