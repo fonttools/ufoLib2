@@ -2,52 +2,31 @@ from __future__ import annotations
 
 from functools import partialmethod
 from importlib import import_module
-from typing import IO, Any, AnyStr, BinaryIO, Callable, Type, cast
+from typing import IO, Any, AnyStr, Callable, Type
 
 from ufoLib2.typing import PathLike, T
 
 _SERDE_FORMATS_ = ("json", "msgpack")
 
 
+# the @serde decorator sets these as @classmethods on the class, hence
+# the cls argument must appear as the first argument; in the standalone loads/load
+# functions the input string or file-like object is the first argument and the second
+# argument is the object_class, so below just swap the order of the arguments
 def _loads(
-    cls: Type[Any], s: str | bytes, *, __serde_submodule: Any, **kwargs: Any
-) -> Any:
-    return __serde_submodule.loads(s, cls, **kwargs)
+    cls: Type[T], s: str | bytes, *, __callback: Callable[..., T], **kwargs: Any
+) -> T:
+    return __callback(s, cls, **kwargs)
 
 
 def _load(
-    cls: Type[Any],
+    cls: Type[T],
     fp: PathLike | IO[AnyStr],
     *,
-    __loads_method: Callable[..., Any],
+    __callback: Callable[..., T],
     **kwargs: Any,
-) -> Any:
-    data: str | bytes
-    if hasattr(fp, "read"):
-        fp = cast(IO[AnyStr], fp)
-        data = fp.read()
-    else:
-        fp = cast(PathLike, fp)
-        with open(fp, "rb") as f:
-            data = f.read()
-    return __loads_method(data, **kwargs)
-
-
-def _dumps(self: Any, *, __serde_submodule: Any, **kwargs: Any) -> Any:
-    return __serde_submodule.dumps(self, **kwargs)
-
-
-def _dump(
-    self: Any, fp: PathLike | BinaryIO, *, __dumps_method_name: str, **kwargs: Any
-) -> None:
-    data: bytes = getattr(self, __dumps_method_name)(**kwargs)
-    if hasattr(fp, "write"):
-        fp = cast(BinaryIO, fp)
-        fp.write(data)
-    else:
-        fp = cast(PathLike, fp)
-        with open(fp, "wb") as f:
-            f.write(data)
+) -> T:
+    return __callback(fp, cls, **kwargs)
 
 
 def serde(cls: Type[T]) -> Type[T]:
@@ -108,25 +87,15 @@ def serde(cls: Type[T]) -> Type[T]:
             setattr(
                 cls,
                 f"{fmt}_loads",
-                partialmethod(classmethod(_loads), __serde_submodule=serde_submodule),
+                partialmethod(classmethod(_loads), __callback=serde_submodule.loads),
             )
             setattr(
                 cls,
                 f"{fmt}_load",
-                partialmethod(
-                    classmethod(_load), __loads_method=getattr(cls, f"{fmt}_loads")
-                ),
+                partialmethod(classmethod(_load), __callback=serde_submodule.load),
             )
-            setattr(
-                cls,
-                f"{fmt}_dumps",
-                partialmethod(_dumps, __serde_submodule=serde_submodule),
-            )
-            setattr(
-                cls,
-                f"{fmt}_dump",
-                partialmethod(_dump, __dumps_method_name=f"{fmt}_dumps"),
-            )
+            setattr(cls, f"{fmt}_dumps", serde_submodule.dumps)
+            setattr(cls, f"{fmt}_dump", serde_submodule.dump)
             supported_formats.append(fmt)
 
     setattr(cls, "_SERDE_FORMATS_", tuple(supported_formats))
