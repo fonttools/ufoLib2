@@ -20,8 +20,8 @@ from typing import (
     cast,
 )
 
-import attr
-from attr import define, field
+import attrs
+from attrs import define, field
 from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
@@ -31,7 +31,11 @@ from ufoLib2.constants import OBJECT_LIBS_KEY
 from ufoLib2.typing import Drawable, GlyphSet, HasIdentifier
 
 if TYPE_CHECKING:
-    from cattr import GenConverter
+    # Importing 'AttrsInstance' from 'attr' instead of 'attrs' namespace because
+    # v22.1.0 is missing the symbol: https://github.com/python-attrs/attrs/issues/987
+    # from attrs import AttrsInstance
+    from attr import AttrsInstance
+    from cattrs import Converter
 
 
 class BoundingBox(NamedTuple):
@@ -70,17 +74,39 @@ def unionBounds(
 
 
 def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
-    if getattr(self, "_lazy", True) and hasattr(self, "unlazify"):
+    if self._lazy:
         self.unlazify()
     return self.__class__(
         **{
             (a.name if a.name[0] != "_" else a.name[1:]): deepcopy(
                 getattr(self, a.name), memo
             )
-            for a in attr.fields(self.__class__)
-            if a.init and a.metadata.get("copyable", True)
+            for a in attrs.fields(self.__class__)
+            if a.init
         },
     )
+
+
+def _getstate_unlazify_attrs(self: Any) -> Dict[str, Any]:
+    if self._lazy:
+        self.unlazify()
+    return {
+        a.name: getattr(self, a.name) if a.init else a.default
+        for a in attrs.fields(self.__class__)
+    }
+
+
+_obj_setattr = object.__setattr__
+
+
+# Since we override __getstate__, we must also override __setstate__.
+# Below is adapted from `attrs._make._ClassBuilder._make_getstate_setstate` method:
+# https://github.com/python-attrs/attrs/blob/36ed0204/src/attr/_make.py#L931-L937
+def _setstate_attrs(self: Any, state: Dict[str, Any]) -> None:
+    _bound_setattr = _obj_setattr.__get__(self, attrs.Attribute)  # type: ignore
+    for a in attrs.fields(self.__class__):
+        if a.name in state:
+            _bound_setattr(a.name, state[a.name])
 
 
 def _object_lib(parent_lib: dict[str, Any], obj: HasIdentifier) -> dict[str, Any]:
@@ -223,6 +249,9 @@ class DataStore(DataStoreMapping):
 
     __deepcopy__ = _deepcopy_unlazify_attrs
 
+    __getstate__ = _getstate_unlazify_attrs
+    __setstate__ = _setstate_attrs
+
     # MutableMapping methods
 
     def __len__(self) -> int:
@@ -288,7 +317,7 @@ class DataStore(DataStoreMapping):
         """Returns a list of filenames in the data store."""
         return list(self._data.keys())
 
-    def _unstructure(self, converter: GenConverter) -> dict[str, str]:
+    def _unstructure(self, converter: Converter) -> dict[str, str]:
         # avoid encoding if converter supports bytes natively
         test = converter.unstructure(b"\0")
         if isinstance(test, bytes):
@@ -309,7 +338,7 @@ class DataStore(DataStoreMapping):
     def _structure(
         data: Mapping[str, Any],
         cls: Type[DataStore],
-        converter: GenConverter,
+        converter: Converter,
     ) -> DataStore:
         self = cls()
         for k, v in data.items():
@@ -345,9 +374,11 @@ class AttrDictMixin(AttrDictMixinMapping):
 
     @classmethod
     @lru_cache(maxsize=None)
-    def _key_to_attr_map(cls, reverse: bool = False) -> dict[str, str]:
+    def _key_to_attr_map(
+        cls: Type[AttrsInstance], reverse: bool = False
+    ) -> dict[str, str]:
         result = {}
-        for a in attr.fields(cls):
+        for a in attrs.fields(cls):
             attr_name = a.name
             key = attr_name
             if "rename_attr" in a.metadata:
@@ -370,7 +401,8 @@ class AttrDictMixin(AttrDictMixinMapping):
 
     def __iter__(self) -> Iterator[str]:
         key_map = self._key_to_attr_map(reverse=True)
-        for attr_name in attr.fields_dict(self.__class__):
+        cls = cast("Type[AttrsInstance]", self.__class__)
+        for attr_name in attrs.fields_dict(cls):
             if getattr(self, attr_name) is not None:
                 yield key_map[attr_name]
 

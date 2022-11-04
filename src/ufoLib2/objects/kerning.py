@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, Mapping, Tuple
 
+from ufoLib2.serde import serde
+
 if TYPE_CHECKING:
     from typing import Type
 
-    from cattr import GenConverter
+    from cattrs import Converter
 
 KerningPair = Tuple[str, str]
 
 
+@serde
 class Kerning(Dict[KerningPair, float]):
     def as_nested_dicts(self) -> dict[str, dict[str, float]]:
         result: dict[str, dict[str, float]] = {}
@@ -25,7 +28,7 @@ class Kerning(Dict[KerningPair, float]):
             for right in kerning[left]
         )
 
-    def _unstructure(self, converter: GenConverter) -> dict[str, dict[str, float]]:
+    def _unstructure(self, converter: Converter) -> dict[str, dict[str, float]]:
         del converter  # unused
         return self.as_nested_dicts()
 
@@ -33,7 +36,7 @@ class Kerning(Dict[KerningPair, float]):
     def _structure(
         data: Mapping[str, Mapping[str, float]],
         cls: Type[Kerning],
-        converter: GenConverter,
+        converter: Converter,
     ) -> Kerning:
         del converter  # unused
         return cls.from_nested_dicts(data)

@@ -4,9 +4,9 @@ import sys
 from functools import partial
 from typing import Any, Callable, Tuple, Type, cast
 
-from attr import fields, has, resolve_types
-from cattr import GenConverter
-from cattr.gen import (
+from attrs import fields, has, resolve_types
+from cattrs import Converter
+from cattrs.gen import (
     AttributeOverride,
     make_dict_structure_fn,
     make_dict_unstructure_fn,
@@ -49,17 +49,19 @@ def is_ufoLib2_class_with_custom_structure(cls: Type[Any]) -> bool:
     return is_ufoLib2_class(cls) and hasattr(cls, "_structure")
 
 
-def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
+def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
     def attrs_hook_factory(
-        cls: Type[Any], gen_fn: Callable[..., Callable[[Any], Any]], structuring: bool
-    ) -> Callable[[Any], Any]:
+        cls: Type[Any], gen_fn: Callable[..., Callable[..., Any]], structuring: bool
+    ) -> Callable[..., Any]:
         base = get_origin(cls)
         if base is None:
             base = cls
         attribs = fields(base)
         # PEP563 postponed annotations need resolving as we check Attribute.type below
         resolve_types(base)
-        kwargs: dict[str, bool | AttributeOverride] = {}
+        kwargs: dict[str, bool | AttributeOverride] = {
+            "_cattrs_detailed_validation": conv.detailed_validation
+        }
         if structuring:
             kwargs["_cattrs_forbid_extra_keys"] = conv.forbid_extra_keys
             kwargs["_cattrs_prefer_attrib_converters"] = conv._prefer_attrib_converters
@@ -71,7 +73,7 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
                 # classes that don't have a custom hook registered) check for any
                 # type_overrides (Dict[Type, AttributeOverride]); they allow a custom
                 # converter to omit specific attributes of given type e.g.:
-                # >>> conv = GenConverter(type_overrides={Image: override(omit=True)})
+                # >>> conv = Converter(type_overrides={Image: override(omit=True)})
                 attrib_override = conv.type_overrides[a.type]
             else:
                 # by default, we omit all Optional attributes (i.e. with None default),
@@ -94,7 +96,7 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
     def custom_unstructure_hook_factory(cls: Type[Any]) -> Callable[[Any], Any]:
         return partial(cls._unstructure, converter=conv)
 
-    def custom_structure_hook_factory(cls: Type[Any]) -> Callable[[Any], Any]:
+    def custom_structure_hook_factory(cls: Type[Any]) -> Callable[[Any, Any], Any]:
         return partial(cls._structure, converter=conv)
 
     def unstructure_transform(t: Transform) -> Tuple[float]:
@@ -134,7 +136,7 @@ def register_hooks(conv: GenConverter, allow_bytes: bool = True) -> None:
         conv.register_structure_hook(bytes, structure_bytes)
 
 
-default_converter = GenConverter(
+default_converter = Converter(
     omit_if_default=True,
     forbid_extra_keys=True,
     prefer_attrib_converters=False,
@@ -143,3 +145,11 @@ register_hooks(default_converter, allow_bytes=False)
 
 structure = default_converter.structure
 unstructure = default_converter.unstructure
+
+# same as default_converter but allows bytes
+binary_converter = Converter(
+    omit_if_default=True,
+    forbid_extra_keys=True,
+    prefer_attrib_converters=False,
+)
+register_hooks(binary_converter, allow_bytes=True)

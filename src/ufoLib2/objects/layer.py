@@ -12,7 +12,7 @@ from typing import (
     overload,
 )
 
-from attr import define, field
+from attrs import define, field
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
@@ -21,13 +21,16 @@ from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
 from ufoLib2.objects.misc import (
     BoundingBox,
     _deepcopy_unlazify_attrs,
+    _getstate_unlazify_attrs,
     _prune_object_libs,
+    _setstate_attrs,
     unionBounds,
 )
+from ufoLib2.serde import serde
 from ufoLib2.typing import T
 
 if TYPE_CHECKING:
-    from cattr import GenConverter
+    from cattrs import Converter
 
 _GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
 
@@ -64,6 +67,7 @@ def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyp
     return result
 
 
+@serde
 @define
 class Layer:
     """Represents a Layer that holds Glyph objects.
@@ -115,6 +119,7 @@ class Layer:
     the default attribute is automatically True. Exactly one layer must be marked as
     default in a font."""
 
+    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
     _glyphSet: Any = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
@@ -146,6 +151,7 @@ class Layer:
                 glyphSet.readGlyph(glyphName, glyph, glyph.getPointPen())
                 glyphs[glyphName] = glyph
         self = cls(name, glyphs, default=default)
+        self._lazy = lazy
         if lazy:
             self._glyphSet = glyphSet
         glyphSet.readLayerInfo(self)
@@ -153,10 +159,15 @@ class Layer:
 
     def unlazify(self) -> None:
         """Load all glyphs into memory."""
-        for _ in self:
-            pass
+        if self._lazy:
+            for _ in self:
+                pass
+        self._lazy = False
 
     __deepcopy__ = _deepcopy_unlazify_attrs
+
+    __getstate__ = _getstate_unlazify_attrs
+    __setstate__ = _setstate_attrs
 
     def __contains__(self, name: object) -> bool:
         return name in self._glyphs
@@ -371,7 +382,7 @@ class Layer:
             # all glyphs are loaded by now, no need to keep ref to glyphSet
             self._glyphSet = None
 
-    def _unstructure(self, converter: GenConverter) -> dict[str, Any]:
+    def _unstructure(self, converter: Converter) -> dict[str, Any]:
         # omit glyph name attribute, already used as key
         glyphs: dict[str, dict[str, Any]] = {}
         for glyph_name in self._glyphs:
@@ -397,7 +408,7 @@ class Layer:
 
     @staticmethod
     def _structure(
-        data: dict[str, Any], cls: Type[Layer], converter: GenConverter
+        data: dict[str, Any], cls: Type[Layer], converter: Converter
     ) -> Layer:
         return cls(
             name=data.get("name", DEFAULT_LAYER_NAME),

@@ -18,7 +18,7 @@ from typing import (
 
 import fs.base
 import fs.tempfs
-from attr import define, field
+from attrs import define, field
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
@@ -35,9 +35,12 @@ from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
 from ufoLib2.objects.misc import (
     BoundingBox,
     _deepcopy_unlazify_attrs,
+    _getstate_unlazify_attrs,
     _object_lib,
     _prune_object_libs,
+    _setstate_attrs,
 )
+from ufoLib2.serde import serde
 from ufoLib2.typing import HasIdentifier, PathLike, T
 
 
@@ -73,6 +76,7 @@ def _set_kerning(self: Font, value: Mapping[KerningPair, float]) -> None:
     self._kerning = _convert_Kerning(value)
 
 
+@serde
 @define(kw_only=True)
 class Font:
     """A data class representing a single Unified Font Object (UFO).
@@ -163,9 +167,7 @@ class Font:
     """ImageSet: A mapping of image file paths to arbitrary image data."""
 
     # init=False args, set by alternate open/read classmethod constructors
-    _path: Optional[PathLike] = field(
-        default=None, metadata=dict(copyable=False), eq=False, init=False
-    )
+    _path: Optional[PathLike] = field(default=None, eq=False, init=False)
     _lazy: Optional[bool] = field(default=None, init=False, eq=False)
     _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
     _fileStructure: Optional[UFOFileStructure] = field(
@@ -317,6 +319,9 @@ class Font:
         self._lazy = False
 
     __deepcopy__ = _deepcopy_unlazify_attrs
+
+    __getstate__ = _getstate_unlazify_attrs
+    __setstate__ = _setstate_attrs
 
     @property
     def glyphOrder(self) -> list[str]:

@@ -3,15 +3,18 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Type
 
-from attr import define
+from attrs import define
+
+from ufoLib2.serde import serde
 
 if TYPE_CHECKING:
-    from cattr import GenConverter
+    from cattrs import Converter
 
 
 RE_NEWLINES = re.compile(r"\r\n|\r")
 
 
+@serde
 @define
 class Features:
     """A data class representing UFO features.
@@ -33,11 +36,11 @@ class Features:
         self.text = RE_NEWLINES.sub("\n", self.text)
         return self
 
-    def _unstructure(self, converter: GenConverter) -> str:
+    def _unstructure(self, converter: Converter) -> str:
         del converter  # unused
         return self.text
 
     @staticmethod
-    def _structure(data: str, cls: Type[Features], converter: GenConverter) -> Features:
+    def _structure(data: str, cls: Type[Features], converter: Converter) -> Features:
         del converter  # unused
         return cls(data)

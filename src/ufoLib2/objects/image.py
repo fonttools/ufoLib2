@@ -3,8 +3,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, ClassVar, Iterator, Optional, Tuple
 
-from attr import define, field
+from attrs import define, field
 from fontTools.misc.transform import Identity, Transform
+
+from ufoLib2.serde import serde
 
 from .misc import _convert_transform
 
@@ -15,6 +17,7 @@ else:
     ImageMapping = Mapping
 
 
+@serde
 @define
 class Image(ImageMapping):
     """Represents a background image reference.

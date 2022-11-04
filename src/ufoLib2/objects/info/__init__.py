@@ -4,12 +4,13 @@ from enum import IntEnum
 from functools import partial
 from typing import Any, Callable, List, Mapping, Optional, Sequence, TypeVar
 
-import attr
-from attr import define, field
+import attrs
+from attrs import define, field
 from fontTools.ufoLib import UFOReader
 
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.misc import AttrDictMixin
+from ufoLib2.serde import serde
 
 from .woff import (
     WoffMetadataCopyright,
@@ -59,7 +60,7 @@ def _positive(instance: Any, attribute: Any, value: int) -> None:
         )
 
 
-_optional_positive = attr.validators.optional(_positive)
+_optional_positive = attrs.validators.optional(_positive)
 
 
 # or maybe use IntFlag?
@@ -170,6 +171,7 @@ def _dict_list_setter_property(cls: type[Tc], name: str | None = None) -> Any:
     )
 
 
+@serde
 @define
 class Info:
     """A data class representing the contents of fontinfo.plist.

@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from typing import Optional
 
-from attr import define
+from attrs import define
+
+from ufoLib2.serde import serde
 
 
+@serde
 @define
 class Point:
     """Represents a single point.

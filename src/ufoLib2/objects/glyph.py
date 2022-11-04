@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Iterator, List, Mapping, Optional, cast
 
-from attr import define, field
+from attrs import define, field
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
@@ -20,9 +20,11 @@ from ufoLib2.objects.image import Image
 from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
 from ufoLib2.objects.misc import BoundingBox, _object_lib, getBounds, getControlBounds
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
+from ufoLib2.serde import serde
 from ufoLib2.typing import GlyphSet, HasIdentifier
 
 
+@serde
 @define
 class Glyph:
     """Represents a glyph, containing contours, components, anchors and various

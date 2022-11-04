@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any, List, Mapping, Optional, Sequence, Type, TypeVar
 
-from attr import Attribute, define, field
+from attrs import Attribute, define, field
 
 from ufoLib2.objects.misc import AttrDictMixin
 

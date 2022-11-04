@@ -11,19 +11,24 @@ from typing import (
     Sized,
 )
 
-from attr import define, field
+from attrs import define, field
 from fontTools.ufoLib import UFOReader, UFOWriter
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.errors import Error
 from ufoLib2.objects.layer import Layer
-from ufoLib2.objects.misc import _deepcopy_unlazify_attrs
+from ufoLib2.objects.misc import (
+    _deepcopy_unlazify_attrs,
+    _getstate_unlazify_attrs,
+    _setstate_attrs,
+)
+from ufoLib2.serde import serde
 from ufoLib2.typing import T
 
 if TYPE_CHECKING:
     from typing import Type
 
-    from cattr import GenConverter
+    from cattrs import Converter
 
 _LAYER_NOT_LOADED = Layer(name="___UFOLIB2_LAZY_LAYER___")
 
@@ -33,6 +38,7 @@ def _must_have_at_least_one_item(self: Any, attribute: Any, value: Sized) -> Non
         raise ValueError("value must have at least one item.")
 
 
+@serde
 @define
 class LayerSet:
     """Represents a mapping of layer names to Layer objects.
@@ -74,6 +80,7 @@ class LayerSet:
 
     _defaultLayer: Layer = field(default=_LAYER_NOT_LOADED, eq=False)
 
+    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
     _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
@@ -165,6 +172,7 @@ class LayerSet:
         assert defaultLayer is not None
 
         self = cls(layers=layers, defaultLayer=defaultLayer)
+        self._lazy = lazy
         if lazy:
             self._reader = reader
 
@@ -172,10 +180,15 @@ class LayerSet:
 
     def unlazify(self) -> None:
         """Load all layers into memory."""
-        for layer in self:
-            layer.unlazify()
+        if self._lazy:
+            for layer in self:
+                layer.unlazify()
+        self._lazy = False
 
     __deepcopy__ = _deepcopy_unlazify_attrs
+
+    __getstate__ = _getstate_unlazify_attrs
+    __setstate__ = _setstate_attrs
 
     @staticmethod
     def _loadLayer(
@@ -374,11 +387,11 @@ class LayerSet:
             layer.write(glyphSet, saveAs=saveAs)
         writer.writeLayerContents(self.layerOrder)
 
-    def _unstructure(self, converter: GenConverter) -> list[dict[str, Any]]:
+    def _unstructure(self, converter: Converter) -> list[dict[str, Any]]:
         return [converter.unstructure(layer) for layer in self]
 
     @staticmethod
     def _structure(
-        data: list[dict[str, Any]], cls: Type[LayerSet], converter: GenConverter
+        data: list[dict[str, Any]], cls: Type[LayerSet], converter: Converter
     ) -> LayerSet:
         return cls.from_iterable(converter.structure(layer, Layer) for layer in data)
