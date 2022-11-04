@@ -15,7 +15,6 @@ from typing import (
     Optional,
     Sequence,
     Set,
-    Tuple,
     Type,
     TypeVar,
     cast,
@@ -32,6 +31,10 @@ from ufoLib2.constants import OBJECT_LIBS_KEY
 from ufoLib2.typing import Drawable, GlyphSet, HasIdentifier
 
 if TYPE_CHECKING:
+    # Importing 'AttrsInstance' from 'attr' instead of 'attrs' namespace because
+    # v22.1.0 is missing the symbol: https://github.com/python-attrs/attrs/issues/987
+    # from attrs import AttrsInstance
+    from attr import AttrsInstance
     from cattrs import Converter
 
 
@@ -371,7 +374,9 @@ class AttrDictMixin(AttrDictMixinMapping):
 
     @classmethod
     @lru_cache(maxsize=None)
-    def _key_to_attr_map(cls, reverse: bool = False) -> dict[str, str]:
+    def _key_to_attr_map(
+        cls: Type[AttrsInstance], reverse: bool = False
+    ) -> dict[str, str]:
         result = {}
         for a in attrs.fields(cls):
             attr_name = a.name
@@ -396,7 +401,8 @@ class AttrDictMixin(AttrDictMixinMapping):
 
     def __iter__(self) -> Iterator[str]:
         key_map = self._key_to_attr_map(reverse=True)
-        for attr_name in attrs.fields_dict(self.__class__):
+        cls = cast("Type[AttrsInstance]", self.__class__)
+        for attr_name in attrs.fields_dict(cls):
             if getattr(self, attr_name) is not None:
                 yield key_map[attr_name]
 

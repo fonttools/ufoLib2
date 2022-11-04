@@ -51,8 +51,8 @@ def is_ufoLib2_class_with_custom_structure(cls: Type[Any]) -> bool:
 
 def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
     def attrs_hook_factory(
-        cls: Type[Any], gen_fn: Callable[..., Callable[[Any], Any]], structuring: bool
-    ) -> Callable[[Any], Any]:
+        cls: Type[Any], gen_fn: Callable[..., Callable[..., Any]], structuring: bool
+    ) -> Callable[..., Any]:
         base = get_origin(cls)
         if base is None:
             base = cls
@@ -96,7 +96,7 @@ def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
     def custom_unstructure_hook_factory(cls: Type[Any]) -> Callable[[Any], Any]:
         return partial(cls._unstructure, converter=conv)
 
-    def custom_structure_hook_factory(cls: Type[Any]) -> Callable[[Any], Any]:
+    def custom_structure_hook_factory(cls: Type[Any]) -> Callable[[Any, Any], Any]:
         return partial(cls._structure, converter=conv)
 
     def unstructure_transform(t: Transform) -> Tuple[float]:
