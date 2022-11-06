@@ -53,11 +53,14 @@ jobs:
       run: pip install tox coverage
     - name: Run Tox
       run: tox -e py-cov
-    - name: Re-run Tox (without cattrs)
+    - name: Re-run Tox without cattrs
       if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.10')
       run: |
-        .tox/py-cov/bin/pip uninstall -y cattrs
-        tox -e py-cov --skip-pkg-install
+        tox -e py-nocattrs
+    - name: Re-run Tox without msgpack
+      if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.10')
+      run: |
+        tox -e py-nomsgpack
     - name: Produce coverage files
       run: |
         coverage combine

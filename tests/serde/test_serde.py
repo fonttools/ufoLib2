@@ -1,20 +1,37 @@
 import importlib
-import sys
 from typing import Any, Dict, List
 
 import pytest
 from attrs import define
 
 import ufoLib2.objects
+from ufoLib2.errors import ExtrasNotInstalledError
 from ufoLib2.serde import _SERDE_FORMATS_, serde
 
+cattrs = None
+try:
+    import cattrs  # type: ignore
+except ImportError:
+    pass
 
-def test_raise_import_error(monkeypatch: Any) -> None:
-    # pretend we can't import the module (e.g. msgpack not installed)
-    monkeypatch.setitem(sys.modules, "ufoLib2.serde.msgpack", None)
 
-    with pytest.raises(ImportError, match="ufoLib2.serde.msgpack"):
-        importlib.import_module("ufoLib2.serde.msgpack")
+msgpack = None
+try:
+    import msgpack  # type: ignore
+except ImportError:
+    pass
+
+
+EXTRAS_REQUIREMENTS = {
+    "json": ["cattrs"],
+    "msgpack": ["cattrs", "msgpack"],
+}
+
+
+def assert_extras_not_installed(extras: str, missing_dependency: str) -> None:
+    # sanity check that the dependency is not installed
+    with pytest.raises(ImportError, match=missing_dependency):
+        importlib.import_module(missing_dependency)
 
     @serde
     @define
@@ -24,10 +41,26 @@ def test_raise_import_error(monkeypatch: Any) -> None:
 
     foo = Foo(1)
 
-    with pytest.raises(ImportError, match="ufoLib2.serde.msgpack"):
-        # since the method is only added dynamically at runtime, mypy complains that
-        # "Foo" has no attribute "msgpack_dumps" -- so I shut it up
-        foo.msgpack_dumps()  # type: ignore
+    with pytest.raises(
+        ExtrasNotInstalledError, match=f"Extras not installed: '{extras}'"
+    ):
+        dumps_method = getattr(foo, f"{extras}_dumps")
+        dumps_method()
+
+
+@pytest.mark.skipif(cattrs is not None, reason="cattrs installed, not applicable")
+def test_json_cattrs_not_installed() -> None:
+    assert_extras_not_installed("json", "cattrs")
+
+
+@pytest.mark.skipif(cattrs is not None, reason="cattrs installed, not applicable")
+def test_msgpack_cattrs_not_installed() -> None:
+    assert_extras_not_installed("msgpack", "cattrs")
+
+
+@pytest.mark.skipif(msgpack is not None, reason="msgpack installed, not applicable")
+def test_msgpack_not_installed() -> None:
+    assert_extras_not_installed("msgpack", "msgpack")
 
 
 BASIC_EMPTY_OBJECTS: List[Dict[str, Any]] = [
@@ -61,9 +94,8 @@ assert {d["class_name"] for d in BASIC_EMPTY_OBJECTS} == set(ufoLib2.objects.__a
     ids=lambda x: x["class_name"],  # type: ignore
 )
 def test_serde_all_objects(fmt: str, object_info: Dict[str, Any]) -> None:
-    if fmt in ("json", "msgpack"):
-        # skip these format tests if cattrs is not installed
-        pytest.importorskip("cattrs")
+    for req in EXTRAS_REQUIREMENTS[fmt]:
+        pytest.importorskip(req)
 
     klass = getattr(ufoLib2.objects, object_info["class_name"])
     loads = getattr(klass, f"{fmt}_loads")

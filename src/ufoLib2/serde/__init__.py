@@ -4,6 +4,7 @@ from functools import partialmethod
 from importlib import import_module
 from typing import IO, Any, AnyStr, Callable, Type
 
+from ufoLib2.errors import ExtrasNotInstalledError
 from ufoLib2.typing import PathLike, T
 
 _SERDE_FORMATS_ = ("json", "msgpack")
@@ -75,14 +76,11 @@ def serde(cls: Type[T]) -> Type[T]:
 
         try:
             serde_submodule = import_module(f"ufoLib2.serde.{fmt}")
-        except ImportError as e:
-            exc = e
-
-            def raise_error(*args: Any, **kwargs: Any) -> None:
-                raise exc
-
+        except ImportError as exc:
             for method in ("loads", "load", "dumps", "dump"):
-                setattr(cls, f"{fmt}_{method}", raise_error)
+                setattr(
+                    cls, f"{fmt}_{method}", ExtrasNotInstalledError(fmt, chained=exc)
+                )
         else:
             setattr(
                 cls,
