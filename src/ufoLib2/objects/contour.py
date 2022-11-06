@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import warnings
-from collections.abc import MutableSequence
-from typing import Iterable, Iterator, List, Optional, overload
+from typing import Iterable, Iterator, List, MutableSequence, Optional, overload
 
 from attrs import define, field
 from fontTools.pens.basePen import AbstractPen

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any, ClassVar, Iterator, Optional, Tuple
+from typing import Any, ClassVar, Iterator, Mapping, Optional, Tuple
 
 from attrs import define, field
 from fontTools.misc.transform import Identity, Transform

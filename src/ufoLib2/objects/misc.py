@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import collections.abc
 import uuid
 from abc import abstractmethod
-from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
 from functools import lru_cache
 from typing import (
@@ -11,6 +9,8 @@ from typing import (
     Any,
     Dict,
     Iterator,
+    Mapping,
+    MutableMapping,
     NamedTuple,
     Optional,
     Sequence,
@@ -121,7 +121,7 @@ def _object_lib(parent_lib: dict[str, Any], obj: HasIdentifier) -> dict[str, Any
         object_libs = parent_lib["public.objectLibs"] = {}
     else:
         object_libs = parent_lib["public.objectLibs"]
-        assert isinstance(object_libs, collections.abc.MutableMapping)
+        assert isinstance(object_libs, MutableMapping)
 
     if obj.identifier in object_libs:
         object_lib: dict[str, Any] = object_libs[obj.identifier]
