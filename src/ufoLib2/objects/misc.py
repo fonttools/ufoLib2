@@ -158,15 +158,8 @@ _DATA_NOT_LOADED = DataPlaceholder(b"__UFOLIB2_DATA_NOT_LOADED__")
 Tds = TypeVar("Tds", bound="DataStore")
 
 
-# For Python 3.7 compatibility.
-if TYPE_CHECKING:
-    DataStoreMapping = MutableMapping[str, bytes]
-else:
-    DataStoreMapping = MutableMapping
-
-
 @define
-class DataStore(DataStoreMapping):
+class DataStore(MutableMapping[str, bytes]):
     """Represents the base class for ImageSet and DataSet.
 
     Both behave like a dictionary that loads its "values" lazily by default and only
@@ -353,17 +346,10 @@ class DataStore(DataStoreMapping):
         return self
 
 
-# For Python 3.7 compatibility.
-if TYPE_CHECKING:
-    AttrDictMixinMapping = Mapping[str, Any]
-else:
-    AttrDictMixinMapping = Mapping
-
-
 _T = TypeVar("_T", bound="AttrDictMixin")
 
 
-class AttrDictMixin(AttrDictMixinMapping):
+class AttrDictMixin(Mapping[str, Any]):
     """Read attribute values using mapping interface.
 
     For use with Anchors, Guidelines and WoffMetadata classes, where client code
