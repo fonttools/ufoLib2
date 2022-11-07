@@ -42,7 +42,7 @@ def assert_extras_not_installed(extras: str, missing_dependency: str) -> None:
     foo = Foo(1)
 
     with pytest.raises(
-        ExtrasNotInstalledError, match=f"Extras not installed: '{extras}'"
+        ExtrasNotInstalledError, match=f"Extras not installed: ufoLib2\[{extras}\]"
     ) as exc_info:
         dumps_method = getattr(foo, f"{extras}_dumps")
         dumps_method()
