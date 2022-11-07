@@ -1,12 +1,14 @@
 from pathlib import Path
 
-import msgpack  # type: ignore
 import pytest
 
 import ufoLib2.objects
 
 # isort: off
 pytest.importorskip("cattrs")
+pytest.importorskip("msgpack")
+
+import msgpack  # type: ignore  # noqa
 
 import ufoLib2.serde.msgpack  # noqa: E402
 

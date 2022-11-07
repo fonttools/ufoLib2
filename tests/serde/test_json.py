@@ -20,6 +20,8 @@ def test_dumps_loads(
 ) -> None:
     if not have_orjson:
         monkeypatch.setattr(ufoLib2.serde.json, "have_orjson", have_orjson)
+    else:
+        pytest.importorskip("orjson")
 
     font = ufo_UbuTestData
     data = font.json_dumps()  # type: ignore
@@ -82,6 +84,7 @@ def test_dump_load(
 
 @pytest.mark.parametrize("indent", [1, 3], ids=["indent-1", "indent-3"])
 def test_indent_not_2_orjson(indent: int) -> None:
+    pytest.importorskip("orjson")
     with pytest.raises(ValueError):
         ufoLib2.serde.json.dumps(None, indent=indent)
 
