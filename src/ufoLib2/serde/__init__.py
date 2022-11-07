@@ -77,10 +77,10 @@ def serde(cls: Type[T]) -> Type[T]:
         try:
             serde_submodule = import_module(f"ufoLib2.serde.{fmt}")
         except ImportError as exc:
+            raise_error = ExtrasNotInstalledError(fmt)
+            raise_error.__cause__ = exc
             for method in ("loads", "load", "dumps", "dump"):
-                setattr(
-                    cls, f"{fmt}_{method}", ExtrasNotInstalledError(fmt, chained=exc)
-                )
+                setattr(cls, f"{fmt}_{method}", raise_error)
         else:
             setattr(
                 cls,

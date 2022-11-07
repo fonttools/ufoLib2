@@ -43,9 +43,11 @@ def assert_extras_not_installed(extras: str, missing_dependency: str) -> None:
 
     with pytest.raises(
         ExtrasNotInstalledError, match=f"Extras not installed: '{extras}'"
-    ):
+    ) as exc_info:
         dumps_method = getattr(foo, f"{extras}_dumps")
         dumps_method()
+
+    assert isinstance(exc_info.value.__cause__, ModuleNotFoundError)
 
 
 @pytest.mark.skipif(cattrs is not None, reason="cattrs installed, not applicable")
