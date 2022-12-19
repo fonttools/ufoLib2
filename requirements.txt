@@ -20,7 +20,7 @@ lxml==4.9.2
     # via ufoLib2 (setup.cfg)
 msgpack==1.0.4
     # via ufoLib2 (setup.cfg)
-orjson==3.7.8 ; platform_python_implementation != "PyPy"
+orjson==3.8.3; platform_python_implementation != "PyPy"
     # via ufoLib2 (setup.cfg)
 pytz==2021.3
     # via fs
