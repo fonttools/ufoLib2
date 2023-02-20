@@ -24,7 +24,7 @@ mccabe==0.7.0
     # via flake8
 mypy==1.0.1
     # via -r requirements-dev.in
-mypy-extensions==0.4.3
+mypy-extensions==1.0.0
     # via
     #   black
     #   mypy
