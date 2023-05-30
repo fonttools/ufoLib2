@@ -110,7 +110,11 @@ from ufoLib2.converters import register_hooks, structure, unstructure  # noqa: E
                 ],
             },
         ),
-        (Guideline(x=0, name="foo"), {"x": 0, "name": "foo"}),
+        (Guideline(x=0, name="foo"), {"name": "foo"}),
+        (
+            Guideline(x=149, y=1523, identifier="aaa"),
+            {"x": 149, "y": 1523, "identifier": "aaa"},
+        ),
         (Guideline(y=1, name="bar"), {"y": 1, "name": "bar"}),
         (
             Guideline(
