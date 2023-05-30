@@ -17,13 +17,13 @@ class Guideline(AttrDictMixin):
     data composition restrictions.
     """
 
-    x: float = 0
+    x: Optional[float] = None
     """The origin x coordinate of the guideline."""
 
-    y: float = 0
+    y: Optional[float] = None
     """The origin y coordinate of the guideline."""
 
-    angle: float = 0
+    angle: Optional[float] = None
     """The angle of the guideline."""
 
     name: Optional[str] = None
@@ -36,5 +36,13 @@ class Guideline(AttrDictMixin):
     """The globally unique identifier of the guideline."""
 
     def __attrs_post_init__(self) -> None:
-        if not (0 <= self.angle <= 360):
+        x, y, angle = self.x, self.y, self.angle
+        if x is None and y is None:
+            raise ValueError("x or y must be present")
+        if x is None or y is None:
+            if angle is not None:
+                raise ValueError("if 'x' or 'y' are None, 'angle' must not be present")
+        if x is not None and y is not None and angle is None:
+            raise ValueError("if 'x' and 'y' are defined, 'angle' must be defined")
+        if angle is not None and not (0 <= angle <= 360):
             raise ValueError("angle must be between 0 and 360")
