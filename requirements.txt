@@ -22,7 +22,7 @@ msgpack==1.0.5
     # via ufoLib2 (setup.cfg)
 orjson==3.9.1; platform_python_implementation != "PyPy"
     # via ufoLib2 (setup.cfg)
-pytz==2021.3
+pytz==2023.3
     # via fs
 six==1.16.0
     # via fs
