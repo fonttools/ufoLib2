@@ -471,7 +471,12 @@ from ufoLib2.converters import register_hooks, structure, unstructure  # noqa: E
         ),
         (
             Font(
-                layers=[Layer(glyphs=[Glyph("a")])],
+                layers=[
+                    Layer(
+                        glyphs=[Glyph("a", tempLib={"foo": "bar"})],
+                        tempLib={"a": 123},
+                    )
+                ],
                 info=Info(familyName="Test"),
                 features="languagesystem DFLT dflt;",
                 groups={"LOWERCASE": ["a"]},
@@ -479,12 +484,14 @@ from ufoLib2.converters import register_hooks, structure, unstructure  # noqa: E
                 lib={"foo": "bar"},
                 data={"baz": b"\0"},
                 images={"foobarbaz": b"\0"},
+                tempLib={"foofoo": "barbar"},
             ),
             {
                 "layers": [
                     {
                         "name": "public.default",
-                        "glyphs": {"a": {}},
+                        "glyphs": {"a": {"tempLib": {"foo": "bar"}}},
+                        "tempLib": {"a": 123},
                     }
                 ],
                 "info": {"familyName": "Test"},
@@ -494,6 +501,7 @@ from ufoLib2.converters import register_hooks, structure, unstructure  # noqa: E
                 "lib": {"foo": "bar"},
                 "data": {"baz": "AA=="},
                 "images": {"foobarbaz": "AA=="},
+                "tempLib": {"foofoo": "barbar"},
             },
         ),
     ],
@@ -572,6 +580,7 @@ def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
                 "components": [],
                 "contours": [],
                 "guidelines": [],
+                "tempLib": {},
             },
             id="False-Glyph",
         ),
@@ -579,7 +588,13 @@ def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
         pytest.param(
             False,
             Layer(),
-            {"name": "public.default", "default": True, "glyphs": {}, "lib": {}},
+            {
+                "name": "public.default",
+                "default": True,
+                "glyphs": {},
+                "lib": {},
+                "tempLib": {},
+            },
             id="False-Layer",
         ),
         pytest.param(
@@ -596,9 +611,16 @@ def test_structure_forbid_extra_keys(forbid_extra_keys: bool) -> None:
                 "info": {},
                 "kerning": {},
                 "layers": [
-                    {"default": True, "glyphs": {}, "lib": {}, "name": "public.default"}
+                    {
+                        "default": True,
+                        "glyphs": {},
+                        "lib": {},
+                        "name": "public.default",
+                        "tempLib": {},
+                    }
                 ],
                 "lib": {},
+                "tempLib": {},
             },
             id="False-Font",
         ),
@@ -680,6 +702,7 @@ def test_custom_type_overrides() -> None:
         "components": [],
         "contours": [],
         "guidelines": [],
+        "tempLib": {},
     }
 
 

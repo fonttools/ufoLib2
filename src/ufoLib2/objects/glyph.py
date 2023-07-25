@@ -17,7 +17,14 @@ from ufoLib2.objects.component import Component
 from ufoLib2.objects.contour import Contour
 from ufoLib2.objects.guideline import Guideline
 from ufoLib2.objects.image import Image
-from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
+from ufoLib2.objects.lib import (
+    Lib,
+    _convert_Lib,
+    _get_lib,
+    _get_tempLib,
+    _set_lib,
+    _set_tempLib,
+)
 from ufoLib2.objects.misc import BoundingBox, _object_lib, getBounds, getControlBounds
 from ufoLib2.pointPens.glyphPointPen import GlyphPointPen
 from ufoLib2.serde import serde
@@ -84,6 +91,9 @@ class Glyph:
 
     _guidelines: List[Guideline] = field(factory=list)
 
+    _tempLib: Lib = field(factory=Lib, converter=_convert_Lib)
+    """A temporary map of arbitrary plist values."""
+
     def __len__(self) -> int:
         return len(self.contours)
 
@@ -105,6 +115,8 @@ class Glyph:
         )
 
     lib = property(_get_lib, _set_lib)
+
+    tempLib = property(_get_tempLib, _set_tempLib)
 
     @property
     def anchors(self) -> list[Anchor]:

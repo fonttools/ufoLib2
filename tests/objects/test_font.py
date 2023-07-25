@@ -6,7 +6,7 @@ from typing import Optional
 
 import pytest
 
-from ufoLib2.objects import Font, Glyph, Guideline
+from ufoLib2.objects import Font, Glyph, Guideline, Layer
 
 
 def test_font_equality(datadir: Path) -> None:
@@ -137,3 +137,25 @@ def test_pickle_lazy_font(datadir: Path, lazy: Optional[bool]) -> None:
     # unpickling doesn't initialize the lazy flag or a reader, which reset to default
     assert font2._lazy is None
     assert font2._reader is None
+
+
+def test_tempLib_not_saved(tmp_path: Path) -> None:
+    font = Font(
+        layers=[
+            Layer(
+                glyphs=[Glyph("a", tempLib={"something": 123})],
+                tempLib={"hello": b"world"},
+            )
+        ],
+        tempLib={"foo": {"bar": b"baz"}},
+    )
+    assert font.tempLib
+    assert font.layers.defaultLayer.tempLib
+    assert font["a"].tempLib
+
+    font.save(tmp_path / "Font.ufo")
+
+    font2 = Font.open(tmp_path / "Font.ufo")
+    assert not font2.tempLib
+    assert not font2.layers.defaultLayer.tempLib
+    assert not font2["a"].tempLib
