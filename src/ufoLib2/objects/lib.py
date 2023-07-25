@@ -36,6 +36,14 @@ def _set_lib(self: Any, value: Mapping[str, Any]) -> None:
     self._lib = _convert_Lib(value)
 
 
+def _get_tempLib(self: Any) -> Lib:
+    return cast(Lib, self._tempLib)
+
+
+def _set_tempLib(self: Any, value: Mapping[str, Any]) -> None:
+    self._tempLib = _convert_Lib(value)
+
+
 def is_data_dict(value: Any) -> bool:
     return (
         isinstance(value, Mapping)

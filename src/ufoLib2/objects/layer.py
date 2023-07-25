@@ -17,7 +17,14 @@ from fontTools.ufoLib.glifLib import GlyphSet
 
 from ufoLib2.constants import DEFAULT_LAYER_NAME
 from ufoLib2.objects.glyph import Glyph
-from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
+from ufoLib2.objects.lib import (
+    Lib,
+    _convert_Lib,
+    _get_lib,
+    _get_tempLib,
+    _set_lib,
+    _set_tempLib,
+)
 from ufoLib2.objects.misc import (
     BoundingBox,
     _deepcopy_unlazify_attrs,
@@ -118,6 +125,9 @@ class Layer:
     """Can set to True to mark a layer as default. If layer name is 'public.default'
     the default attribute is automatically True. Exactly one layer must be marked as
     default in a font."""
+
+    _tempLib: Lib = field(factory=Lib, converter=_convert_Lib)
+    """A temporary map of arbitrary plist values."""
 
     _lazy: Optional[bool] = field(default=None, init=False, eq=False)
     _glyphSet: Any = field(default=None, init=False, eq=False)
@@ -249,6 +259,8 @@ class Layer:
         return self._name
 
     lib = property(_get_lib, _set_lib)
+
+    tempLib = property(_get_tempLib, _set_tempLib)
 
     @property
     def default(self) -> bool:
@@ -399,6 +411,7 @@ class Layer:
             ("default", self._default, self._name == DEFAULT_LAYER_NAME),
             ("glyphs", glyphs, {}),
             ("lib", self._lib, {}),
+            ("tempLib", self._tempLib, {}),
         ]:
             if not converter.omit_if_default or value != default:
                 d[key] = value
@@ -419,6 +432,7 @@ class Layer:
             color=data.get("color"),
             lib=converter.structure(data.get("lib", {}), Lib),
             default=data.get("default", False),
+            tempLib=converter.structure(data.get("tempLib", {}), Lib),
         )
 
 

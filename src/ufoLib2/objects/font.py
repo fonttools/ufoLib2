@@ -31,7 +31,14 @@ from ufoLib2.objects.info import Info
 from ufoLib2.objects.kerning import Kerning, KerningPair
 from ufoLib2.objects.layer import Layer
 from ufoLib2.objects.layerSet import LayerSet
-from ufoLib2.objects.lib import Lib, _convert_Lib, _get_lib, _set_lib
+from ufoLib2.objects.lib import (
+    Lib,
+    _convert_Lib,
+    _get_lib,
+    _get_tempLib,
+    _set_lib,
+    _set_tempLib,
+)
 from ufoLib2.objects.misc import (
     BoundingBox,
     _deepcopy_unlazify_attrs,
@@ -100,6 +107,8 @@ class Font:
         lib (Dict[str, Any]): A mapping of keys to arbitrary values.
         data (DataSet): A mapping of data file paths to arbitrary data.
         images (ImageSet): A mapping of image file paths to arbitrary image data.
+        tempLib (Dict[str, Any]): A temporary mapping of keys to arbitrary values
+            which unlike lib are *not* saved to disk.
 
     Behavior:
         The Font object has some dict-like behavior for quick access to glyphs on the
@@ -165,6 +174,9 @@ class Font:
 
     images: ImageSet = field(factory=ImageSet, converter=_convert_ImageSet)
     """ImageSet: A mapping of image file paths to arbitrary image data."""
+
+    _tempLib: Lib = field(factory=Lib, converter=_convert_Lib)
+    """Dict[str, PlistEncodable]: A temporary map of arbitrary plist values."""
 
     # init=False args, set by alternate open/read classmethod constructors
     _path: Optional[PathLike] = field(default=None, eq=False, init=False)
@@ -375,6 +387,8 @@ class Font:
     kerning = property(_get_kerning, _set_kerning)
 
     lib = property(_get_lib, _set_lib)
+
+    tempLib = property(_get_tempLib, _set_tempLib)
 
     def objectLib(self, object: HasIdentifier) -> dict[str, Any]:
         """Return the lib for an object with an identifier, as stored in a font's lib.
