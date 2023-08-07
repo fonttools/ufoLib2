@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements-dev.txt requirements-dev.in
 #
-attrs==22.1.0
+attrs==23.1.0
     # via
     #   -c requirements.txt
     #   pytest
