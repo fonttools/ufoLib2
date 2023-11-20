@@ -10,7 +10,7 @@ attrs==23.1.0
     # via
     #   cattrs
     #   ufoLib2 (setup.cfg)
-cattrs==22.2.0
+cattrs==23.2.1
     # via ufoLib2 (setup.cfg)
 fonttools[ufo]==4.29.1
     # via ufoLib2 (setup.cfg)
