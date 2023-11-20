@@ -18,7 +18,7 @@ fs==2.4.16
     # via fonttools
 lxml==4.9.3
     # via ufoLib2 (setup.cfg)
-msgpack==1.0.4
+msgpack==1.0.7
     # via ufoLib2 (setup.cfg)
 orjson==3.7.8 ; platform_python_implementation != "PyPy"
     # via ufoLib2 (setup.cfg)
