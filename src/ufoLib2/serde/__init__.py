@@ -73,7 +73,6 @@ def serde(cls: Type[T]) -> Type[T]:
 
     supported_formats = []
     for fmt in _SERDE_FORMATS_:
-
         try:
             serde_submodule = import_module(f"ufoLib2.serde.{fmt}")
         except ImportError as exc:
