@@ -103,7 +103,7 @@ _obj_setattr = object.__setattr__
 # Below is adapted from `attrs._make._ClassBuilder._make_getstate_setstate` method:
 # https://github.com/python-attrs/attrs/blob/36ed0204/src/attr/_make.py#L931-L937
 def _setstate_attrs(self: Any, state: Dict[str, Any]) -> None:
-    _bound_setattr = _obj_setattr.__get__(self, attrs.Attribute)  # type: ignore
+    _bound_setattr = _obj_setattr.__get__(self, attrs.Attribute)
     for a in attrs.fields(self.__class__):
         if a.name in state:
             _bound_setattr(a.name, state[a.name])

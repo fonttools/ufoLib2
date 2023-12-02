@@ -93,7 +93,7 @@ assert {d["class_name"] for d in BASIC_EMPTY_OBJECTS} == set(ufoLib2.objects.__a
 @pytest.mark.parametrize(
     "object_info",
     BASIC_EMPTY_OBJECTS,
-    ids=lambda x: x["class_name"],  # type: ignore
+    ids=lambda x: x["class_name"],
 )
 def test_serde_all_objects(fmt: str, object_info: Dict[str, Any]) -> None:
     for req in EXTRAS_REQUIREMENTS[fmt]:

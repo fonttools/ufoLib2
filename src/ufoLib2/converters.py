@@ -6,12 +6,8 @@ from typing import Any, Callable, Tuple, Type, cast
 
 from attrs import fields, has, resolve_types
 from cattrs import Converter
-from cattrs.gen import (
-    AttributeOverride,
-    make_dict_structure_fn,
-    make_dict_unstructure_fn,
-    override,
-)
+from cattrs.gen import make_dict_structure_fn, make_dict_unstructure_fn, override
+from cattrs.gen._consts import AttributeOverride
 from fontTools.misc.transform import Transform
 
 is_py37 = sys.version_info[:2] == (3, 7)
