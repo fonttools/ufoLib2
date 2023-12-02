@@ -25,7 +25,6 @@ def test_dumps_loads(ufo_UbuTestData: ufoLib2.objects.Font) -> None:
 
 
 def test_dump_load(tmp_path: Path, ufo_UbuTestData: ufoLib2.objects.Font) -> None:
-
     font = ufo_UbuTestData
     with open(tmp_path / "test.msgpack", "wb") as f:
         font.msgpack_dump(f)  # type: ignore

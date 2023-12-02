@@ -16,7 +16,7 @@ from ufoLib2.objects.misc import _DATA_NOT_LOADED
 
 def test_import_version() -> None:
     assert hasattr(ufoLib2, "__version__")
-    assert isinstance(ufoLib2.__version__, str)  # type: ignore
+    assert isinstance(ufoLib2.__version__, str)
 
 
 def test_LayerSet_load_layers_on_iteration(tmp_path: Path) -> None:

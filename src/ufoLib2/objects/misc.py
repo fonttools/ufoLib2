@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import collections.abc
 import uuid
 from abc import abstractmethod
-from collections.abc import Mapping, MutableMapping
 from copy import deepcopy
 from functools import lru_cache
 from typing import (
@@ -11,6 +9,8 @@ from typing import (
     Any,
     Dict,
     Iterator,
+    Mapping,
+    MutableMapping,
     NamedTuple,
     Optional,
     Sequence,
@@ -103,7 +103,7 @@ _obj_setattr = object.__setattr__
 # Below is adapted from `attrs._make._ClassBuilder._make_getstate_setstate` method:
 # https://github.com/python-attrs/attrs/blob/36ed0204/src/attr/_make.py#L931-L937
 def _setstate_attrs(self: Any, state: Dict[str, Any]) -> None:
-    _bound_setattr = _obj_setattr.__get__(self, attrs.Attribute)  # type: ignore
+    _bound_setattr = _obj_setattr.__get__(self, attrs.Attribute)
     for a in attrs.fields(self.__class__):
         if a.name in state:
             _bound_setattr(a.name, state[a.name])
@@ -121,7 +121,7 @@ def _object_lib(parent_lib: dict[str, Any], obj: HasIdentifier) -> dict[str, Any
         object_libs = parent_lib["public.objectLibs"] = {}
     else:
         object_libs = parent_lib["public.objectLibs"]
-        assert isinstance(object_libs, collections.abc.MutableMapping)
+        assert isinstance(object_libs, MutableMapping)
 
     if obj.identifier in object_libs:
         object_lib: dict[str, Any] = object_libs[obj.identifier]
@@ -158,15 +158,8 @@ _DATA_NOT_LOADED = DataPlaceholder(b"__UFOLIB2_DATA_NOT_LOADED__")
 Tds = TypeVar("Tds", bound="DataStore")
 
 
-# For Python 3.7 compatibility.
-if TYPE_CHECKING:
-    DataStoreMapping = MutableMapping[str, bytes]
-else:
-    DataStoreMapping = MutableMapping
-
-
 @define
-class DataStore(DataStoreMapping):
+class DataStore(MutableMapping[str, bytes]):
     """Represents the base class for ImageSet and DataSet.
 
     Both behave like a dictionary that loads its "values" lazily by default and only
@@ -353,17 +346,10 @@ class DataStore(DataStoreMapping):
         return self
 
 
-# For Python 3.7 compatibility.
-if TYPE_CHECKING:
-    AttrDictMixinMapping = Mapping[str, Any]
-else:
-    AttrDictMixinMapping = Mapping
-
-
 _T = TypeVar("_T", bound="AttrDictMixin")
 
 
-class AttrDictMixin(AttrDictMixinMapping):
+class AttrDictMixin(Mapping[str, Any]):
     """Read attribute values using mapping interface.
 
     For use with Anchors, Guidelines and WoffMetadata classes, where client code

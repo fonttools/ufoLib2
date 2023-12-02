@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, ClassVar, Iterator, Optional, Tuple
+from typing import Any, ClassVar, Iterator, Mapping, Optional, Tuple
 
 from attrs import define, field
 from fontTools.misc.transform import Identity, Transform
@@ -10,16 +9,10 @@ from ufoLib2.serde import serde
 
 from .misc import _convert_transform
 
-# For Python 3.7 compatibility.
-if TYPE_CHECKING:
-    ImageMapping = Mapping[str, Any]
-else:
-    ImageMapping = Mapping
-
 
 @serde
 @define
-class Image(ImageMapping):
+class Image(Mapping[str, Any]):
     """Represents a background image reference.
 
     See http://unifiedfontobject.org/versions/ufo3/images/ and

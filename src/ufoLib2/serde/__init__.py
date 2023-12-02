@@ -73,7 +73,6 @@ def serde(cls: Type[T]) -> Type[T]:
 
     supported_formats = []
     for fmt in _SERDE_FORMATS_:
-
         try:
             serde_submodule = import_module(f"ufoLib2.serde.{fmt}")
         except ImportError as exc:
@@ -85,12 +84,12 @@ def serde(cls: Type[T]) -> Type[T]:
             setattr(
                 cls,
                 f"{fmt}_loads",
-                partialmethod(classmethod(_loads), __callback=serde_submodule.loads),
+                partialmethod(classmethod(_loads), __callback=serde_submodule.loads),  # type: ignore[arg-type]
             )
             setattr(
                 cls,
                 f"{fmt}_load",
-                partialmethod(classmethod(_load), __callback=serde_submodule.load),
+                partialmethod(classmethod(_load), __callback=serde_submodule.load),  # type: ignore[arg-type]
             )
             setattr(cls, f"{fmt}_dumps", serde_submodule.dumps)
             setattr(cls, f"{fmt}_dump", serde_submodule.dump)
