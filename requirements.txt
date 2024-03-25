@@ -6,21 +6,21 @@
 #
 appdirs==1.4.4
     # via fs
-attrs==23.1.0
+attrs==23.2.0
     # via
     #   cattrs
     #   ufoLib2 (setup.cfg)
 cattrs==23.2.3
     # via ufoLib2 (setup.cfg)
-fonttools[ufo]==4.46.0
+fonttools[ufo]==4.50.0
     # via
     #   fonttools
     #   ufoLib2 (setup.cfg)
 fs==2.4.16
     # via fonttools
-lxml==4.9.3
+lxml==5.1.0
     # via ufoLib2 (setup.cfg)
-msgpack==1.0.7
+msgpack==1.0.8
     # via ufoLib2 (setup.cfg)
 orjson==3.9.15 ; platform_python_implementation != "PyPy"
     # via ufoLib2 (setup.cfg)
