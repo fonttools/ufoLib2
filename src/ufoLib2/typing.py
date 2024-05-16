@@ -19,8 +19,7 @@ class Drawable(Protocol):
     See :mod:`fontTools.pens.basePen` for an introduction to pens.
     """
 
-    def draw(self, pen: AbstractPen) -> None:
-        ...
+    def draw(self, pen: AbstractPen) -> None: ...
 
 
 class DrawablePoints(Protocol):
@@ -29,8 +28,7 @@ class DrawablePoints(Protocol):
     See :mod:`fontTools.pens.pointPen` for an introduction to point pens.
     """
 
-    def drawPoints(self, pen: AbstractPointPen) -> None:
-        ...
+    def drawPoints(self, pen: AbstractPointPen) -> None: ...
 
 
 class HasIdentifier(Protocol):
@@ -54,8 +52,6 @@ class GlyphSet(Protocol):
     """
 
     # "object" instead of "str" because that's what typeshed says a Mapping should have.
-    def __contains__(self, name: object) -> bool:
-        ...
+    def __contains__(self, name: object) -> bool: ...
 
-    def __getitem__(self, name: str) -> Drawable | DrawablePoints:
-        ...
+    def __getitem__(self, name: str) -> Drawable | DrawablePoints: ...

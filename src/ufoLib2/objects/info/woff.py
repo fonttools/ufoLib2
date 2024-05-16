@@ -2,6 +2,7 @@
 
 https://unifiedfontobject.org/versions/ufo3/fontinfo.plist/#woff-data
 """
+
 from __future__ import annotations
 
 from typing import Any, List, Mapping, Optional, Sequence, Type, TypeVar
