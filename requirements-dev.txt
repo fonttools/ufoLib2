@@ -28,7 +28,7 @@ packaging==24.1
     # via
     #   black
     #   pytest
-pathspec==0.11.2
+pathspec==0.12.1
     # via black
 platformdirs==4.0.0
     # via black
