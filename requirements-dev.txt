@@ -40,5 +40,5 @@ pyflakes==3.2.0
     # via flake8
 pytest==8.3.3
     # via -r requirements-dev.in
-typing-extensions==4.8.0
+typing-extensions==4.12.2
     # via mypy
