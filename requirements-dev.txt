@@ -38,7 +38,7 @@ pycodestyle==2.12.1
     # via flake8
 pyflakes==3.2.0
     # via flake8
-pytest==7.4.3
+pytest==8.3.3
     # via -r requirements-dev.in
 typing-extensions==4.8.0
     # via mypy
