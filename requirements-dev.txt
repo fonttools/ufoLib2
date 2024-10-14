@@ -10,7 +10,7 @@ click==8.1.7
     # via black
 coverage==7.6.3
     # via -r requirements-dev.in
-flake8==6.1.0
+flake8==7.1.1
     # via -r requirements-dev.in
 iniconfig==2.0.0
     # via pytest
