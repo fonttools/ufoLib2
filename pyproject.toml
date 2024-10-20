@@ -81,5 +81,5 @@ module = "ufoLib2.*"
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["fontTools.*"]
+module = ["fontTools.*", "ufoLib2._version"]
 ignore_missing_imports = true
