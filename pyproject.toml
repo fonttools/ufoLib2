@@ -55,3 +55,13 @@ multi_line_output = 3
 profile = "black"
 float_to_top = true
 known_first_party = "ufoLib2"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests", "ufoLib2"]
+addopts = "-ra --doctest-modules --doctest-ignore-import-errors --pyargs"
+doctest_optionflags = ["ALLOW_UNICODE", "ELLIPSIS"]
+filterwarnings = [
+    "ignore::DeprecationWarning:fs",
+    "ignore::DeprecationWarning:pkg_resources",
+]
