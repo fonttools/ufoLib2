@@ -1,9 +1,54 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=61.2", "wheel", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "ufoLib2"
+description = "ufoLib2 is a UFO font processing library."
+authors = [{ name = "Adrien Tétar", email = "adri-from-59@hotmail.fr" }]
+license = { text = "Apache 2.0" }
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Text Processing :: Fonts",
+    "License :: OSI Approved :: Apache Software License",
+]
+urls = { Homepage = "https://github.com/fonttools/ufoLib2" }
+requires-python = ">=3.8"
+dependencies = ["attrs >= 22.1.0", "fonttools[ufo] >= 4.0.0"]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.optional-dependencies]
+lxml = ["lxml"]
+converters = ["cattrs >= 22.2.0"]
+json = ["cattrs >= 22.2.0", "orjson ; platform_python_implementation != 'PyPy'"]
+msgpack = ["cattrs >= 22.2.0", "msgpack"]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+license-files = ["LICENSE"]
+include-package-data = false
+
+# https://www.python.org/dev/peps/pep-0561
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools_scm]
+write_to = "src/ufoLib2/_version.py"
+
 [tool.black]
-target-version = ["py37"]
+target-version = ["py38"]
 
 [tool.isort]
 multi_line_output = 3
@@ -11,5 +56,30 @@ profile = "black"
 float_to_top = true
 known_first_party = "ufoLib2"
 
-[tool.setuptools_scm]
-write_to = "src/ufoLib2/_version.py"
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests", "ufoLib2"]
+addopts = "-ra --doctest-modules --doctest-ignore-import-errors --pyargs"
+doctest_optionflags = ["ALLOW_UNICODE", "ELLIPSIS"]
+filterwarnings = [
+    "ignore::DeprecationWarning:fs",
+    "ignore::DeprecationWarning:pkg_resources",
+]
+
+[tool.mypy]
+python_version = "3.8"
+disallow_incomplete_defs = true
+no_implicit_optional = true
+strict_optional = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "ufoLib2.*"
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["fontTools.*", "ufoLib2._version"]
+ignore_missing_imports = true

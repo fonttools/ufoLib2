@@ -228,12 +228,10 @@ class Layer:
         return self._glyphs.keys()
 
     @overload
-    def pop(self, key: str) -> Glyph:
-        ...
+    def pop(self, key: str) -> Glyph: ...
 
     @overload
-    def pop(self, key: str, default: Glyph | T = ...) -> Glyph | T:
-        ...
+    def pop(self, key: str, default: Glyph | T = ...) -> Glyph | T: ...
 
     def pop(self, key: str, default: Glyph | T = KeyError) -> Glyph | T:  # type: ignore
         """Remove and return glyph from layer.

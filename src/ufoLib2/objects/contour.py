@@ -54,8 +54,7 @@ class Contour(MutableSequence[Point]):
         del self.points[index]
 
     @overload
-    def __getitem__(self, index: int) -> Point:
-        ...
+    def __getitem__(self, index: int) -> Point: ...
 
     @overload
     def __getitem__(self, index: slice) -> list[Point]:  # noqa: F811
