@@ -12,29 +12,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Lint
-      run: |
-        pip install tox
-        tox -e lint
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Lint
+        run: |
+          pip install tox
+          tox -e lint
 
-  docs:  # To see if they build.
+  docs: # To see if they build.
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Lint
-      run: |
-        pip install tox
-        tox -e docs
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Lint
+        run: |
+          pip install tox
+          tox -e docs
 
   test:
     runs-on: ${{ matrix.platform }}
@@ -44,34 +44,34 @@ jobs:
         platform: [ubuntu-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install packages
-      run: pip install tox coverage
-    - name: Run Tox
-      run: tox -e py-cov
-    - name: Re-run Tox without cattrs
-      if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.13')
-      run: |
-        tox -e py-nocattrs
-    - name: Re-run Tox without msgpack
-      if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.13')
-      run: |
-        tox -e py-nomsgpack
-    - name: Produce coverage files
-      run: |
-        coverage combine
-        coverage xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        file: coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install packages
+        run: pip install tox coverage
+      - name: Run Tox
+        run: tox -e py-cov
+      - name: Re-run Tox without cattrs
+        if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.13')
+        run: |
+          tox -e py-nocattrs
+      - name: Re-run Tox without msgpack
+        if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.13')
+        run: |
+          tox -e py-nomsgpack
+      - name: Produce coverage files
+        run: |
+          coverage combine
+          coverage xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
   deploy:
     # only run if the commit is tagged...
@@ -84,19 +84,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        pip install build twine
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        python -m build
-        twine check dist/*
-        twine upload dist/*
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          pip install build twine
+      - name: Build and publish
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          python -m build
+          twine check dist/*
+          twine upload dist/*
