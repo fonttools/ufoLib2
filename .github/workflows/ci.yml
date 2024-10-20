@@ -40,7 +40,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        python-version: ['3.8', '3.11']
+        python-version: ["3.8", "3.13"]
         platform: [ubuntu-latest, windows-latest]
 
     steps:
@@ -54,11 +54,11 @@ jobs:
     - name: Run Tox
       run: tox -e py-cov
     - name: Re-run Tox without cattrs
-      if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.11')
+      if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.13')
       run: |
         tox -e py-nocattrs
     - name: Re-run Tox without msgpack
-      if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.10')
+      if: startsWith(matrix.platform, 'ubuntu-latest') && startsWith(matrix.python-version, '3.13')
       run: |
         tox -e py-nomsgpack
     - name: Produce coverage files
