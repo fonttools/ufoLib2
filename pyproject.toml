@@ -27,9 +27,9 @@ content-type = "text/markdown"
 
 [project.optional-dependencies]
 lxml = ["lxml"]
-converters = ["cattrs >= 22.2.0"]
-json = ["cattrs >= 22.2.0", "orjson ; platform_python_implementation != 'PyPy'"]
-msgpack = ["cattrs >= 22.2.0", "msgpack"]
+converters = ["cattrs >= 24.1"]
+json = ["cattrs >= 24.1", "orjson ; platform_python_implementation != 'PyPy'"]
+msgpack = ["cattrs >= 24.1", "msgpack"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
