@@ -40,7 +40,7 @@ pyflakes==3.2.0
     # via flake8
 pytest==8.3.3
     # via -r requirements-dev.in
-tomli==2.0.2
+tomli==2.1.0
     # via
     #   black
     #   mypy
