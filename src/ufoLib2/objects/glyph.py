@@ -355,10 +355,12 @@ class Glyph:
     # Pen methods
     # -----------
 
-    def draw(self, pen: AbstractPen) -> None:
+    def draw(self, pen: AbstractPen, outputImpliedClosingLine: bool = False) -> None:
         """Draws glyph into given pen."""
         # TODO: Document pen interface more or link to somewhere.
-        pointPen = PointToSegmentPen(pen)
+        pointPen = PointToSegmentPen(
+            pen, outputImpliedClosingLine=outputImpliedClosingLine
+        )
         self.drawPoints(pointPen)
 
     def drawPoints(self, pointPen: AbstractPointPen) -> None:
