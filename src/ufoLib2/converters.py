@@ -98,6 +98,9 @@ def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
     def unstructure_transform(t: Transform) -> Tuple[float]:
         return cast(Tuple[float], tuple(t))
 
+    def structure_transform(t: Tuple[float], _: Any) -> Transform:
+        return Transform(*t)
+
     conv.register_unstructure_hook_factory(
         is_ufoLib2_attrs_class,
         partial(attrs_hook_factory, gen_fn=make_dict_unstructure_fn, structuring=False),
@@ -110,6 +113,7 @@ def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
         cast(Type[Transform], Transform), unstructure_transform
     )
 
+    conv.register_structure_hook(cast(Type[Transform], Transform), structure_transform)
     conv.register_structure_hook_factory(
         is_ufoLib2_attrs_class,
         partial(attrs_hook_factory, gen_fn=make_dict_structure_fn, structuring=True),
