@@ -10,7 +10,7 @@ cattrs==24.1.2
     # via ufolib2 (pyproject.toml)
 exceptiongroup==1.2.2
     # via cattrs
-fonttools==4.54.1
+fonttools==4.55.8
     # via ufolib2 (pyproject.toml)
 fs==2.4.16
     # via fonttools
