@@ -284,3 +284,17 @@ def test_convert_on_setattr(
     assert not isinstance(obj, attr_type)
     setattr(o, attr_name, obj)
     assert isinstance(getattr(o, attr_name), attr_type)
+
+
+def test_LayerSet_rename_layer(tmp_path: Path, datadir: Path) -> None:
+    ufo = ufoLib2.Font.open(datadir / "MutatorSansBoldCondensed.ufo")
+    ufo_tmp_path = tmp_path / "test.ufo"
+
+    # Make sure we are not in overwrite mode before renaming.
+    ufo.save(ufo_tmp_path)
+    ufo = ufoLib2.Font.open(ufo_tmp_path)
+    ufo.renameLayer("background", "public.background2")
+    ufo.save()
+
+    ufo2 = ufoLib2.Font.open(ufo_tmp_path)
+    assert ufo == ufo2
