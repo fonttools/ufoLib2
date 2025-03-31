@@ -18,7 +18,7 @@ lxml==5.3.1
     # via ufolib2 (pyproject.toml)
 msgpack==1.1.0
     # via ufolib2 (pyproject.toml)
-orjson==3.10.10
+orjson==3.10.16
     # via ufolib2 (pyproject.toml)
 setuptools==75.3.0
     # via fs
