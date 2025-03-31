@@ -24,5 +24,5 @@ setuptools==78.1.0
     # via fs
 six==1.17.0
     # via fs
-typing-extensions==4.12.2
+typing-extensions==4.13.0
     # via cattrs
