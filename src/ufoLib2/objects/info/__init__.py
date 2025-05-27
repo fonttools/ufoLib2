@@ -93,7 +93,7 @@ class NameRecord(AttrDictMixin):
 
 class WidthClass(IntEnum):
     ULTRA_CONDENSED = 1
-    EXTRA_CONDESED = 2
+    EXTRA_CONDENSED = 2
     CONDENSED = 3
     SEMI_CONDENSED = 4
     NORMAL = 5  # alias for WidthClass.MEDIUM
