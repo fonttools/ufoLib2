@@ -38,7 +38,7 @@ pycodestyle==2.13.0
     # via flake8
 pyflakes==3.3.2
     # via flake8
-pytest==8.3.3
+pytest==8.4.0
     # via -r requirements-dev.in
 tomli==2.0.2
     # via
