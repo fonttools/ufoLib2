@@ -241,7 +241,7 @@ def test_guidelines() -> None:
     ]
 
     # setter should clear existing guidelines
-    font.guidelines = [{"x": 100}, ufoLib2.objects.Guideline(y=20)]  # type: ignore
+    font.guidelines = [{"x": 100}, ufoLib2.objects.Guideline(y=20)]
 
     assert len(font.guidelines) == 2
     assert font.guidelines == [
