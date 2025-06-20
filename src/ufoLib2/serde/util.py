@@ -10,7 +10,7 @@ def read_bytes(fp: PathLike | BinaryIO) -> bytes:
         fp = cast(BinaryIO, fp)
         return fp.read()
     else:
-        fp = cast(PathLike, fp)
+        fp = cast(PathLike, fp)  # type: ignore
         with open(fp, "rb") as f:
             return f.read()
 
@@ -20,6 +20,6 @@ def write_bytes(fp: PathLike | BinaryIO, data: bytes) -> None:
         fp = cast(BinaryIO, fp)
         fp.write(data)
     else:
-        fp = cast(PathLike, fp)
+        fp = cast(PathLike, fp)  # type: ignore
         with open(fp, "wb") as f:
             f.write(data)
