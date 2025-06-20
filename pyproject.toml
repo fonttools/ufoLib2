@@ -48,7 +48,7 @@ namespaces = false
 write_to = "src/ufoLib2/_version.py"
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py39"]
 
 [tool.isort]
 multi_line_output = 3
@@ -67,7 +67,7 @@ filterwarnings = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 disallow_incomplete_defs = true
 no_implicit_optional = true
 strict_optional = true
