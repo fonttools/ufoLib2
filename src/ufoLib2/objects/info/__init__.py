@@ -138,7 +138,7 @@ def _convert_WidthClass(value: int | None) -> WidthClass | None:
 
 
 def _convert_WoffMetadataExtensions(
-    values: Sequence[WoffMetadataExtension | Mapping[str, Any]] | None
+    values: Sequence[WoffMetadataExtension | Mapping[str, Any]] | None,
 ) -> list[WoffMetadataExtension] | None:
     return _convert_optional_list_of_dicts(WoffMetadataExtension, values)
 

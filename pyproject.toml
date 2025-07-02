@@ -17,7 +17,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
 ]
 urls = { Homepage = "https://github.com/fonttools/ufoLib2" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = ["attrs >= 22.1.0", "fonttools[ufo] >= 4.0.0"]
 dynamic = ["version"]
 
@@ -27,9 +27,9 @@ content-type = "text/markdown"
 
 [project.optional-dependencies]
 lxml = ["lxml"]
-converters = ["cattrs >= 24.1"]
-json = ["cattrs >= 24.1", "orjson ; platform_python_implementation != 'PyPy'"]
-msgpack = ["cattrs >= 24.1", "msgpack"]
+converters = ["cattrs >= 25.1.1"]
+json = ["cattrs >= 25.1.1", "orjson ; platform_python_implementation != 'PyPy'"]
+msgpack = ["cattrs >= 25.1.1", "msgpack"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }
@@ -48,7 +48,7 @@ namespaces = false
 write_to = "src/ufoLib2/_version.py"
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py39"]
 
 [tool.isort]
 multi_line_output = 3
@@ -67,7 +67,7 @@ filterwarnings = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 disallow_incomplete_defs = true
 no_implicit_optional = true
 strict_optional = true
