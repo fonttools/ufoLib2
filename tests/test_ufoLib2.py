@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import zipfile
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Type
@@ -284,3 +285,27 @@ def test_convert_on_setattr(
     assert not isinstance(obj, attr_type)
     setattr(o, attr_name, obj)
     assert isinstance(getattr(o, attr_name), attr_type)
+
+
+@pytest.mark.parametrize(
+    "structure", [ufoLib.UFOFileStructure.PACKAGE, ufoLib.UFOFileStructure.ZIP]
+)
+def test_save_again_to_existing_path(
+    tmp_path: Path, structure: ufoLib.UFOFileStructure
+) -> None:
+    font = Font()
+    ufo_name = "foo.ufoz" if structure == ufoLib.UFOFileStructure.ZIP else "foo.ufo"
+    font.save(tmp_path / ufo_name, structure=structure)
+
+    # without the overwrite flag, this should fail
+    with pytest.raises(OSError, match="already exists"):
+        font.save(tmp_path / ufo_name, structure=structure)
+
+    # with the overwrite flag, it should succeed
+    font.save(tmp_path / ufo_name, overwrite=True, structure=structure)
+
+    if structure == ufoLib.UFOFileStructure.PACKAGE:
+        assert (tmp_path / ufo_name).is_dir()
+    else:
+        assert (tmp_path / ufo_name).is_file()
+        assert zipfile.is_zipfile(tmp_path / ufo_name)
