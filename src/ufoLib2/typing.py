@@ -12,6 +12,9 @@ T = TypeVar("T")
 PathLike = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
 """Represents a path in various possible forms."""
 
+# can be used with isinstance at runtime to check if something is a path
+PATH_TYPES = (str, bytes, os.PathLike)
+
 
 class Drawable(Protocol):
     """Stand-in for an object that can draw itself with a given pen.

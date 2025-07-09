@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import tempfile
 from typing import (
     Any,
     Dict,
@@ -16,8 +17,6 @@ from typing import (
     cast,
 )
 
-import fs.base
-import fs.tempfs
 from attrs import define, field
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
 
@@ -48,7 +47,7 @@ from ufoLib2.objects.misc import (
     _setstate_attrs,
 )
 from ufoLib2.serde import serde
-from ufoLib2.typing import HasIdentifier, PathLike, T
+from ufoLib2.typing import PATH_TYPES, HasIdentifier, PathLike, T
 
 
 def _convert_LayerSet(value: LayerSet | Iterable[Layer]) -> LayerSet:
@@ -532,7 +531,7 @@ class Font:
 
     def save(
         self,
-        path: PathLike | fs.base.FS | None = None,
+        path: PathLike | None = None,
         formatVersion: int = 3,
         structure: UFOFileStructure | None = None,
         overwrite: bool = False,
@@ -541,9 +540,8 @@ class Font:
         """Saves the font to ``path``.
 
         Args:
-            path: The target path. If it is None, the path from the last save (except
-                when that was a ``fs.base.FS``) or when the font was first opened will
-                be used.
+            path: The target path. If it is None, the path from the last save or when
+                the font was first opened will be used.
             formatVersion: The version to save the UFO as. Only version 3 is supported
                 currently.
             structure (fontTools.ufoLib.UFOFileStructure): How to store the UFO.
@@ -567,8 +565,8 @@ class Font:
             structure = self._fileStructure
 
         # Normalize path unless we're given a fs.base.FS, which we pass to UFOWriter.
-        if path is not None and not isinstance(path, fs.base.FS):
-            path = os.path.normpath(os.fspath(path))
+        if path is not None and isinstance(path, PATH_TYPES):
+            path = os.fsdecode(os.path.normpath(os.fspath(path)))
 
         overwritePath = tmp = None
 
@@ -577,8 +575,8 @@ class Font:
             if isinstance(path, str) and os.path.exists(path):
                 if overwrite:
                     overwritePath = path
-                    tmp = fs.tempfs.TempFS()
-                    path = tmp.getsyspath(os.path.basename(path))
+                    tmp = tempfile.TemporaryDirectory()
+                    path = os.path.join(tmp.name, os.path.basename(path))
                 else:
                     import errno
 
@@ -608,12 +606,12 @@ class Font:
         finally:
             # clean up the temporary directory
             if tmp is not None:
-                tmp.close()
+                tmp.cleanup()
 
         # Only remember path if it isn't a fs.base.FS because not all FS objects are
         # OsFS with a corresponding filesystem path. E.g. think about MemoryFS.
         # If you want, you can call getsyspath("") method of OsFS object and set that to
         # self._path. But you then have to catch the fs.errors.NoSysPath and skip if
         # the FS object does not implement a filesystem path.
-        if not isinstance(path, fs.base.FS):
+        if isinstance(path, str):
             self._path = path
