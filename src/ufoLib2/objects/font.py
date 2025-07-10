@@ -610,7 +610,10 @@ class Font:
         finally:
             # clean up the temporary directory
             if tmp is not None:
-                tmp.cleanup()
+                try:
+                    tmp.cleanup()
+                except PermissionError:
+                    pass
 
         # Only remember path if it isn't a fs.base.FS because not all FS objects are
         # OsFS with a corresponding filesystem path. E.g. think about MemoryFS.
