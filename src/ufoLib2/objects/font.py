@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 import tempfile
 from typing import (
     Any,
@@ -575,7 +576,10 @@ class Font:
             if isinstance(path, str) and os.path.exists(path):
                 if overwrite:
                     overwritePath = path
-                    tmp = tempfile.TemporaryDirectory()
+                    if sys.version_info < (3, 10):
+                        tmp = tempfile.TemporaryDirectory()
+                    else:
+                        tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
                     path = os.path.join(tmp.name, os.path.basename(path))
                 else:
                     import errno
