@@ -2,7 +2,7 @@
 #    uv pip compile --universal --python 3.9 requirements-dev.in
 black==25.1.0
     # via -r requirements-dev.in
-click==8.1.8 ; python_full_version < '3.10'
+click==8.2.1; python_full_version < '3.10'
     # via black
 click==8.2.1 ; python_full_version >= '3.10'
     # via black
