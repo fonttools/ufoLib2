@@ -50,7 +50,7 @@ pygments==2.19.2
     # via pytest
 pytest==8.4.2
     # via -r requirements-dev.in
-tomli==2.2.1 ; python_full_version < '3.11'
+tomli==2.3.0; python_full_version < '3.11'
     # via
     #   black
     #   mypy
