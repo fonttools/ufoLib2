@@ -48,7 +48,7 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.19.2
     # via pytest
-pytest==8.4.1
+pytest==9.0.1
     # via -r requirements-dev.in
 tomli==2.2.1 ; python_full_version < '3.11'
     # via
