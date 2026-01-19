@@ -55,7 +55,7 @@ tomli==2.2.1 ; python_full_version < '3.11'
     #   black
     #   mypy
     #   pytest
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   -c requirements.txt
     #   black
