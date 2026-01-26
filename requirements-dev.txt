@@ -38,7 +38,7 @@ pathspec==1.0.3
     # via
     #   black
     #   mypy
-platformdirs==4.3.8
+platformdirs==4.5.1
     # via black
 pluggy==1.6.0
     # via pytest
