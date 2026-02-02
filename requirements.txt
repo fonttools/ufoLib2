@@ -12,7 +12,7 @@ fonttools==4.61.1
     # via ufolib2 (pyproject.toml)
 lxml==6.0.2
     # via ufolib2 (pyproject.toml)
-msgpack==1.1.1
+msgpack==1.1.2
     # via ufolib2 (pyproject.toml)
 orjson==3.11.0 ; platform_python_implementation != 'PyPy'
     # via ufolib2 (pyproject.toml)
