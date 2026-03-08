@@ -1,23 +1,19 @@
-[build-system]
-requires = ["setuptools>=61.2", "wheel", "setuptools_scm>=6.2"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "ufoLib2"
 description = "ufoLib2 is a UFO font processing library."
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [{ name = "Adrien Tétar", email = "adri-from-59@hotmail.fr" }]
-license = { text = "Apache 2.0" }
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Intended Audience :: Developers",
-    "Intended Audience :: End Users/Desktop",
-    "Topic :: Text Processing :: Fonts",
-    "License :: OSI Approved :: Apache Software License",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Text Processing :: Fonts",
 ]
 urls = { Homepage = "https://github.com/fonttools/ufoLib2" }
-requires-python = ">=3.10"
 dependencies = ["attrs >= 22.1.0", "fonttools[ufo] >= 4.58.0"]
 dynamic = ["version"]
 
@@ -26,26 +22,14 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.optional-dependencies]
-lxml = ["lxml"]
 converters = ["cattrs >= 25.1.1"]
 json = ["cattrs >= 25.1.1", "orjson ; platform_python_implementation != 'PyPy'"]
+lxml = ["lxml"]
 msgpack = ["cattrs >= 25.1.1", "msgpack"]
 
-[tool.setuptools]
-package-dir = { "" = "src" }
-license-files = ["LICENSE"]
-include-package-data = false
-
-# https://www.python.org/dev/peps/pep-0561
-[tool.setuptools.package-data]
-"*" = ["py.typed"]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-namespaces = false
-
-[tool.setuptools_scm]
-write_to = "src/ufoLib2/_version.py"
+[build-system]
+requires = ["setuptools>=77.0.0", "setuptools_scm>=6.2", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.black]
 target-version = ["py310"]
@@ -55,16 +39,6 @@ multi_line_output = 3
 profile = "black"
 float_to_top = true
 known_first_party = "ufoLib2"
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-testpaths = ["tests", "ufoLib2"]
-addopts = "-ra --doctest-modules --doctest-ignore-import-errors --pyargs"
-doctest_optionflags = ["ALLOW_UNICODE", "ELLIPSIS"]
-filterwarnings = [
-    "ignore::DeprecationWarning:fs",
-    "ignore::DeprecationWarning:pkg_resources",
-]
 
 [tool.mypy]
 python_version = "3.10"
@@ -83,3 +57,33 @@ disallow_untyped_defs = true
 [[tool.mypy.overrides]]
 module = ["fontTools.*", "ufoLib2._version"]
 ignore_missing_imports = true
+
+[tool.pytest]
+addopts = [
+  "--doctest-ignore-import-errors",
+  "--doctest-modules",
+  "--pyargs",
+  "-ra"
+]
+doctest_optionflags = ["ALLOW_UNICODE", "ELLIPSIS"]
+filterwarnings = [
+  "ignore::DeprecationWarning:fs",
+  "ignore::DeprecationWarning:pkg_resources",
+]
+minversion = "6.0"
+testpaths = ["tests", "ufoLib2"]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = false
+
+# https://www.python.org/dev/peps/pep-0561
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools_scm]
+version_file = "src/ufoLib2/_version.py"
