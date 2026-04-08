@@ -6,4 +6,4 @@ It resembles the defcon library, but does without notifications, the layout engi
 
 It does not replace `fontTools.ufoLib` but builds on it. The eventual goal is to merge it into `fontTools.ufoLib.objects`.
 
-Documentation: https://ufolib2.readthedocs.io/en/latest/
+Documentation: <https://ufolib2.readthedocs.io/en/latest/>
