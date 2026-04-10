@@ -1,14 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator, Sized
 from typing import (
     TYPE_CHECKING,
     AbstractSet,
     Any,
-    Dict,
-    Iterable,
-    Iterator,
-    Optional,
-    Sized,
 )
 
 from attrs import define, field
@@ -26,7 +22,6 @@ from ufoLib2.serde import serde
 from ufoLib2.typing import T
 
 if TYPE_CHECKING:
-    from typing import Type
 
     from cattrs import Converter
 
@@ -74,14 +69,14 @@ class LayerSet:
             del font.layers["myLayerName"]
     """
 
-    _layers: Dict[str, Layer] = field(
+    _layers: dict[str, Layer] = field(
         validator=_must_have_at_least_one_item,
     )
 
     _defaultLayer: Layer = field(default=_LAYER_NOT_LOADED, eq=False)
 
-    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
-    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
+    _lazy: bool | None = field(default=None, init=False, eq=False)
+    _reader: UFOReader | None = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
         if self._defaultLayer == _LAYER_NOT_LOADED:
@@ -392,6 +387,6 @@ class LayerSet:
 
     @staticmethod
     def _structure(
-        data: list[dict[str, Any]], cls: Type[LayerSet], converter: Converter
+        data: list[dict[str, Any]], cls: type[LayerSet], converter: Converter
     ) -> LayerSet:
         return cls.from_iterable(converter.structure(layer, Layer) for layer in data)

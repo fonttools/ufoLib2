@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Mapping, Tuple
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
 
 from ufoLib2.serde import serde
 
 if TYPE_CHECKING:
-    from typing import Type
 
     from cattrs import Converter
 
-KerningPair = Tuple[str, str]
+KerningPair = tuple[str, str]
 
 
 @serde
-class Kerning(Dict[KerningPair, float]):
+class Kerning(dict[KerningPair, float]):
     def as_nested_dicts(self) -> dict[str, dict[str, float]]:
         result: dict[str, dict[str, float]] = {}
         for (left, right), value in self.items():
@@ -35,7 +35,7 @@ class Kerning(Dict[KerningPair, float]):
     @staticmethod
     def _structure(
         data: Mapping[str, Mapping[str, float]],
-        cls: Type[Kerning],
+        cls: type[Kerning],
         converter: Converter,
     ) -> Kerning:
         del converter  # unused
