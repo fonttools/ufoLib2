@@ -32,7 +32,7 @@ def test_dump_load(tmp_path: Path, ufo_UbuTestData: ufoLib2.objects.Font) -> Non
 
     assert font == font2
 
-    # laod/dump work with paths too, not just file objects
+    # load/dump work with paths too, not just file objects
     font3 = ufoLib2.objects.Font.msgpack_load(tmp_path / "test.msgpack")  # type: ignore
 
     assert font == font3
@@ -51,7 +51,7 @@ def test_allow_bytes(ufo_UbuTestData: ufoLib2.objects.Font) -> None:
     assert all(isinstance(v, bytes) for v in font.data.values())
 
     # bytes *are* allowed in MessagePack (unlike JSON), so its converter should
-    # keep them as such (not translate them to Base64 str) upon serializig
+    # keep them as such (not translate them to Base64 str) upon serializing
     b = font.data.msgpack_dumps()  # type: ignore
 
     # check that (even before structuring the DataSet object) the msgpack raw data

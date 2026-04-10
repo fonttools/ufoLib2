@@ -123,7 +123,7 @@ def test_pickle_lazy_font(datadir: Path, lazy: bool | None) -> None:
 
     assert isinstance(data, bytes) and len(data) > 0
 
-    # picklying unlazifies
+    # pickling unlazifies
     if lazy:
         assert font._lazy is False
     else:
