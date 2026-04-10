@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import partialmethod
 from importlib import import_module
-from typing import IO, Any, AnyStr, Callable, Type
+from typing import IO, Any, AnyStr
 
 from ufoLib2.errors import ExtrasNotInstalledError
 from ufoLib2.typing import PathLike, T
@@ -15,13 +16,13 @@ _SERDE_FORMATS_ = ("json", "msgpack")
 # functions the input string or file-like object is the first argument and the second
 # argument is the object_class, so below just swap the order of the arguments
 def _loads(
-    cls: Type[T], s: str | bytes, *, __callback: Callable[..., T], **kwargs: Any
+    cls: type[T], s: str | bytes, *, __callback: Callable[..., T], **kwargs: Any
 ) -> T:
     return __callback(s, cls, **kwargs)
 
 
 def _load(
-    cls: Type[T],
+    cls: type[T],
     fp: PathLike | IO[AnyStr],
     *,
     __callback: Callable[..., T],
@@ -30,7 +31,7 @@ def _load(
     return __callback(fp, cls, **kwargs)
 
 
-def serde(cls: Type[T]) -> Type[T]:
+def serde(cls: type[T]) -> type[T]:
     """Decorator to add serialization support to a ufoLib2 class.
 
     This adds f"{format}_loads" / f"{format}_dumps" (from/to bytes) methods, and
