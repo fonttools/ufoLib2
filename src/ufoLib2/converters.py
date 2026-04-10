@@ -63,7 +63,7 @@ def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
             else:
                 # by default, we omit all Optional attributes (i.e. with None default),
                 # overriding a Converter's global 'omit_if_default' option. Specific
-                # attibutes can still define their own 'omit_if_default' behavior in
+                # attributes can still define their own 'omit_if_default' behavior in
                 # the Attribute.metadata dict.
                 attrib_override = override(
                     omit_if_default=a.metadata.get(

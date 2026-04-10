@@ -69,7 +69,7 @@ changes, but complicates adding libs to the objects directly. Since ufoLib2
 intentionally lacks defcon's parent-child object hierarchy, a guideline can't
 follow a link to the containing parent and access its lib. Magically loading
 and storing the ``public.objectLibs`` lib key on loading and saving a UFO adds
-an uncomfortable amount of magic and edge-casiness. What if a client itself
+an uncomfortable amount of magic and edge-cases. What if a client itself
 adds a ``public.objectLibs`` entry for an object that differs from what is in
 that object's lib? Overwrite, ignore, error out? With the ``.objectLib``
 method, this edge case does not exist.
