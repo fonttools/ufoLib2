@@ -4,6 +4,7 @@ from collections.abc import Iterator, KeysView, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
+    NamedTuple,
     overload,
 )
 
@@ -35,6 +36,12 @@ if TYPE_CHECKING:
     from cattrs import Converter
 
 _GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
+
+
+class TupleUnstructured(NamedTuple):
+    key: str
+    value: bool | Lib | dict[str, dict[str, Any]]
+    default: bool | dict[Any, Any]
 
 
 def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyph]:
@@ -401,12 +408,13 @@ class Layer:
             # the layer's "key" in the layerSet.
             "name": self._name,
         }
-        default: Any
         for key, value, default in [
-            ("default", self._default, self._name == DEFAULT_LAYER_NAME),
-            ("glyphs", glyphs, {}),
-            ("lib", self._lib, {}),
-            ("tempLib", self._tempLib, {}),
+            TupleUnstructured(
+                "default", self._default, self._name == DEFAULT_LAYER_NAME
+            ),
+            TupleUnstructured("glyphs", glyphs, {}),
+            TupleUnstructured("lib", self._lib, {}),
+            TupleUnstructured("tempLib", self._tempLib, {}),
         ]:
             if not converter.omit_if_default or value != default:
                 d[key] = value
