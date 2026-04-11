@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, cast, overload
 
 from ufoLib2.constants import DATA_LIB_KEY
 from ufoLib2.serde import serde
+from ufoLib2.typing import K, T
 
 if TYPE_CHECKING:
 
@@ -53,7 +54,22 @@ def is_data_dict(value: Any) -> bool:
     )
 
 
-def _unstructure_data(value: Any, converter: Converter) -> Any:
+@overload
+def _unstructure_data(value: bytes, converter: Converter) -> dict[str, str | Any]: ...
+@overload
+def _unstructure_data(value: list[Any], converter: Converter) -> list[Any]: ...
+@overload
+def _unstructure_data(value: tuple[Any, ...], converter: Converter) -> list[Any]: ...
+@overload
+def _unstructure_data(value: Mapping[K, Any], converter: Converter) -> dict[K, Any]: ...
+@overload
+def _unstructure_data(value: T, converter: Converter) -> T: ...
+
+
+def _unstructure_data(
+    value: bytes | list[Any] | tuple[Any, ...] | Mapping[K, Any] | T,
+    converter: Converter,
+) -> dict[str, str | Any] | list[Any] | dict[K, Any] | T:
     if isinstance(value, bytes):
         return {"type": DATA_LIB_KEY, "data": converter.unstructure(value)}
     elif isinstance(value, (list, tuple)):
