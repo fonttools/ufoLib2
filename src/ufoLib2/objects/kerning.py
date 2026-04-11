@@ -21,7 +21,7 @@ class Kerning(dict[KerningPair, float]):
         return result
 
     @classmethod
-    def from_nested_dicts(self, kerning: Mapping[str, Mapping[str, float]]) -> Kerning:
+    def from_nested_dicts(cls, kerning: Mapping[str, Mapping[str, float]]) -> Kerning:
         return Kerning(
             ((left, right), kerning[left][right])
             for left in kerning
