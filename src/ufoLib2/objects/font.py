@@ -157,7 +157,7 @@ class Font:
     features: Features = field(factory=Features, converter=_convert_Features)
     """Features: The font Features object."""
 
-    groups: dict[str, list[str]] = field(factory=dict)
+    groups: dict[str, list[str]] = field(factory=dict[str, list[str]])
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
     _kerning: Kerning = field(factory=Kerning, converter=_convert_Kerning)

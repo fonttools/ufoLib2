@@ -160,12 +160,12 @@ class DataStore(MutableMapping[str, bytes]):
     differ in which reader and writer methods they call.
     """
 
-    _data: dict[str, bytes] = field(factory=dict)
+    _data: dict[str, bytes] = field(factory=dict[str, bytes])
 
     _lazy: bool | None = field(default=False, kw_only=True, eq=False, init=False)
     _reader: UFOReader | None = field(default=None, init=False, repr=False, eq=False)
     _scheduledForDeletion: set[str] = field(
-        factory=set, init=False, repr=False, eq=False
+        factory=set[str], init=False, repr=False, eq=False
     )
 
     def __eq__(self, other: object) -> bool:
@@ -357,7 +357,7 @@ class AttrDictMixin(Mapping[str, Any]):
     def _key_to_attr_map(
         cls: type[AttrsInstance], reverse: bool = False
     ) -> dict[str, str]:
-        result = {}
+        result: dict[str, str] = {}
         for a in attrs.fields(cls):
             attr_name = a.name
             key = attr_name

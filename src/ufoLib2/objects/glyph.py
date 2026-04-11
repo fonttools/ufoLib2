@@ -71,7 +71,7 @@ class Glyph:
     height: float = 0
     """The height of the glyph."""
 
-    unicodes: list[int] = field(factory=list)
+    unicodes: list[int] = field(factory=list[int])
     """The Unicode code points assigned to the glyph. Note that a glyph can have
     multiple."""
 
@@ -83,14 +83,14 @@ class Glyph:
     note: str | None = None
     """A free form text note about the glyph."""
 
-    _anchors: list[Anchor] = field(factory=list)
-    components: list[Component] = field(factory=list)
+    _anchors: list[Anchor] = field(factory=list[Anchor])
+    components: list[Component] = field(factory=list[Component])
     """The list of components the glyph contains."""
 
-    contours: list[Contour] = field(factory=list)
+    contours: list[Contour] = field(factory=list[Contour])
     """The list of contours the glyph contains."""
 
-    _guidelines: list[Guideline] = field(factory=list)
+    _guidelines: list[Guideline] = field(factory=list[Guideline])
 
     _tempLib: Lib = field(factory=Lib, converter=_convert_Lib)
     """A temporary map of arbitrary plist values."""
