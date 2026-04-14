@@ -1,14 +1,16 @@
 from pathlib import Path
 
-import msgpack  # type: ignore  # noqa
 import pytest
 
 import ufoLib2.objects
-import ufoLib2.serde.msgpack  # noqa: E402
 
 # isort: off
 pytest.importorskip("cattrs")
 pytest.importorskip("msgpack")
+
+import msgpack  # type: ignore  # noqa
+
+import ufoLib2.serde.msgpack  # noqa: E402
 
 
 def test_dumps_loads(ufo_UbuTestData: ufoLib2.objects.Font) -> None:
