@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, BinaryIO, Type, cast
+from typing import Any, BinaryIO, cast
 
 import msgpack  # type: ignore
 
@@ -15,7 +15,7 @@ def dumps(obj: Any, **kwargs: Any) -> bytes:
     return cast(bytes, result)
 
 
-def loads(s: bytes, object_class: Type[T], **kwargs: Any) -> T:
+def loads(s: bytes, object_class: type[T], **kwargs: Any) -> T:
     data = msgpack.unpackb(s, **kwargs)
     return binary_converter.structure(data, object_class)
 
@@ -24,5 +24,5 @@ def dump(obj: Any, fp: PathLike | BinaryIO, **kwargs: Any) -> None:
     write_bytes(fp, dumps(obj, **kwargs))
 
 
-def load(fp: PathLike | BinaryIO, object_class: Type[T], **kwargs: Any) -> T:
+def load(fp: PathLike | BinaryIO, object_class: type[T], **kwargs: Any) -> T:
     return loads(read_bytes(fp), object_class, **kwargs)

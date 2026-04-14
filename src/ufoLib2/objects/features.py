@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING
 
 from attrs import define
 
@@ -41,6 +41,6 @@ class Features:
         return self.text
 
     @staticmethod
-    def _structure(data: str, cls: Type[Features], converter: Converter) -> Features:
+    def _structure(data: str, cls: type[Features], converter: Converter) -> Features:
         del converter  # unused
         return cls(data)

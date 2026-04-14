@@ -2,19 +2,13 @@ from __future__ import annotations
 
 import uuid
 from abc import abstractmethod
+from collections.abc import Iterator, Mapping, MutableMapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    Iterator,
-    Mapping,
-    MutableMapping,
     NamedTuple,
-    Optional,
-    Sequence,
-    Set,
     Type,
     TypeVar,
     cast,
@@ -87,7 +81,7 @@ def _deepcopy_unlazify_attrs(self: Any, memo: Any) -> Any:
     )
 
 
-def _getstate_unlazify_attrs(self: Any) -> Dict[str, Any]:
+def _getstate_unlazify_attrs(self: Any) -> dict[str, Any]:
     if self._lazy:
         self.unlazify()
     return {
@@ -102,7 +96,7 @@ _obj_setattr = object.__setattr__
 # Since we override __getstate__, we must also override __setstate__.
 # Below is adapted from `attrs._make._ClassBuilder._make_getstate_setstate` method:
 # https://github.com/python-attrs/attrs/blob/36ed0204/src/attr/_make.py#L931-L937
-def _setstate_attrs(self: Any, state: Dict[str, Any]) -> None:
+def _setstate_attrs(self: Any, state: dict[str, Any]) -> None:
     _bound_setattr = _obj_setattr.__get__(self, attrs.Attribute)
     for a in attrs.fields(self.__class__):
         if a.name in state:
@@ -166,12 +160,12 @@ class DataStore(MutableMapping[str, bytes]):
     differ in which reader and writer methods they call.
     """
 
-    _data: Dict[str, bytes] = field(factory=dict)
+    _data: dict[str, bytes] = field(factory=dict[str, bytes])
 
-    _lazy: Optional[bool] = field(default=False, kw_only=True, eq=False, init=False)
-    _reader: Optional[UFOReader] = field(default=None, init=False, repr=False, eq=False)
-    _scheduledForDeletion: Set[str] = field(
-        factory=set, init=False, repr=False, eq=False
+    _lazy: bool | None = field(default=False, kw_only=True, eq=False, init=False)
+    _reader: UFOReader | None = field(default=None, init=False, repr=False, eq=False)
+    _scheduledForDeletion: set[str] = field(
+        factory=set[str], init=False, repr=False, eq=False
     )
 
     def __eq__(self, other: object) -> bool:
@@ -330,7 +324,7 @@ class DataStore(MutableMapping[str, bytes]):
     @staticmethod
     def _structure(
         data: Mapping[str, Any],
-        cls: Type[DataStore],
+        cls: type[DataStore],
         converter: Converter,
     ) -> DataStore:
         self = cls()
@@ -361,9 +355,9 @@ class AttrDictMixin(Mapping[str, Any]):
     @classmethod
     @lru_cache(maxsize=None)
     def _key_to_attr_map(
-        cls: Type[AttrsInstance], reverse: bool = False
+        cls: type[AttrsInstance], reverse: bool = False
     ) -> dict[str, str]:
-        result = {}
+        result: dict[str, str] = {}
         for a in attrs.fields(cls):
             attr_name = a.name
             key = attr_name
@@ -396,7 +390,7 @@ class AttrDictMixin(Mapping[str, Any]):
         return sum(1 for _ in self)
 
     @classmethod
-    def coerce_from_dict(cls: Type[_T], value: _T | Mapping[str, Any]) -> _T:
+    def coerce_from_dict(cls: type[_T], value: _T | Mapping[str, Any]) -> _T:
         if isinstance(value, cls):
             return value
         elif isinstance(value, Mapping):
@@ -408,7 +402,7 @@ class AttrDictMixin(Mapping[str, Any]):
 
     @classmethod
     def coerce_from_optional_dict(
-        cls: Type[_T], value: _T | Mapping[str, Any] | None
+        cls: type[_T], value: _T | Mapping[str, Any] | None
     ) -> _T | None:
         if value is None:
             return None

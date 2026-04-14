@@ -5,7 +5,8 @@ https://unifiedfontobject.org/versions/ufo3/fontinfo.plist/#woff-data
 
 from __future__ import annotations
 
-from typing import Any, List, Mapping, Optional, Sequence, Type, TypeVar
+from collections.abc import Mapping, Sequence
+from typing import Any, TypeVar
 
 from attrs import Attribute, define, field
 
@@ -15,7 +16,7 @@ _T = TypeVar("_T", bound=AttrDictMixin)
 
 
 def _convert_list_of_woff_metadata(
-    cls: Type[_T], values: Sequence[_T | Mapping[str, Any]]
+    cls: type[_T], values: Sequence[_T | Mapping[str, Any]]
 ) -> list[_T]:
     return [cls.coerce_from_dict(v) for v in values]
 
@@ -28,19 +29,19 @@ class WoffMetadataUniqueID(AttrDictMixin):
 @define
 class WoffMetadataVendor(AttrDictMixin):
     name: str
-    url: Optional[str] = None
-    dir: Optional[str] = None
+    url: str | None = None
+    dir: str | None = None
     # 'class' of course is reserved in Python
-    class_: Optional[str] = field(default=None, metadata={"rename_attr": "class"})
+    class_: str | None = field(default=None, metadata={"rename_attr": "class"})
 
 
 @define
 class WoffMetadataCredit(AttrDictMixin):
     name: str
-    url: Optional[str] = None
-    role: Optional[str] = None
-    dir: Optional[str] = None
-    class_: Optional[str] = field(default=None, metadata={"rename_attr": "class"})
+    url: str | None = None
+    role: str | None = None
+    dir: str | None = None
+    class_: str | None = field(default=None, metadata={"rename_attr": "class"})
 
 
 def _convert_list_of_woff_metadata_credits(
@@ -51,7 +52,7 @@ def _convert_list_of_woff_metadata_credits(
 
 @define
 class WoffMetadataCredits(AttrDictMixin):
-    credits: List[WoffMetadataCredit] = field(
+    credits: list[WoffMetadataCredit] = field(
         factory=list,
         converter=_convert_list_of_woff_metadata_credits,
     )
@@ -60,9 +61,9 @@ class WoffMetadataCredits(AttrDictMixin):
 @define
 class WoffMetadataText(AttrDictMixin):
     text: str
-    language: Optional[str] = None
-    dir: Optional[str] = None
-    class_: Optional[str] = field(default=None, metadata={"rename_attr": "class"})
+    language: str | None = None
+    dir: str | None = None
+    class_: str | None = field(default=None, metadata={"rename_attr": "class"})
 
 
 def _at_least_one_item(
@@ -82,8 +83,8 @@ def _convert_list_of_woff_metadata_texts(
 
 @define
 class WoffMetadataDescription(AttrDictMixin):
-    url: Optional[str] = None
-    text: List[WoffMetadataText] = field(
+    url: str | None = None
+    text: list[WoffMetadataText] = field(
         factory=list,
         validator=_at_least_one_item,
         converter=_convert_list_of_woff_metadata_texts,
@@ -92,9 +93,9 @@ class WoffMetadataDescription(AttrDictMixin):
 
 @define
 class WoffMetadataLicense(AttrDictMixin):
-    url: Optional[str] = None
-    id: Optional[str] = None
-    text: List[WoffMetadataText] = field(
+    url: str | None = None
+    id: str | None = None
+    text: list[WoffMetadataText] = field(
         factory=list,
         converter=_convert_list_of_woff_metadata_texts,
     )
@@ -102,7 +103,7 @@ class WoffMetadataLicense(AttrDictMixin):
 
 @define
 class WoffMetadataCopyright(AttrDictMixin):
-    text: List[WoffMetadataText] = field(
+    text: list[WoffMetadataText] = field(
         factory=list,
         validator=_at_least_one_item,
         converter=_convert_list_of_woff_metadata_texts,
@@ -111,7 +112,7 @@ class WoffMetadataCopyright(AttrDictMixin):
 
 @define
 class WoffMetadataTrademark(AttrDictMixin):
-    text: List[WoffMetadataText] = field(
+    text: list[WoffMetadataText] = field(
         factory=list,
         validator=_at_least_one_item,
         converter=_convert_list_of_woff_metadata_texts,
@@ -121,24 +122,24 @@ class WoffMetadataTrademark(AttrDictMixin):
 @define
 class WoffMetadataLicensee(AttrDictMixin):
     name: str
-    dir: Optional[str] = None
-    class_: Optional[str] = field(default=None, metadata={"rename_attr": "class"})
+    dir: str | None = None
+    class_: str | None = field(default=None, metadata={"rename_attr": "class"})
 
 
 @define
 class WoffMetadataExtensionName(AttrDictMixin):
     text: str
-    language: Optional[str] = None
-    dir: Optional[str] = None
-    class_: Optional[str] = field(default=None, metadata={"rename_attr": "class"})
+    language: str | None = None
+    dir: str | None = None
+    class_: str | None = field(default=None, metadata={"rename_attr": "class"})
 
 
 @define
 class WoffMetadataExtensionValue(AttrDictMixin):
     text: str
-    language: Optional[str] = None
-    dir: Optional[str] = None
-    class_: Optional[str] = field(default=None, metadata={"rename_attr": "class"})
+    language: str | None = None
+    dir: str | None = None
+    class_: str | None = field(default=None, metadata={"rename_attr": "class"})
 
 
 def _convert_list_of_woff_metadata_extension_name(
@@ -155,14 +156,14 @@ def _convert_list_of_woff_metadata_extension_value(
 
 @define
 class WoffMetadataExtensionItem(AttrDictMixin):
-    id: Optional[str] = None
-    names: List[WoffMetadataExtensionName] = field(
+    id: str | None = None
+    names: list[WoffMetadataExtensionName] = field(
         factory=list,
         validator=_at_least_one_item,
         converter=_convert_list_of_woff_metadata_extension_name,
     )
     # 'values()' is the name of the dict method, hence the attribute named 'values_'
-    values_: List[WoffMetadataExtensionValue] = field(
+    values_: list[WoffMetadataExtensionValue] = field(
         factory=list,
         validator=_at_least_one_item,
         converter=_convert_list_of_woff_metadata_extension_value,
@@ -178,13 +179,13 @@ def _convert_list_of_woff_metadata_extension_item(
 
 @define
 class WoffMetadataExtension(AttrDictMixin):
-    id: Optional[str]
-    names: List[WoffMetadataExtensionName] = field(
+    id: str | None
+    names: list[WoffMetadataExtensionName] = field(
         factory=list,
         converter=_convert_list_of_woff_metadata_extension_name,
     )
     # 'items()' is the name of the dict method, hence the attribute named 'items_'
-    items_: List[WoffMetadataExtensionItem] = field(
+    items_: list[WoffMetadataExtensionItem] = field(
         factory=list,
         validator=_at_least_one_item,
         converter=_convert_list_of_woff_metadata_extension_item,

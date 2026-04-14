@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Hashable
 from typing import Protocol, TypeVar, Union
 
 from fontTools.pens.basePen import AbstractPen
@@ -8,6 +9,9 @@ from fontTools.pens.pointPen import AbstractPointPen
 
 T = TypeVar("T")
 """Generic variable for mypy for trivial generic function signatures."""
+
+K = TypeVar("K", bound=Hashable)
+"""Generic variable for mypy for mapping keys."""
 
 PathLike = Union[str, bytes, "os.PathLike[str]", "os.PathLike[bytes]"]
 """Represents a path in various possible forms."""

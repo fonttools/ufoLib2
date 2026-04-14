@@ -2,19 +2,17 @@ from __future__ import annotations
 
 import os
 import shutil
-import sys
 import tempfile
-from typing import (
-    Any,
-    Dict,
+from collections.abc import (
     Iterable,
     Iterator,
     KeysView,
-    List,
     Mapping,
     MutableMapping,
-    Optional,
     Sequence,
+)
+from typing import (
+    Any,
     cast,
 )
 
@@ -159,7 +157,7 @@ class Font:
     features: Features = field(factory=Features, converter=_convert_Features)
     """Features: The font Features object."""
 
-    groups: Dict[str, List[str]] = field(factory=dict)
+    groups: dict[str, list[str]] = field(factory=dict[str, list[str]])
     """Dict[str, List[str]]: A mapping of group names to a list of glyph names."""
 
     _kerning: Kerning = field(factory=Kerning, converter=_convert_Kerning)
@@ -179,12 +177,10 @@ class Font:
     """Dict[str, PlistEncodable]: A temporary map of arbitrary plist values."""
 
     # init=False args, set by alternate open/read classmethod constructors
-    _path: Optional[PathLike] = field(default=None, eq=False, init=False)
-    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
-    _reader: Optional[UFOReader] = field(default=None, init=False, eq=False)
-    _fileStructure: Optional[UFOFileStructure] = field(
-        default=None, init=False, eq=False
-    )
+    _path: PathLike | None = field(default=None, eq=False, init=False)
+    _lazy: bool | None = field(default=None, init=False, eq=False)
+    _reader: UFOReader | None = field(default=None, init=False, eq=False)
+    _fileStructure: UFOFileStructure | None = field(default=None, init=False, eq=False)
 
     @classmethod
     def open(cls, path: PathLike, lazy: bool = True, validate: bool = True) -> Font:
@@ -576,10 +572,7 @@ class Font:
             if isinstance(path, str) and os.path.exists(path):
                 if overwrite:
                     overwritePath = path
-                    if sys.version_info < (3, 10):
-                        tmp = tempfile.TemporaryDirectory()
-                    else:
-                        tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+                    tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
                     path = os.path.join(tmp.name, os.path.basename(path))
                 else:
                     import errno

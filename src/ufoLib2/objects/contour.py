@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import warnings
-from typing import Iterable, Iterator, List, MutableSequence, Optional, overload
+from collections.abc import Iterable, Iterator, MutableSequence
+from typing import overload
 
 from attrs import define, field
 from fontTools.pens.basePen import AbstractPen
@@ -42,10 +43,10 @@ class Contour(MutableSequence[Point]):
             contour[0] = anotherPoint
     """
 
-    points: List[Point] = field(factory=list)
+    points: list[Point] = field(factory=list)
     """The list of points in the contour."""
 
-    identifier: Optional[str] = field(default=None, repr=False)
+    identifier: str | None = field(default=None, repr=False)
     """The globally unique identifier of the contour."""
 
     # collections.abc.MutableSequence interface
