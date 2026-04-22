@@ -4,13 +4,9 @@ black==26.3.1
     # via -r requirements-dev.in
 click==8.3.1
     # via black
-colorama==0.4.6 ; sys_platform == 'win32'
-    # via
-    #   click
-    #   pytest
 coverage==7.13.5
     # via -r requirements-dev.in
-exceptiongroup==1.3.1 ; python_full_version < '3.11'
+exceptiongroup==1.3.1 ; python_full_version < "3.11"
     # via
     #   -c requirements.txt
     #   pytest
@@ -20,7 +16,7 @@ iniconfig==2.3.0
     # via pytest
 isort==8.0.1
     # via -r requirements-dev.in
-librt==0.8.1 ; platform_python_implementation != 'PyPy'
+librt==0.8.1
     # via mypy
 mccabe==0.7.0
     # via flake8
@@ -48,11 +44,11 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.20.0
     # via pytest
-pytest==9.0.2
+pytest==9.0.3
     # via -r requirements-dev.in
 pytokens==0.4.1
     # via black
-tomli==2.4.1 ; python_full_version < '3.11'
+tomli==2.4.1
     # via
     #   black
     #   mypy
