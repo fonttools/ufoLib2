@@ -14,7 +14,7 @@ lxml==6.1.0
     # via ufolib2 (pyproject.toml)
 msgpack==1.1.2
     # via ufolib2 (pyproject.toml)
-orjson==3.11.7 ; platform_python_implementation != 'PyPy'
+orjson==3.11.8; platform_python_implementation != 'PyPy'
     # via ufolib2 (pyproject.toml)
 typing-extensions==4.15.0
     # via
