@@ -1,25 +1,14 @@
 from __future__ import annotations
 
-import sys
+from collections.abc import Callable
 from functools import partial
-from typing import Any, Callable, Tuple, Type, cast
+from typing import Any, cast, get_origin
 
 from attrs import fields, has, resolve_types
 from cattrs import Converter
 from cattrs.gen import make_dict_structure_fn, make_dict_unstructure_fn, override
 from cattrs.gen._consts import AttributeOverride
 from fontTools.misc.transform import Transform
-
-is_py37 = sys.version_info[:2] == (3, 7)
-
-if is_py37:
-
-    def get_origin(cl: Type[Any]) -> Any:
-        return getattr(cl, "__origin__", None)
-
-else:
-    from typing import get_origin  # type: ignore
-
 
 __all__ = [
     "register_hooks",
@@ -28,26 +17,26 @@ __all__ = [
 ]
 
 
-def is_ufoLib2_class(cls: Type[Any]) -> bool:
+def is_ufoLib2_class(cls: type[Any]) -> bool:
     mod: str = getattr(cls, "__module__", "")
     return mod.split(".")[0] == "ufoLib2"
 
 
-def is_ufoLib2_attrs_class(cls: Type[Any]) -> bool:
-    return is_ufoLib2_class(cls) and (has(cls) or has(get_origin(cls)))
+def is_ufoLib2_attrs_class(cls: type[Any]) -> bool:
+    return is_ufoLib2_class(cls) and (has(cls) or has(get_origin(cls)))  # type: ignore
 
 
-def is_ufoLib2_class_with_custom_unstructure(cls: Type[Any]) -> bool:
+def is_ufoLib2_class_with_custom_unstructure(cls: type[Any]) -> bool:
     return is_ufoLib2_class(cls) and hasattr(cls, "_unstructure")
 
 
-def is_ufoLib2_class_with_custom_structure(cls: Type[Any]) -> bool:
+def is_ufoLib2_class_with_custom_structure(cls: type[Any]) -> bool:
     return is_ufoLib2_class(cls) and hasattr(cls, "_structure")
 
 
 def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
     def attrs_hook_factory(
-        cls: Type[Any], gen_fn: Callable[..., Callable[..., Any]], structuring: bool
+        cls: type[Any], gen_fn: Callable[..., Callable[..., Any]], structuring: bool
     ) -> Callable[..., Any]:
         base = get_origin(cls)
         if base is None:
@@ -74,7 +63,7 @@ def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
             else:
                 # by default, we omit all Optional attributes (i.e. with None default),
                 # overriding a Converter's global 'omit_if_default' option. Specific
-                # attibutes can still define their own 'omit_if_default' behavior in
+                # attributes can still define their own 'omit_if_default' behavior in
                 # the Attribute.metadata dict.
                 attrib_override = override(
                     omit_if_default=a.metadata.get(
@@ -89,16 +78,16 @@ def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
 
         return gen_fn(cls, conv, **kwargs)
 
-    def custom_unstructure_hook_factory(cls: Type[Any]) -> Callable[[Any], Any]:
+    def custom_unstructure_hook_factory(cls: type[Any]) -> Callable[[Any], Any]:
         return partial(cls._unstructure, converter=conv)
 
-    def custom_structure_hook_factory(cls: Type[Any]) -> Callable[[Any, Any], Any]:
+    def custom_structure_hook_factory(cls: type[Any]) -> Callable[[Any, Any], Any]:
         return partial(cls._structure, converter=conv)
 
-    def unstructure_transform(t: Transform) -> Tuple[float]:
-        return cast(Tuple[float], tuple(t))
+    def unstructure_transform(t: Transform) -> tuple[float]:
+        return cast(tuple[float], tuple(t))
 
-    def structure_transform(t: Tuple[float], _: Any) -> Transform:
+    def structure_transform(t: tuple[float], _: Any) -> Transform:
         return Transform(*t)
 
     conv.register_unstructure_hook_factory(
@@ -109,11 +98,9 @@ def register_hooks(conv: Converter, allow_bytes: bool = True) -> None:
         is_ufoLib2_class_with_custom_unstructure,
         custom_unstructure_hook_factory,
     )
-    conv.register_unstructure_hook(
-        cast(Type[Transform], Transform), unstructure_transform
-    )
+    conv.register_unstructure_hook(Transform, unstructure_transform)
 
-    conv.register_structure_hook(cast(Type[Transform], Transform), structure_transform)
+    conv.register_structure_hook(Transform, structure_transform)
     conv.register_structure_hook_factory(
         is_ufoLib2_attrs_class,
         partial(attrs_hook_factory, gen_fn=make_dict_structure_fn, structuring=True),

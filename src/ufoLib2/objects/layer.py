@@ -1,14 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Iterator, KeysView, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
-    Iterator,
-    KeysView,
-    Optional,
-    Sequence,
-    Type,
+    NamedTuple,
     overload,
 )
 
@@ -42,15 +38,21 @@ if TYPE_CHECKING:
 _GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
 
 
+class TupleUnstructured(NamedTuple):
+    key: str
+    value: bool | Lib | dict[str, dict[str, Any]]
+    default: bool | dict[Any, Any]
+
+
 def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyph]:
     result: dict[str, Glyph] = {}
     if isinstance(value, dict):
-        glyph_ids = set()
+        glyph_ids: set[int] = set()
         for name, glyph in value.items():
             if not isinstance(glyph, Glyph):
                 raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
             if glyph is not _GLYPH_NOT_LOADED:
-                glyph_id = id(glyph)
+                glyph_id: int = id(glyph)
                 if glyph_id in glyph_ids:
                     raise KeyError(f"{glyph!r} can't be added twice")
                 glyph_ids.add(glyph_id)
@@ -114,8 +116,10 @@ class Layer:
     """
 
     _name: str = field(default=DEFAULT_LAYER_NAME, metadata={"omit_if_default": False})
-    _glyphs: Dict[str, Glyph] = field(factory=dict, converter=_convert_glyphs)
-    color: Optional[str] = None
+    _glyphs: dict[str, Glyph] = field(
+        factory=dict[str, Glyph], converter=_convert_glyphs
+    )
+    color: str | None = None
     """The color assigned to the layer."""
 
     _lib: Lib = field(factory=Lib, converter=_convert_Lib)
@@ -129,7 +133,7 @@ class Layer:
     _tempLib: Lib = field(factory=Lib, converter=_convert_Lib)
     """A temporary map of arbitrary plist values."""
 
-    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
+    _lazy: bool | None = field(default=None, init=False, eq=False)
     _glyphSet: Any = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
@@ -404,12 +408,13 @@ class Layer:
             # the layer's "key" in the layerSet.
             "name": self._name,
         }
-        default: Any
         for key, value, default in [
-            ("default", self._default, self._name == DEFAULT_LAYER_NAME),
-            ("glyphs", glyphs, {}),
-            ("lib", self._lib, {}),
-            ("tempLib", self._tempLib, {}),
+            TupleUnstructured(
+                "default", self._default, self._name == DEFAULT_LAYER_NAME
+            ),
+            TupleUnstructured("glyphs", glyphs, {}),
+            TupleUnstructured("lib", self._lib, {}),
+            TupleUnstructured("tempLib", self._tempLib, {}),
         ]:
             if not converter.omit_if_default or value != default:
                 d[key] = value
@@ -419,7 +424,7 @@ class Layer:
 
     @staticmethod
     def _structure(
-        data: dict[str, Any], cls: Type[Layer], converter: Converter
+        data: dict[str, Any], cls: type[Layer], converter: Converter
     ) -> Layer:
         return cls(
             name=data.get("name", DEFAULT_LAYER_NAME),
@@ -437,7 +442,7 @@ class Layer:
 def _fetch_glyph_identifiers(glyph: Glyph) -> set[str]:
     """Returns all identifiers in use in a glyph."""
 
-    identifiers = set()
+    identifiers: set[str] = set()
     for anchor in glyph.anchors:
         if anchor.identifier is not None:
             identifiers.add(anchor.identifier)

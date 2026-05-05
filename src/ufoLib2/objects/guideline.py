@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from attrs import define
 
 from ufoLib2.objects.misc import AttrDictMixin
@@ -17,22 +15,22 @@ class Guideline(AttrDictMixin):
     data composition restrictions.
     """
 
-    x: Optional[float] = None
+    x: float | None = None
     """The origin x coordinate of the guideline."""
 
-    y: Optional[float] = None
+    y: float | None = None
     """The origin y coordinate of the guideline."""
 
-    angle: Optional[float] = None
+    angle: float | None = None
     """The angle of the guideline."""
 
-    name: Optional[str] = None
+    name: str | None = None
     """The name of the guideline, no uniqueness required."""
 
-    color: Optional[str] = None
+    color: str | None = None
     """The color of the guideline."""
 
-    identifier: Optional[str] = None
+    identifier: str | None = None
     """The globally unique identifier of the guideline."""
 
     def __attrs_post_init__(self) -> None:
