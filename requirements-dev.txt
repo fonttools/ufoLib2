@@ -20,7 +20,7 @@ iniconfig==2.3.0
     # via pytest
 isort==8.0.1
     # via -r requirements-dev.in
-librt==0.8.1 ; platform_python_implementation != 'PyPy'
+librt==0.11.0; platform_python_implementation != 'PyPy'
     # via mypy
 mccabe==0.7.0
     # via flake8
