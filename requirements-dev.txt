@@ -34,7 +34,7 @@ packaging==26.2
     # via
     #   black
     #   pytest
-pathspec==1.0.4
+pathspec==1.1.1
     # via
     #   black
     #   mypy
