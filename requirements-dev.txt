@@ -48,7 +48,7 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.20.0
     # via pytest
-pytest==9.0.2
+pytest==9.0.3
     # via -r requirements-dev.in
 pytokens==0.4.1
     # via black
