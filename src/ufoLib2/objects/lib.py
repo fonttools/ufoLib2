@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, cast, overload
+from datetime import datetime
+from functools import partial
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast, overload
 
 from ufoLib2.constants import DATA_LIB_KEY
 from ufoLib2.serde import serde
-from ufoLib2.typing import K, T
 
 if TYPE_CHECKING:
 
@@ -54,28 +55,80 @@ def is_data_dict(value: Any) -> bool:
     )
 
 
+PlistScalar: TypeAlias = bool | datetime | float | int | str
+PlistContainer: TypeAlias = (
+    Mapping[str, PlistScalar] | list[PlistScalar] | tuple[PlistScalar, ...]
+)
+PlistEncodable: TypeAlias = (
+    Mapping[str, PlistContainer] | list[PlistContainer] | tuple[PlistContainer, ...]
+)
+
+形PlistScalar = TypeVar("形PlistScalar", bool, datetime, float, int, str)
+形PlistContainer = TypeVar(
+    "形PlistContainer",
+    Mapping[str, PlistScalar],
+    list[PlistScalar],
+    tuple[PlistScalar, ...],
+)
+形PlistEncodable = TypeVar(
+    "形PlistEncodable",
+    Mapping[str, PlistContainer],
+    list[PlistContainer],
+    tuple[PlistContainer, ...],
+)
+
+
 @overload
-def _unstructure_data(value: bytes, converter: Converter) -> dict[str, str | Any]: ...
+def _unstructure_data(value: bytes, converter: Converter) -> dict[str, PlistScalar]: ...
+
+
 @overload
-def _unstructure_data(value: list[Any], converter: Converter) -> list[Any]: ...
+def _unstructure_data(
+    value: list[PlistEncodable], converter: Converter
+) -> list[PlistEncodable]: ...
+
+
 @overload
-def _unstructure_data(value: tuple[Any, ...], converter: Converter) -> list[Any]: ...
+def _unstructure_data(
+    value: tuple[PlistEncodable, ...], converter: Converter
+) -> list[PlistEncodable]: ...
+
+
 @overload
-def _unstructure_data(value: Mapping[K, Any], converter: Converter) -> dict[K, Any]: ...
+def _unstructure_data(
+    value: Mapping[str, PlistEncodable], converter: Converter
+) -> dict[str, PlistEncodable]: ...
+
+
 @overload
-def _unstructure_data(value: T, converter: Converter) -> T: ...
+def _unstructure_data(value: 形PlistScalar, converter: Converter) -> 形PlistScalar: ...
 
 
 def _unstructure_data(
-    value: bytes | list[Any] | tuple[Any, ...] | Mapping[K, Any] | T,
+    value: (
+        bytes
+        | list[PlistEncodable]
+        | tuple[PlistEncodable, ...]
+        | Mapping[str, PlistEncodable]
+        | 形PlistScalar
+    ),
     converter: Converter,
-) -> dict[str, str | Any] | list[Any] | dict[K, Any] | T:
+) -> (
+    dict[str, PlistScalar]
+    | list[PlistEncodable]
+    | dict[str, PlistEncodable]
+    | 形PlistScalar
+):
+    recurse: partial[PlistEncodable] = partial(_unstructure_data, converter=converter)
     if isinstance(value, bytes):
         return {"type": DATA_LIB_KEY, "data": converter.unstructure(value)}
     elif isinstance(value, (list, tuple)):
-        return [_unstructure_data(v, converter) for v in value]
+        return list(map(recurse, value))
     elif isinstance(value, Mapping):
-        return {k: _unstructure_data(v, converter) for k, v in value.items()}
+        kk = tuple(value.keys())
+        vv = tuple(value.values())
+        rr = tuple(map(recurse, vv))
+        return dict(zip(kk, rr, strict=True))
     return value
 
 
@@ -94,15 +147,17 @@ def _structure_data_inplace(
 
 @serde
 class Lib(dict[str, Any]):
-    def _unstructure(self, converter: Converter) -> dict[str, Any]:
+    def _unstructure(
+        self, converter: Converter
+    ) -> dict[str, bytes | PlistEncodable] | dict[str, PlistEncodable]:
         # avoid encoding if converter supports bytes natively
-        test = converter.unstructure(b"\0")
+        test: bytes | str | object = converter.unstructure(b"\0")
         if isinstance(test, bytes):
             return dict(self)
         elif not isinstance(test, str):
             raise NotImplementedError(type(test))
 
-        data: dict[str, Any] = _unstructure_data(self, converter)
+        data: dict[str, PlistEncodable] = _unstructure_data(self, converter)
         return data
 
     @staticmethod
