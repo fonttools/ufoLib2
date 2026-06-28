@@ -1,11 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Iterator, Sized
-from typing import (
-    TYPE_CHECKING,
-    AbstractSet,
-    Any,
-)
+from typing import TYPE_CHECKING, AbstractSet, Any
 
 from attrs import define, field
 from fontTools.ufoLib import UFOReader, UFOWriter

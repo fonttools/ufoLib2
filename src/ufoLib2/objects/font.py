@@ -11,10 +11,7 @@ from collections.abc import (
     MutableMapping,
     Sequence,
 )
-from typing import (
-    Any,
-    cast,
-)
+from typing import Any, cast
 
 from attrs import define, field
 from fontTools.ufoLib import UFOFileStructure, UFOReader, UFOWriter
