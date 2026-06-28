@@ -1,11 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator, KeysView, Sequence
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, overload
 
 from attrs import define, field
 from fontTools.ufoLib.glifLib import GlyphSet

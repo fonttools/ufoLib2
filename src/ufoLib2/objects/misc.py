@@ -5,14 +5,7 @@ from abc import abstractmethod
 from collections.abc import Iterator, Mapping, MutableMapping, Sequence
 from copy import deepcopy
 from functools import lru_cache
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    NamedTuple,
-    Type,
-    TypeVar,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, NamedTuple, Type, TypeVar, cast
 
 import attrs
 from attrs import define, field
