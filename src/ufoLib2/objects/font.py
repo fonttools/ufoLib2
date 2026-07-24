@@ -266,9 +266,7 @@ class Font:
     def __repr__(self) -> str:
         names = list(filter(None, [self.info.familyName, self.info.styleName]))
         fontName = " '{}'".format(" ".join(names)) if names else ""
-        return "<{}.{}{} at {}>".format(
-            self.__class__.__module__, self.__class__.__name__, fontName, hex(id(self))
-        )
+        return f"<{self.__class__.__module__}.{self.__class__.__name__}{fontName} at {hex(id(self))}>"
 
     def __eq__(self, other: object) -> bool:
         # same as attrs-defined __eq__ method, only that it un-lazifies fonts if needed

@@ -4,7 +4,7 @@ import uuid
 from abc import abstractmethod
 from collections.abc import Iterator, Mapping, MutableMapping, Sequence
 from copy import deepcopy
-from functools import lru_cache
+from functools import lru_cache, cache
 from typing import TYPE_CHECKING, Any, NamedTuple, Type, TypeVar, cast
 
 import attrs
@@ -346,7 +346,7 @@ class AttrDictMixin(Mapping[str, Any]):
     # XXX: Use generics?
 
     @classmethod
-    @lru_cache(maxsize=None)
+    @cache
     def _key_to_attr_map(
         cls: type[AttrsInstance], reverse: bool = False
     ) -> dict[str, str]:
@@ -374,7 +374,7 @@ class AttrDictMixin(Mapping[str, Any]):
 
     def __iter__(self) -> Iterator[str]:
         key_map = self._key_to_attr_map(reverse=True)
-        cls = cast("Type[AttrsInstance]", self.__class__)
+        cls = cast("type[AttrsInstance]", self.__class__)
         for attr_name in attrs.fields_dict(cls):
             if getattr(self, attr_name) is not None:
                 yield key_map[attr_name]

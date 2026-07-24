@@ -54,11 +54,7 @@ __all__ = (
 
 def _positive(instance: Any, attribute: Any, value: int) -> None:
     if value < 0:
-        raise ValueError(
-            "'{name}' must be at least 0 (got {value!r})".format(
-                name=attribute.name, value=value
-            )
-        )
+        raise ValueError(f"'{attribute.name}' must be at least 0 (got {value!r})")
 
 
 _optional_positive = attrs.validators.optional(_positive)

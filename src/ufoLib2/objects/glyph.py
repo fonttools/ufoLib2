@@ -396,7 +396,7 @@ class Glyph:
             Sets the mark color. If value is None, deletes the key from the lib if
             present.
         """
-        return cast(Optional[str], self.lib.get("public.markColor"))
+        return cast(str | None, self.lib.get("public.markColor"))
 
     @markColor.setter
     def markColor(self, value: str | None) -> None:
@@ -418,7 +418,7 @@ class Glyph:
             Sets the vertical origin. If value is None, deletes the key from the lib if
             present.
         """
-        return cast(Optional[float], self.lib.get("public.verticalOrigin"))
+        return cast(float | None, self.lib.get("public.verticalOrigin"))
 
     @verticalOrigin.setter
     def verticalOrigin(self, value: float | None) -> None:
