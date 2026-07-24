@@ -4,8 +4,8 @@ import uuid
 from abc import abstractmethod
 from collections.abc import Iterator, Mapping, MutableMapping, Sequence
 from copy import deepcopy
-from functools import lru_cache, cache
-from typing import TYPE_CHECKING, Any, NamedTuple, Type, TypeVar, cast
+from functools import cache
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar, cast
 
 import attrs
 from attrs import define, field
