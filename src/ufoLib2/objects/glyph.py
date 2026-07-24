@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterator, Mapping
 from copy import deepcopy
-from typing import Any, Iterator, List, Mapping, Optional, cast
+from typing import Any, Optional, cast
 
 from attrs import define, field
 from fontTools.misc.transform import Transform
@@ -62,7 +63,7 @@ class Glyph:
         :attr:`.Glyph.components` and :attr:`.Glyph.anchors` attributes.
     """
 
-    _name: Optional[str] = None
+    _name: str | None = None
 
     width: float = 0
     """The width of the glyph."""
@@ -70,7 +71,7 @@ class Glyph:
     height: float = 0
     """The height of the glyph."""
 
-    unicodes: List[int] = field(factory=list)
+    unicodes: list[int] = field(factory=list[int])
     """The Unicode code points assigned to the glyph. Note that a glyph can have
     multiple."""
 
@@ -79,17 +80,17 @@ class Glyph:
     _lib: Lib = field(factory=Lib, converter=_convert_Lib)
     """The glyph's mapping of string keys to arbitrary data."""
 
-    note: Optional[str] = None
+    note: str | None = None
     """A free form text note about the glyph."""
 
-    _anchors: List[Anchor] = field(factory=list)
-    components: List[Component] = field(factory=list)
+    _anchors: list[Anchor] = field(factory=list[Anchor])
+    components: list[Component] = field(factory=list[Component])
     """The list of components the glyph contains."""
 
-    contours: List[Contour] = field(factory=list)
+    contours: list[Contour] = field(factory=list[Contour])
     """The list of contours the glyph contains."""
 
-    _guidelines: List[Guideline] = field(factory=list)
+    _guidelines: list[Guideline] = field(factory=list[Guideline])
 
     _tempLib: Lib = field(factory=Lib, converter=_convert_Lib)
     """A temporary map of arbitrary plist values."""

@@ -39,6 +39,7 @@ multi_line_output = 3
 profile = "black"
 float_to_top = true
 known_first_party = "ufoLib2"
+split_on_trailing_comma = false
 
 [tool.mypy]
 python_version = "3.10"

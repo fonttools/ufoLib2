@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, BinaryIO, Type
+from typing import Any, BinaryIO
 
 from ufoLib2.converters import structure, unstructure
 from ufoLib2.serde.util import read_bytes, write_bytes
@@ -40,7 +40,7 @@ def dumps(
     return result
 
 
-def loads(s: str | bytes, object_class: Type[T], **kwargs: Any) -> T:
+def loads(s: str | bytes, object_class: type[T], **kwargs: Any) -> T:
     if have_orjson:
         data = orjson.loads(s, **kwargs)
     else:
@@ -58,5 +58,5 @@ def dump(
     write_bytes(fp, dumps(obj, indent=indent, sort_keys=sort_keys, **kwargs))
 
 
-def load(fp: PathLike | BinaryIO, object_class: Type[T], **kwargs: Any) -> T:
+def load(fp: PathLike | BinaryIO, object_class: type[T], **kwargs: Any) -> T:
     return loads(read_bytes(fp), object_class, **kwargs)

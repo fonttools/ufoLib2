@@ -12,7 +12,7 @@ See:
 - https://unifiedfontobject.org/versions/ufo3/glyphs/glif/#publicobjectlibs
 """
 
-DATA_LIB_KEY = "com.github.fonttools.ufoLib2.lib.plist.data"
+DATA_LIB_KEY: str = "com.github.fonttools.ufoLib2.lib.plist.data"
 """
 Lib key used for serializing binary data as JSON-encodable string.
 """

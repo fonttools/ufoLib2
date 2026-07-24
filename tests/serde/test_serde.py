@@ -1,5 +1,5 @@
 import importlib
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 from attrs import define
@@ -65,7 +65,7 @@ def test_msgpack_not_installed() -> None:
     assert_extras_not_installed("msgpack", "msgpack")
 
 
-BASIC_EMPTY_OBJECTS: List[Dict[str, Any]] = [
+BASIC_EMPTY_OBJECTS: list[dict[str, Any]] = [
     {"class_name": "Anchor", "args": (0, 0)},
     {"class_name": "Component", "args": ("a",)},
     {"class_name": "Contour", "args": ()},
@@ -95,7 +95,7 @@ assert {d["class_name"] for d in BASIC_EMPTY_OBJECTS} == set(ufoLib2.objects.__a
     BASIC_EMPTY_OBJECTS,
     ids=lambda x: x["class_name"],
 )
-def test_serde_all_objects(fmt: str, object_info: Dict[str, Any]) -> None:
+def test_serde_all_objects(fmt: str, object_info: dict[str, Any]) -> None:
     for req in EXTRAS_REQUIREMENTS[fmt]:
         pytest.importorskip(req)
 
