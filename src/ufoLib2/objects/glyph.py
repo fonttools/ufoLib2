@@ -479,7 +479,7 @@ class Glyph:
         """
         bounds = self.getBounds(layer)
         if bounds is None:
-            return None
+            return
         diff = value - bounds.xMin
         if diff:
             self.width += diff
@@ -509,7 +509,7 @@ class Glyph:
         """
         bounds = self.getBounds(layer)
         if bounds is None:
-            return None
+            return
         self.width = bounds.xMax + value
 
     def getBottomMargin(self, layer: GlyphSet | None = None) -> float | None:
@@ -539,7 +539,7 @@ class Glyph:
         """
         bounds = self.getBounds(layer)
         if bounds is None:
-            return None
+            return
         # blindly copied from defcon Glyph._set_bottomMargin; not sure it's correct
         if self.verticalOrigin is None:
             oldValue = bounds.yMin

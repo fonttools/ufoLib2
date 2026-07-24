@@ -31,8 +31,8 @@ from .woff import (
 )
 
 __all__ = (
-    "Info",
     "GaspRangeRecord",
+    "Info",
     "NameRecord",
     "WidthClass",
     "WoffMetadataCopyright",
