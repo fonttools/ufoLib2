@@ -92,7 +92,7 @@ def test_bounds(ufo_UbuTestData: Font) -> None:
     font = ufo_UbuTestData
 
     assert font.bounds == (8, -11, 655, 693)
-    assert font.controlPointBounds == (8, -11, 655, 693)
+    assert font.controlPointBounds == (8, -11, 655, 693)  # type: ignore[unreachable]
 
 
 def test_data_images_init() -> None:

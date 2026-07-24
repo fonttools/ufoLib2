@@ -283,7 +283,7 @@ class Font:
         # test possible Font subclasses for equality.
         if other.__class__ is not self.__class__:
             return NotImplemented
-        other = cast(Font, other)
+        other = cast(Font, other)  # type: ignore[redundant-cast]
 
         for font in (self, other):
             if font._lazy:
