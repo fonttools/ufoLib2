@@ -96,7 +96,7 @@ def test_not_allow_bytes(ufo_UbuTestData: ufoLib2.objects.Font) -> None:
     assert all(isinstance(v, bytes) for v in font.data.values())
 
     # bytes are are not allowed in JSON, so our converter automatically
-    # translates them to Base64 strings upon serializig
+    # translates them to Base64 strings upon serializing
     s = font.data.json_dumps()  # type: ignore
 
     # check that (before structuring the DataSet object) the json data

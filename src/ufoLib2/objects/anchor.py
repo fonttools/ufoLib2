@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from attrs import define
 
 from ufoLib2.objects.misc import AttrDictMixin
@@ -22,13 +20,13 @@ class Anchor(AttrDictMixin):
     y: float
     """The y coordinate of the anchor."""
 
-    name: Optional[str] = None
+    name: str | None = None
     """The name of the anchor."""
 
-    color: Optional[str] = None
+    color: str | None = None
     """The color of the anchor."""
 
-    identifier: Optional[str] = None
+    identifier: str | None = None
     """The globally unique identifier of the anchor."""
 
     def move(self, delta: tuple[float, float]) -> None:

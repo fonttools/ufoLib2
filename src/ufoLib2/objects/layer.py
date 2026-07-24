@@ -1,16 +1,7 @@
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterator,
-    KeysView,
-    Optional,
-    Sequence,
-    Type,
-    overload,
-)
+from collections.abc import Iterator, KeysView, Sequence
+from typing import TYPE_CHECKING, Any, overload
 
 from attrs import define, field
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -45,12 +36,12 @@ _GLYPH_NOT_LOADED = Glyph(name="___UFOLIB2_LAZY_GLYPH___")
 def _convert_glyphs(value: dict[str, Glyph] | Sequence[Glyph]) -> dict[str, Glyph]:
     result: dict[str, Glyph] = {}
     if isinstance(value, dict):
-        glyph_ids = set()
+        glyph_ids: set[int] = set()
         for name, glyph in value.items():
             if not isinstance(glyph, Glyph):
                 raise TypeError(f"Expected Glyph, found {type(glyph).__name__}")
             if glyph is not _GLYPH_NOT_LOADED:
-                glyph_id = id(glyph)
+                glyph_id: int = id(glyph)
                 if glyph_id in glyph_ids:
                     raise KeyError(f"{glyph!r} can't be added twice")
                 glyph_ids.add(glyph_id)
@@ -114,8 +105,10 @@ class Layer:
     """
 
     _name: str = field(default=DEFAULT_LAYER_NAME, metadata={"omit_if_default": False})
-    _glyphs: Dict[str, Glyph] = field(factory=dict, converter=_convert_glyphs)
-    color: Optional[str] = None
+    _glyphs: dict[str, Glyph] = field(
+        factory=dict[str, Glyph], converter=_convert_glyphs
+    )
+    color: str | None = None
     """The color assigned to the layer."""
 
     _lib: Lib = field(factory=Lib, converter=_convert_Lib)
@@ -129,7 +122,7 @@ class Layer:
     _tempLib: Lib = field(factory=Lib, converter=_convert_Lib)
     """A temporary map of arbitrary plist values."""
 
-    _lazy: Optional[bool] = field(default=None, init=False, eq=False)
+    _lazy: bool | None = field(default=None, init=False, eq=False)
     _glyphSet: Any = field(default=None, init=False, eq=False)
 
     def __attrs_post_init__(self) -> None:
@@ -419,7 +412,7 @@ class Layer:
 
     @staticmethod
     def _structure(
-        data: dict[str, Any], cls: Type[Layer], converter: Converter
+        data: dict[str, Any], cls: type[Layer], converter: Converter
     ) -> Layer:
         return cls(
             name=data.get("name", DEFAULT_LAYER_NAME),
@@ -437,7 +430,7 @@ class Layer:
 def _fetch_glyph_identifiers(glyph: Glyph) -> set[str]:
     """Returns all identifiers in use in a glyph."""
 
-    identifiers = set()
+    identifiers: set[str] = set()
     for anchor in glyph.anchors:
         if anchor.identifier is not None:
             identifiers.add(anchor.identifier)

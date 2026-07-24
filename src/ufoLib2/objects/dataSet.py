@@ -10,7 +10,7 @@ from ufoLib2.serde import serde
 class DataSet(DataStore):
     """Represents a mapping of POSIX filename strings to arbitrary data bytes.
 
-    Always use forward slahes (/) as directory separators, even on Windows.
+    Always use forward slashes (/) as directory separators, even on Windows.
 
     Behavior:
         DataSet behaves like a dictionary of type ``Dict[str, bytes]``.
