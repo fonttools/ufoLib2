@@ -181,7 +181,7 @@ class DataStore(MutableMapping[str, bytes]):
         # test possible Font subclasses for equality.
         if other.__class__ is not self.__class__:
             return NotImplemented
-        other = cast(DataStore, other)
+        other = cast(DataStore, other)  # type: ignore[redundant-cast]
 
         for data_store in (self, other):
             if data_store._lazy:

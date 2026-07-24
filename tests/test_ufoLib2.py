@@ -92,7 +92,7 @@ def test_unlazify(datadir: Path) -> None:
     font = ufoLib2.Font.read(reader, lazy=True)
 
     assert font._reader is reader
-    assert not reader.fs.isclosed()
+    assert not reader.fs.isclosed()  # type: ignore[union-attr]
 
     font.unlazify()
 
