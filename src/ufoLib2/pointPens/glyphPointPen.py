@@ -20,7 +20,7 @@ class GlyphPointPen(AbstractPointPen):  # type: ignore
     introduction to pens.
     """
 
-    __slots__ = "_glyph", "_contour"
+    __slots__ = "_contour", "_glyph"
 
     def __init__(self, glyph: Glyph) -> None:
         self._glyph: Glyph = glyph

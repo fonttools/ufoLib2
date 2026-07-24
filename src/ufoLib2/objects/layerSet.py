@@ -88,7 +88,7 @@ class LayerSet:
         else:
             if not any(layer is self._defaultLayer for layer in self._layers.values()):
                 raise ValueError(
-                    f"default layer {repr(self._defaultLayer)} must be in layer set."
+                    f"default layer {self._defaultLayer!r} must be in layer set."
                 )
             assert self._defaultLayer._default
 

@@ -13,6 +13,7 @@ from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.ufoLib import UFOReader, UFOWriter
+from typing_extensions import Self
 
 from ufoLib2.constants import OBJECT_LIBS_KEY
 from ufoLib2.typing import Drawable, GlyphSet, HasIdentifier
@@ -141,10 +142,6 @@ class DataPlaceholder(bytes):
 _DATA_NOT_LOADED = DataPlaceholder(b"__UFOLIB2_DATA_NOT_LOADED__")
 
 
-# Create a generic variable for mypy that can be 'DataStore' or any subclass.
-Tds = TypeVar("Tds", bound="DataStore")
-
-
 @define
 class DataStore(MutableMapping[str, bytes]):
     """Represents the base class for ImageSet and DataSet.
@@ -183,7 +180,7 @@ class DataStore(MutableMapping[str, bytes]):
         return not result
 
     @classmethod
-    def read(cls: type[Tds], reader: UFOReader, lazy: bool = True) -> Tds:
+    def read(cls, reader: UFOReader, lazy: bool = True) -> Self:
         """Instantiate the data store from a :class:`fontTools.ufoLib.UFOReader`."""
         self = cls()
         for fileName in cls.list_contents(reader):
@@ -383,7 +380,7 @@ class AttrDictMixin(Mapping[str, Any]):
         return sum(1 for _ in self)
 
     @classmethod
-    def coerce_from_dict(cls: type[_T], value: _T | Mapping[str, Any]) -> _T:
+    def coerce_from_dict(cls, value: Self | Mapping[str, Any]) -> Self:
         if isinstance(value, cls):
             return value
         elif isinstance(value, Mapping):
@@ -395,8 +392,8 @@ class AttrDictMixin(Mapping[str, Any]):
 
     @classmethod
     def coerce_from_optional_dict(
-        cls: type[_T], value: _T | Mapping[str, Any] | None
-    ) -> _T | None:
+        cls, value: Self | Mapping[str, Any] | None
+    ) -> Self | None:
         if value is None:
             return None
         return cls.coerce_from_dict(value)
