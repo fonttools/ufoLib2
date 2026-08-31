@@ -20,7 +20,7 @@ flake8==7.3.0
     # via -r requirements-dev.in
 iniconfig==2.3.0
     # via pytest
-isort==8.0.1
+isort==9.0.1
     # via -r requirements-dev.in
 librt==0.13.0 ; platform_python_implementation != 'PyPy'
     # via mypy
