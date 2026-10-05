@@ -44,7 +44,7 @@ platformdirs==4.12.3
     # via black
 pluggy==1.6.0
     # via pytest
-pycodestyle==2.14.0
+pycodestyle==2.15.0
     # via flake8
 pyflakes==3.4.0
     # via flake8
