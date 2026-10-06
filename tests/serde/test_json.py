@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
+import plistlib
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 import ufoLib2.objects
+from ufoLib2.constants import DATE_LIB_KEY
 
 # isort: off
 pytest.importorskip("cattrs")
@@ -110,3 +113,41 @@ def test_not_allow_bytes(ufo_UbuTestData: ufoLib2.objects.Font) -> None:
     data = font.data.json_loads(s)  # type: ignore
     assert isinstance(data, ufoLib2.objects.DataSet)
     assert all(isinstance(v, bytes) for v in data.values())
+
+
+@pytest.mark.parametrize("have_orjson", [False, True], ids=["no-orjson", "with-orjson"])
+def test_lib_datetime(monkeypatch: Any, have_orjson: bool) -> None:
+    if not have_orjson:
+        monkeypatch.setattr(ufoLib2.serde.json, "have_orjson", have_orjson)
+    else:
+        pytest.importorskip("orjson")
+
+    # plistlib reads <date> as a naive datetime
+    date = datetime(2020, 1, 2, 3, 4, 5)
+    font = ufoLib2.objects.Font(lib={"date": date, "nested": [{"date": date}]})
+    font.newGlyph("a").lib["date"] = date
+
+    data = font.json_dumps()  # type: ignore
+    assert json.loads(data)["lib"]["date"] == {
+        "type": DATE_LIB_KEY,
+        "date": "2020-01-02T03:04:05Z",
+    }
+
+    font2 = ufoLib2.objects.Font.json_loads(data)  # type: ignore
+    assert font2.lib == {"date": date, "nested": [{"date": date}]}
+    assert font2["a"].lib == {"date": date}
+
+
+def test_lib_datetime_like_plist() -> None:
+    # UTC without fractional seconds, like plistlib writes and reads <date>
+    date = datetime(2020, 1, 2, 3, 4, 5, 678, tzinfo=timezone(timedelta(hours=1)))
+    font = ufoLib2.objects.Font(lib={"date": date})
+
+    data = font.json_dumps()  # type: ignore
+    assert json.loads(data)["lib"]["date"]["date"] == "2020-01-02T02:04:05Z"
+
+    utc = datetime(2020, 1, 2, 2, 4, 5)
+    assert b"<date>2020-01-02T02:04:05Z</date>" in plistlib.dumps({"date": utc})
+
+    font2 = ufoLib2.objects.Font.json_loads(data)  # type: ignore
+    assert font2.lib == {"date": utc}
