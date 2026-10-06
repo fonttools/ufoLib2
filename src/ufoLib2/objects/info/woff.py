@@ -179,7 +179,7 @@ def _convert_list_of_woff_metadata_extension_item(
 
 @define
 class WoffMetadataExtension(AttrDictMixin):
-    id: str | None
+    id: str | None = None
     names: list[WoffMetadataExtensionName] = field(
         factory=list,
         converter=_convert_list_of_woff_metadata_extension_name,

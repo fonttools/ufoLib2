@@ -265,6 +265,21 @@ def test_woff_metadata(datadir: Path, tmp_path: Path) -> None:
     )
 
 
+def test_woff_metadata_extension_without_id(tmp_path: Path) -> None:
+    # 'id' is optional in a WOFF metadata extension
+    font = Font()
+    font.info.woffMetadataExtensions = [
+        {"items": [{"names": [{"text": "Name"}], "values": [{"text": "Value"}]}]}
+    ]
+    font.save(tmp_path / "Test.ufo", validate=True)
+
+    font2 = Font.open(tmp_path / "Test.ufo", validate=True)
+
+    assert font2.info.woffMetadataExtensions is not None
+    assert font2.info.woffMetadataExtensions[0].id is None
+    assert font2.info == font.info
+
+
 def test_features_normalize_newlines() -> None:
     assert Features("a\r\nb\rc\n").normalize_newlines().text == "a\nb\nc\n"
 
