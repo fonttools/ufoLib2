@@ -1,0 +1,1226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ufoLib2 Font",
+  "description": "JSON serialization of a ufoLib2.Font, as written by ufoLib2.serde.json (font.json_dumps()). Attributes equal to their default are omitted. This describes what ufoLib2 writes, which the loader may accept more loosely (e.g. explicit nulls for optional attributes). Some rules are left to the loader: unique layer names, valid calendar dates, and the UFO spec's constraints beyond types and ranges.",
+  "type": "object",
+  "properties": {
+    "layers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/layer"
+      },
+      "minItems": 1,
+      "description": "Layers in order. Exactly one is the default layer: the one named 'public.default', or else the one with default: true. Layer names must be unique.",
+      "contains": {
+        "anyOf": [
+          {
+            "properties": {
+              "name": {
+                "const": "public.default"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          {
+            "properties": {
+              "default": {
+                "const": true
+              }
+            },
+            "required": [
+              "default"
+            ]
+          }
+        ]
+      },
+      "minContains": 1,
+      "maxContains": 1
+    },
+    "info": {
+      "$ref": "#/$defs/info"
+    },
+    "features": {
+      "type": "string",
+      "description": "The features.fea text."
+    },
+    "groups": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "kerning": {
+      "type": "object",
+      "description": "Nested mapping: first -> second -> value.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "number"
+        }
+      }
+    },
+    "lib": {
+      "$ref": "#/$defs/lib"
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/base64"
+      },
+      "description": "Files in the UFO data directory, keyed by POSIX path."
+    },
+    "images": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/base64"
+      },
+      "description": "Files in the UFO images directory, keyed by file name."
+    },
+    "tempLib": {
+      "$ref": "#/$defs/lib"
+    }
+  },
+  "required": [
+    "layers"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "color": {
+      "type": "string",
+      "description": "UFO color string: comma-separated r,g,b,a components in the 0-1 range."
+    },
+    "identifier": {
+      "type": "string",
+      "description": "Unique identifier, see the UFO spec."
+    },
+    "transformation": {
+      "description": "Affine transformation (xx, xy, yx, yy, dx, dy). Omitted when it is the identity.",
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "base64": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    "plistData": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "com.github.fonttools.ufoLib2.lib.plist.data"
+        },
+        "data": {
+          "$ref": "#/$defs/base64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "data"
+      ],
+      "description": "A plist <data> value (bytes) inside a lib, base64-encoded."
+    },
+    "plistDate": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "com.github.fonttools.ufoLib2.lib.plist.date"
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+          "description": "UTC date and time, as in a plist <date> element."
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "date"
+      ],
+      "description": "A plist <date> value inside a lib."
+    },
+    "lib": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/libValue"
+      },
+      "description": "Arbitrary plist values. JSON has no bytes or date types, so plist <data> and <date> values are wrapped as plistData and plistDate objects, at any depth."
+    },
+    "libValue": {
+      "type": [
+        "string",
+        "number",
+        "boolean",
+        "array",
+        "object"
+      ],
+      "items": {
+        "$ref": "#/$defs/libValue"
+      },
+      "if": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "const": "com.github.fonttools.ufoLib2.lib.plist.data"
+          }
+        },
+        "required": [
+          "type",
+          "data"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/plistData"
+      },
+      "else": {
+        "if": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "com.github.fonttools.ufoLib2.lib.plist.date"
+            }
+          },
+          "required": [
+            "type",
+            "date"
+          ]
+        },
+        "then": {
+          "$ref": "#/$defs/plistDate"
+        },
+        "else": {
+          "additionalProperties": {
+            "$ref": "#/$defs/libValue"
+          }
+        }
+      },
+      "description": "A plist value. An object with the plistData or plistDate type and payload key is that wrapper; any other object is a dictionary."
+    },
+    "point": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "type": {
+          "enum": [
+            "move",
+            "line",
+            "offcurve",
+            "curve",
+            "qcurve"
+          ],
+          "description": "Omitted for off-curve points."
+        },
+        "smooth": {
+          "type": "boolean",
+          "description": "Omitted when false."
+        },
+        "name": {
+          "type": "string"
+        },
+        "identifier": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ]
+    },
+    "contour": {
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        },
+        "identifier": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "additionalProperties": false
+    },
+    "component": {
+      "type": "object",
+      "properties": {
+        "baseGlyph": {
+          "type": "string"
+        },
+        "transformation": {
+          "$ref": "#/$defs/transformation"
+        },
+        "identifier": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "baseGlyph"
+      ]
+    },
+    "anchor": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/$defs/color"
+        },
+        "identifier": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ]
+    },
+    "guideline": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "angle": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360
+        },
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "$ref": "#/$defs/color"
+        },
+        "identifier": {
+          "$ref": "#/$defs/identifier"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Either x, y and angle are all set, or exactly one of x and y and no angle.",
+      "oneOf": [
+        {
+          "required": [
+            "x",
+            "y",
+            "angle"
+          ]
+        },
+        {
+          "required": [
+            "x"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "y"
+                ]
+              },
+              {
+                "required": [
+                  "angle"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "required": [
+            "y"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "x"
+                ]
+              },
+              {
+                "required": [
+                  "angle"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string"
+        },
+        "transformation": {
+          "$ref": "#/$defs/transformation"
+        },
+        "color": {
+          "$ref": "#/$defs/color"
+        }
+      },
+      "additionalProperties": false
+    },
+    "glyph": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Only present for a glyph serialized on its own; inside a layer the name is the key."
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "unicodes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1114111
+          }
+        },
+        "image": {
+          "$ref": "#/$defs/image"
+        },
+        "lib": {
+          "$ref": "#/$defs/lib"
+        },
+        "note": {
+          "type": "string"
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/anchor"
+          }
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/component"
+          }
+        },
+        "contours": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contour"
+          }
+        },
+        "guidelines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/guideline"
+          }
+        },
+        "tempLib": {
+          "$ref": "#/$defs/lib"
+        }
+      },
+      "additionalProperties": false
+    },
+    "layer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "default": {
+          "type": "boolean",
+          "description": "Present only when it differs from name == 'public.default'. A layer named 'public.default' is always the default layer."
+        },
+        "glyphs": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/glyph"
+          }
+        },
+        "lib": {
+          "$ref": "#/$defs/lib"
+        },
+        "tempLib": {
+          "$ref": "#/$defs/lib"
+        },
+        "color": {
+          "$ref": "#/$defs/color"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "woffMetadataText": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "dir": {
+          "enum": [
+            "ltr",
+            "rtl"
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ]
+    },
+    "woffMetadataUniqueID": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id"
+      ]
+    },
+    "woffMetadataVendor": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "dir": {
+          "enum": [
+            "ltr",
+            "rtl"
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "woffMetadataCredit": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "dir": {
+          "enum": [
+            "ltr",
+            "rtl"
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "woffMetadataCredits": {
+      "type": "object",
+      "properties": {
+        "credits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataCredit"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "woffMetadataDescription": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "text": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataText"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ]
+    },
+    "woffMetadataLicense": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataText"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "woffMetadataCopyright": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataText"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ]
+    },
+    "woffMetadataTrademark": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataText"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ]
+    },
+    "woffMetadataLicensee": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "dir": {
+          "enum": [
+            "ltr",
+            "rtl"
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "woffMetadataExtensionName": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "dir": {
+          "enum": [
+            "ltr",
+            "rtl"
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ]
+    },
+    "woffMetadataExtensionValue": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "dir": {
+          "enum": [
+            "ltr",
+            "rtl"
+          ]
+        },
+        "class": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ]
+    },
+    "woffMetadataExtensionItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataExtensionName"
+          },
+          "minItems": 1
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataExtensionValue"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "names",
+        "values"
+      ]
+    },
+    "woffMetadataExtension": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Older ufoLib2 versions write null when unset."
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataExtensionName"
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataExtensionItem"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ]
+    },
+    "gaspRangeRecord": {
+      "type": "object",
+      "properties": {
+        "rangeMaxPPEM": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rangeGaspBehavior": {
+          "type": "array",
+          "items": {
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "rangeMaxPPEM",
+        "rangeGaspBehavior"
+      ]
+    },
+    "nameRecord": {
+      "type": "object",
+      "properties": {
+        "nameID": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "platformID": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodingID": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "languageID": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "string": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "nameID",
+        "platformID",
+        "encodingID",
+        "languageID"
+      ]
+    },
+    "info": {
+      "type": "object",
+      "properties": {
+        "familyName": {
+          "type": "string"
+        },
+        "styleName": {
+          "type": "string"
+        },
+        "styleMapFamilyName": {
+          "type": "string"
+        },
+        "styleMapStyleName": {
+          "type": "string"
+        },
+        "versionMajor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "versionMinor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "copyright": {
+          "type": "string"
+        },
+        "trademark": {
+          "type": "string"
+        },
+        "unitsPerEm": {
+          "type": "number",
+          "minimum": 0
+        },
+        "descender": {
+          "type": "number"
+        },
+        "xHeight": {
+          "type": "number"
+        },
+        "capHeight": {
+          "type": "number"
+        },
+        "ascender": {
+          "type": "number"
+        },
+        "italicAngle": {
+          "type": "number"
+        },
+        "note": {
+          "type": "string"
+        },
+        "guidelines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/guideline"
+          }
+        },
+        "openTypeGaspRangeRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gaspRangeRecord"
+          }
+        },
+        "openTypeHeadCreated": {
+          "type": "string"
+        },
+        "openTypeHeadLowestRecPPEM": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "openTypeHeadFlags": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "openTypeHheaAscender": {
+          "type": "integer"
+        },
+        "openTypeHheaDescender": {
+          "type": "integer"
+        },
+        "openTypeHheaLineGap": {
+          "type": "integer"
+        },
+        "openTypeHheaCaretSlopeRise": {
+          "type": "integer"
+        },
+        "openTypeHheaCaretSlopeRun": {
+          "type": "integer"
+        },
+        "openTypeHheaCaretOffset": {
+          "type": "integer"
+        },
+        "openTypeNameDesigner": {
+          "type": "string"
+        },
+        "openTypeNameDesignerURL": {
+          "type": "string"
+        },
+        "openTypeNameManufacturer": {
+          "type": "string"
+        },
+        "openTypeNameManufacturerURL": {
+          "type": "string"
+        },
+        "openTypeNameLicense": {
+          "type": "string"
+        },
+        "openTypeNameLicenseURL": {
+          "type": "string"
+        },
+        "openTypeNameVersion": {
+          "type": "string"
+        },
+        "openTypeNameUniqueID": {
+          "type": "string"
+        },
+        "openTypeNameDescription": {
+          "type": "string"
+        },
+        "openTypeNamePreferredFamilyName": {
+          "type": "string"
+        },
+        "openTypeNamePreferredSubfamilyName": {
+          "type": "string"
+        },
+        "openTypeNameCompatibleFullName": {
+          "type": "string"
+        },
+        "openTypeNameSampleText": {
+          "type": "string"
+        },
+        "openTypeNameWWSFamilyName": {
+          "type": "string"
+        },
+        "openTypeNameWWSSubfamilyName": {
+          "type": "string"
+        },
+        "openTypeNameRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nameRecord"
+          }
+        },
+        "openTypeOS2WidthClass": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9
+        },
+        "openTypeOS2WeightClass": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "openTypeOS2Selection": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "openTypeOS2VendorID": {
+          "type": "string"
+        },
+        "openTypeOS2Panose": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "openTypeOS2FamilyClass": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "openTypeOS2UnicodeRanges": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "openTypeOS2CodePageRanges": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "openTypeOS2TypoAscender": {
+          "type": "integer"
+        },
+        "openTypeOS2TypoDescender": {
+          "type": "integer"
+        },
+        "openTypeOS2TypoLineGap": {
+          "type": "integer"
+        },
+        "openTypeOS2WinAscent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "openTypeOS2WinDescent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "openTypeOS2Type": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "openTypeOS2SubscriptXSize": {
+          "type": "integer"
+        },
+        "openTypeOS2SubscriptYSize": {
+          "type": "integer"
+        },
+        "openTypeOS2SubscriptXOffset": {
+          "type": "integer"
+        },
+        "openTypeOS2SubscriptYOffset": {
+          "type": "integer"
+        },
+        "openTypeOS2SuperscriptXSize": {
+          "type": "integer"
+        },
+        "openTypeOS2SuperscriptYSize": {
+          "type": "integer"
+        },
+        "openTypeOS2SuperscriptXOffset": {
+          "type": "integer"
+        },
+        "openTypeOS2SuperscriptYOffset": {
+          "type": "integer"
+        },
+        "openTypeOS2StrikeoutSize": {
+          "type": "integer"
+        },
+        "openTypeOS2StrikeoutPosition": {
+          "type": "integer"
+        },
+        "openTypeVheaVertTypoAscender": {
+          "type": "integer"
+        },
+        "openTypeVheaVertTypoDescender": {
+          "type": "integer"
+        },
+        "openTypeVheaVertTypoLineGap": {
+          "type": "integer"
+        },
+        "openTypeVheaCaretSlopeRise": {
+          "type": "integer"
+        },
+        "openTypeVheaCaretSlopeRun": {
+          "type": "integer"
+        },
+        "openTypeVheaCaretOffset": {
+          "type": "integer"
+        },
+        "postscriptFontName": {
+          "type": "string"
+        },
+        "postscriptFullName": {
+          "type": "string"
+        },
+        "postscriptSlantAngle": {
+          "type": "number"
+        },
+        "postscriptUniqueID": {
+          "type": "integer"
+        },
+        "postscriptUnderlineThickness": {
+          "type": "number"
+        },
+        "postscriptUnderlinePosition": {
+          "type": "number"
+        },
+        "postscriptIsFixedPitch": {
+          "type": "boolean"
+        },
+        "postscriptBlueValues": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "postscriptOtherBlues": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "postscriptFamilyBlues": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "postscriptFamilyOtherBlues": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "postscriptStemSnapH": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "postscriptStemSnapV": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "postscriptBlueFuzz": {
+          "type": "number"
+        },
+        "postscriptBlueShift": {
+          "type": "number"
+        },
+        "postscriptBlueScale": {
+          "type": "number"
+        },
+        "postscriptForceBold": {
+          "type": "boolean"
+        },
+        "postscriptDefaultWidthX": {
+          "type": "number"
+        },
+        "postscriptNominalWidthX": {
+          "type": "number"
+        },
+        "postscriptWeightName": {
+          "type": "string"
+        },
+        "postscriptDefaultCharacter": {
+          "type": "string"
+        },
+        "postscriptWindowsCharacterSet": {
+          "type": "integer"
+        },
+        "macintoshFONDName": {
+          "type": "string"
+        },
+        "macintoshFONDFamilyID": {
+          "type": "integer"
+        },
+        "year": {
+          "type": "integer"
+        },
+        "woffMajorVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "woffMinorVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "woffMetadataUniqueID": {
+          "$ref": "#/$defs/woffMetadataUniqueID"
+        },
+        "woffMetadataVendor": {
+          "$ref": "#/$defs/woffMetadataVendor"
+        },
+        "woffMetadataCredits": {
+          "$ref": "#/$defs/woffMetadataCredits"
+        },
+        "woffMetadataDescription": {
+          "$ref": "#/$defs/woffMetadataDescription"
+        },
+        "woffMetadataLicense": {
+          "$ref": "#/$defs/woffMetadataLicense"
+        },
+        "woffMetadataCopyright": {
+          "$ref": "#/$defs/woffMetadataCopyright"
+        },
+        "woffMetadataTrademark": {
+          "$ref": "#/$defs/woffMetadataTrademark"
+        },
+        "woffMetadataLicensee": {
+          "$ref": "#/$defs/woffMetadataLicensee"
+        },
+        "woffMetadataExtensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/woffMetadataExtension"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "fontinfo.plist; see https://unifiedfontobject.org/versions/ufo3/fontinfo.plist/"
+    }
+  }
+}
