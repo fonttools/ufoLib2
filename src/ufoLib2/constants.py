@@ -16,3 +16,8 @@ DATA_LIB_KEY = "com.github.fonttools.ufoLib2.lib.plist.data"
 """
 Lib key used for serializing binary data as JSON-encodable string.
 """
+
+DATE_LIB_KEY = "com.github.fonttools.ufoLib2.lib.plist.date"
+"""
+Lib key used for serializing a datetime as an ISO 8601 UTC string, as in plist.
+"""
