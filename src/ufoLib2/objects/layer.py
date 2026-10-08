@@ -405,7 +405,7 @@ class Layer:
             ("tempLib", self._tempLib, {}),
         ]:
             if not converter.omit_if_default or value != default:
-                d[key] = value
+                d[key] = converter.unstructure(value)
         if self.color is not None:
             d["color"] = self.color
         return d

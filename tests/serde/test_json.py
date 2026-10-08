@@ -82,6 +82,23 @@ def test_dump_load(
     ).read_bytes()
 
 
+@pytest.mark.parametrize("have_orjson", [False, True], ids=["no-orjson", "with-orjson"])
+def test_layer_lib_bytes(monkeypatch: Any, have_orjson: bool) -> None:
+    if not have_orjson:
+        monkeypatch.setattr(ufoLib2.serde.json, "have_orjson", have_orjson)
+    else:
+        pytest.importorskip("orjson")
+
+    font = ufoLib2.objects.Font()
+    font.layers.defaultLayer.lib["foo"] = b"bar"
+    font.layers.defaultLayer.tempLib["baz"] = [b"\0"]
+
+    font2 = ufoLib2.objects.Font.json_loads(font.json_dumps())  # type: ignore
+
+    assert font2.layers.defaultLayer.lib == {"foo": b"bar"}
+    assert font2.layers.defaultLayer.tempLib == {"baz": [b"\0"]}
+
+
 @pytest.mark.parametrize("indent", [1, 3], ids=["indent-1", "indent-3"])
 def test_indent_not_2_orjson(indent: int) -> None:
     pytest.importorskip("orjson")
