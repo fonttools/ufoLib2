@@ -13,7 +13,6 @@ from fontTools.misc.arrayTools import unionRect
 from fontTools.misc.transform import Transform
 from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.ufoLib import UFOReader, UFOWriter
-from typing_extensions import Self
 
 from ufoLib2.constants import OBJECT_LIBS_KEY
 from ufoLib2.typing import Drawable, GlyphSet, HasIdentifier
@@ -24,6 +23,7 @@ if TYPE_CHECKING:
     # from attrs import AttrsInstance
     from attr import AttrsInstance
     from cattrs import Converter
+    from typing_extensions import Self
 
 
 class BoundingBox(NamedTuple):
