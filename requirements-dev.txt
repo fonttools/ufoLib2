@@ -9,7 +9,7 @@ attrs==26.1.0
     #   referencing
 black==26.10.1
     # via -r requirements-dev.in
-click==8.4.2
+click==8.5.0
     # via black
 colorama==0.4.6 ; sys_platform == 'win32'
     # via
