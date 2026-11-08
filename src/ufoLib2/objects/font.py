@@ -250,6 +250,14 @@ class Font:
         """Return a list of glyph names in the default layer."""
         return self.layers._defaultLayer.keys()
 
+    def items(self) -> Iterator[tuple[str, Glyph]]:
+        """Iterate over (name, Glyph) pairs in the default layer.
+
+        Glyphs are loaded lazily as the iterator advances, in the same order
+        as :meth:`keys` and ordinary glyph iteration.
+        """
+        return self.layers._defaultLayer.items()
+
     def close(self) -> None:
         """Closes the UFOReader if it still exists to finalize any outstanding
         file operations."""
