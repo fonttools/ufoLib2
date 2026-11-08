@@ -220,6 +220,15 @@ class Layer:
         """Returns a list of glyph names."""
         return self._glyphs.keys()
 
+    def items(self) -> Iterator[tuple[str, Glyph]]:
+        """Iterate over (name, Glyph) pairs, loading each glyph when needed.
+
+        Names follow :meth:`keys` order; constructing the iterator does not
+        load any glyphs.
+        """
+        for name in self._glyphs:
+            yield name, self[name]
+
     @overload
     def pop(self, key: str) -> Glyph: ...
 

@@ -252,6 +252,15 @@ class LayerSet:
     def keys(self) -> AbstractSet[str]:
         return self._layers.keys()
 
+    def items(self) -> Iterator[tuple[str, Layer]]:
+        """Iterate over (name, Layer) pairs in layer order.
+
+        Layers are loaded as the iterator advances. Their glyphs retain the
+        font's existing lazy-loading behavior.
+        """
+        for name in self._layers:
+            yield name, self[name]
+
     def __repr__(self) -> str:
         n = len(self._layers)
         return "<{}.{} ({} layer{}) at {}>".format(
