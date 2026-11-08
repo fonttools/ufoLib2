@@ -460,6 +460,16 @@ class Font:
         """
         self.layers._defaultLayer.renameGlyph(name, newName, overwrite)
 
+    def renameGlyphs(self, mapping: Mapping[str, str], overwrite: bool = False) -> None:
+        """Rename glyphs and component references in the default layer only.
+
+        See :meth:`.Layer.renameGlyphs` for simultaneous renaming and collision
+        handling. Other layers and font metadata, such as groups, kerning and
+        glyph order, are not modified. The existing :meth:`renameGlyph` keeps
+        its single-glyph behavior.
+        """
+        self.layers._defaultLayer.renameGlyphs(mapping, overwrite)
+
     def renameLayer(self, name: str, newName: str, overwrite: bool = False) -> None:
         """Renames a :class:`.Layer`.
 

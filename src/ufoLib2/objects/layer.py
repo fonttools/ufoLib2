@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, KeysView, Sequence
+from collections.abc import Iterator, KeysView, Mapping, Sequence
 from typing import TYPE_CHECKING, Any, overload
 
 from attrs import define, field
@@ -348,6 +348,60 @@ class Layer:
         glyph._name = newName
         # add it back
         self._glyphs[newName] = glyph
+
+    def renameGlyphs(self, mapping: Mapping[str, str], overwrite: bool = False) -> None:
+        """Rename glyphs and their component references in one batch.
+
+        Names are replaced simultaneously, so swaps and cycles are supported.
+        All source names must exist and target names must be distinct. A target
+        already in this layer must itself be renamed, unless ``overwrite`` is
+        True. Validation precedes loading or renaming glyphs. A nonempty batch
+        loads this layer once to update component references, including those
+        in glyphs that are not renamed. Other layers and font metadata are not
+        modified.
+        """
+        renames = dict(mapping)
+        for name, newName in renames.items():
+            if not isinstance(name, str) or not isinstance(newName, str):
+                raise TypeError("glyph names must be strings")
+            if name not in self._glyphs:
+                raise KeyError(name)
+        targets = set(renames.values())
+        if len(targets) != len(renames):
+            raise ValueError("target glyph names must be distinct")
+        if not overwrite:
+            for newName in targets:
+                if newName in self._glyphs and newName not in renames:
+                    raise KeyError(f"target glyph named '{newName}' already exists")
+        renames = {
+            name: newName for name, newName in renames.items() if name != newName
+        }
+        if not renames:
+            return
+        targets = set(renames.values())
+
+        # Finish lazy reads before changing names or references. Each reference
+        # uses the original mapping exactly once, rather than chaining renames.
+        glyphs = [(name, self[name]) for name in self._glyphs]
+        renamed = {
+            renames.get(name, name): glyph
+            for name, glyph in glyphs
+            if name in renames or name not in targets
+        }
+        seen_components: set[int] = set()
+        for name, glyph in renamed.items():
+            glyph._name = name
+            for component in glyph.components:
+                # Public component lists may share an object. Apply the
+                # original substitution once even across distinct glyphs.
+                if id(component) in seen_components:
+                    continue
+                seen_components.add(id(component))
+                component.baseGlyph = renames.get(
+                    component.baseGlyph, component.baseGlyph
+                )
+        self._glyphs.clear()
+        self._glyphs.update(renamed)
 
     def instantiateGlyphObject(self) -> Glyph:
         """Returns a new Glyph instance.
