@@ -75,7 +75,7 @@ rpds-py==2026.9.1 ; python_full_version >= '3.11'
     # via
     #   jsonschema
     #   referencing
-tomli==2.4.1 ; python_full_version < '3.11'
+tomli==2.5.0; python_full_version < '3.11'
     # via
     #   black
     #   mypy
