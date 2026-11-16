@@ -7,7 +7,7 @@ attrs==26.1.0
     #   -c requirements.txt
     #   jsonschema
     #   referencing
-black==26.5.1
+black==26.10.1
     # via -r requirements-dev.in
 click==8.4.2
     # via black
