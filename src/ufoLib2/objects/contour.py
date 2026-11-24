@@ -69,16 +69,15 @@ class Contour(MutableSequence[Point]):
     ) -> None:
         if isinstance(index, int) and isinstance(point, Point):
             self.points[index] = point
-        elif (
-            isinstance(index, slice)
-            and isinstance(point, Iterable)
-            and all(isinstance(p, Point) for p in point)
-        ):
-            self.points[index] = point
-        else:
-            raise TypeError(
-                f"Expected Point or Iterable[Point], found {type(point).__name__}."
-            )
+            return
+        if isinstance(index, slice) and isinstance(point, Iterable):
+            points = list(point)
+            if all(isinstance(p, Point) for p in points):
+                self.points[index] = points
+                return
+        raise TypeError(
+            f"Expected Point or Iterable[Point], found {type(point).__name__}."
+        )
 
     def __iter__(self) -> Iterator[Point]:
         return iter(self.points)
